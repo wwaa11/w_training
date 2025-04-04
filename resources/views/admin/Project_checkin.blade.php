@@ -4,10 +4,10 @@
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/admin">Admin Management</a> / <a class="text-blue-600" href="{{ env("APP_URL") }}/admin/project/{{ $project->id }}">{{ $project->project_name }}</a> / Check In</div>
             <hr>
+            <input class="mt-3 w-full rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
         </div>
-        <div class="m-auto mt-3 w-full rounded p-3">
-            <input class="mt-3 w-full bg-white p-3" id="searchInput" onkeyup="search()" type="text" placeholder="ค้นหา">
-            <table class="my-3 w-full rounded bg-white p-3">
+        <div class="w-full rounded p-3">
+            <table class="w-full">
                 <thead class="bg-gray-200">
                     <th class="border p-3">วันที่</th>
                     <th class="border p-3">รอบ</th>

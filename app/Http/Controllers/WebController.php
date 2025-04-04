@@ -193,7 +193,8 @@ class WebController extends Controller
     }
     public function adminCreateProject()
     {
-        return view('admin.create_project');
+
+        return view('admin.Project_create');
     }
     public function FulldateTH($date)
     {
@@ -330,18 +331,18 @@ class WebController extends Controller
     {
         $project = Project::find($id);
 
-        return view('admin.view_Project')->with(compact('project'));
+        return view('admin.Project_view')->with(compact('project'));
     }
-    public function adminExcelProjectAll($id)
+    public function Project_allTransactions($id)
     {
         $project = Project::find($id);
 
-        return view('admin.excel_Project')->with(compact('project'));
+        return view('admin.Project_allTransactions')->with(compact('project'));
     }
     public function adminExcelProjectDate($item_id)
     {
         $item = Item::find($item_id);
-        $pdf = Pdf::loadView('admin.excel_Item', compact('item'));
+        $pdf = Pdf::loadView('admin.Project_export', compact('item'));
 
         return $pdf->stream('test.pdf');
     }
@@ -349,7 +350,7 @@ class WebController extends Controller
     {
         $users = User::orderBy('admin', 'desc')->orderBy('userid', 'asc')->get();
 
-        return view('admin.users')->with(compact('users'));
+        return view('admin.Users_Management')->with(compact('users'));
     }
     function adminUserResetPassword(Request $req)
     {
@@ -370,7 +371,7 @@ class WebController extends Controller
         $project = Project::find($project_id);
         $transactions = Transaction::where('project_id', $project_id)->where('transaction_active', true)->where('checkin', true)->where('hr_approve', false)->get();
 
-        return view('admin.checkin_project')->with(compact('project','transactions'));
+        return view('admin.Project_checkin')->with(compact('project','transactions'));
     }
     function admincheckinProjectApprove(Request $req)
     {

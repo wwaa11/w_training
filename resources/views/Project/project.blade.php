@@ -2,7 +2,7 @@
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="mb-6 rounded-lg bg-[#c1dccd] p-3 shadow">
-            <div class="text-3xl text-[#1a3f34]"><a class="text-blue-600" href="{{ env("APP_URL") }}/">รายการทดสอบ</a> / {{ $project->project_name }}</div>
+            <div class="text-3xl text-[#1a3f34]"><a class="text-blue-600" href="{{ env("APP_URL") }}/">รายการลงทะเบียน</a> / {{ $project->project_name }}</div>
             <hr>
             @if ($isRegister)
                 <div class="mt-3 flex flex-row rounded bg-[#dbe9e1] p-3 shadow">

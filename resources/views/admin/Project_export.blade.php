@@ -11,7 +11,16 @@
 <style>
     @font-face {
         font-family: 'Sarabun';
+        font-style: normal;
+        font-weight: normal;
         src: url('{{ public_path("fontexcel/Sarabun-Regular.ttf") }}') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'Sarabun';
+        font-style: normal;
+        font-weight: bold;
+        src: url('{{ public_path("fontexcel/Sarabun-Bold.ttf") }}') format('truetype');
     }
 
     body {
@@ -27,15 +36,11 @@
     th {
         border: 1px solid;
         text-align: center;
-        font-family: 'Sarabun';
     }
 
     td {
         border: 1px solid;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        font-family: 'Sarabun';
+        overflow-wrap: anywhere;
     }
 </style>
 
@@ -44,17 +49,17 @@
         <thead>
             <tr>
                 <th colspan="3"><img style="padding: 3px" height="64px" src="{{ public_path("images/Side Logo.png") }}"></th>
-                <th colspan="3" style="text-align: center; padding: 5px">ใบลงทะเบียน</th>
+                <th colspan="4" style="text-align: center; padding: 5px">ใบลงทะเบียน</th>
             </tr>
             <tr>
                 <th>วันที่</th>
-                <td colspan="2">{{ $item->slot->slot_name }}</td>
+                <th colspan="2">{{ $item->slot->slot_name }}</th>
                 <th>เวลา</th>
-                <td colspan="2">{{ $item->item_name }}</td>
+                <th colspan="3">{{ $item->item_name }}</th>
             </tr>
             <tr>
                 <th>เรื่อง</th>
-                <td colspan="5">{{ $item->slot->project->project_name }}</td>
+                <th colspan="6">{{ $item->slot->project->project_name }}</th>
             </tr>
             <tr>
                 <th style="width: 7%;">ลำดับ</th>
@@ -62,7 +67,8 @@
                 <th style="width: 25%;">ชื่อ - สกุล</th>
                 <th style="">ตำแหน่ง</th>
                 <th style="">แผนก</th>
-                <th style="width: 15%">ลายเช็น</th>
+                <th style="width: 12%">ลายเช็น</th>
+                <th style="width: 12%">HR</th>
             </tr>
         </thead>
         <tbody>
@@ -70,18 +76,31 @@
                 <tr>
                     <td style="text-align: center">{{ $index + 1 }}</td>
                     <td style="text-align: center">{{ $transaction->user }}</td>
-                    <td>{{ $transaction->userData->name }}</td>
-                    <td>
+                    <td style="padding-left: 5px">{{ $transaction->userData->name }}</td>
+                    <td style="overflow-wrap: anywhere;">
                         {{ $transaction->userData->position }}
                     </td>
                     <td>
                         {{ $transaction->userData->department }}
                     </td>
-                    <td>&nbsp;</td>
+                    <td style="text-align: center">
+                        @if ($transaction->checkin_datetime !== null)
+                            {{ date("d/m/y H:i", strtotime($transaction->checkin_datetime)) }}
+                        @else
+                            &nbsp;
+                        @endif
+                    </td>
+                    <td style="text-align: center">
+                        @if ($transaction->hr_approve_datetime !== null)
+                            {{ date("d/m/y H:i", strtotime($transaction->hr_approve_datetime)) }}
+                        @else
+                            &nbsp;
+                        @endif
+                    </td>
                 </tr>
             @endforeach
             <tr>
-                <th style="text-align: right" colspan="5">รวม</th>
+                <th style="text-align: right" colspan="6">รวม</th>
                 <th style="text-align: center">{{ count($item->transactions) }}</th>
             </tr>
         </tbody>
