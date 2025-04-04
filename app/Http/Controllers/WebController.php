@@ -108,6 +108,7 @@ class WebController extends Controller
         $projects = Project::where('project_delete', false)->get();
         $myItem = Transaction::where('user', Auth::user()->userid)
             ->where('transaction_active', true)
+            ->orderBy('date', 'asc')
             ->get();
 
         return view('Project.index')->with(compact('user', 'myItem', 'projects'));
@@ -138,6 +139,7 @@ class WebController extends Controller
             $new->project_id = $req->project_id;
             $new->item_id = $req->item_id;
             $new->user = Auth::user()->userid;
+            $new->date = $item->slot->slot_date;
             $new->save();
 
             $response = [

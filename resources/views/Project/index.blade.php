@@ -9,18 +9,18 @@
                 @foreach ($myItem as $transaction)
                     @if ($transaction->item->slot->slot_date >= date("Y-m-d"))
                         <div class="mt-3 flex flex-row rounded bg-[#dbe9e1] p-3 shadow">
-                            <div class="m-auto w-[20%] text-center md:w-[30%]">
+                            <div class="m-auto w-[20%] p-3 text-center md:w-[30%]">
                                 <div class="text-4xl text-[#008387]">{{ date("d", strtotime($transaction->item->slot->slot_date)) }}</div>
                                 <div>{{ date("M Y", strtotime($transaction->item->slot->slot_date)) }}</div>
                             </div>
-                            <div class="relative flex-1 border-l-2 ps-3">
+                            <div class="relative flex-1 border-l-2 px-3">
                                 <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
                                 <div class="mt-2"><i class="fa-regular fa-calendar text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                                 @if ($transaction->item->item_note_1_active)
                                     <div class="mt-2"><i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
                                 @endif
                                 @if (!$transaction->checkin)
-                                    <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deletetransactionsaction('{{ $transaction->item->slot->project->id }}')"><i class="fa-solid fa-trash"></i></span>
+                                    <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}')"><i class="fa-solid fa-trash"></i></span>
                                 @endif
                                 @if (date("Y-m-d") == $transaction->item->slot->slot_date)
                                     @if (!$transaction->checkin)
