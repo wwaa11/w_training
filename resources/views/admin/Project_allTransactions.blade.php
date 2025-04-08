@@ -7,7 +7,8 @@
             <input class="mt-3 w-full rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
         </div>
         <div class="w-full rounded p-3">
-            <table class="w-full">
+            {{-- <button class="" id="copy-button" onclick="copyTable()">Copy Table to Excel</button> --}}
+            <table class="w-full" id="user-table">
                 <thead class="bg-gray-200">
                     <th class="border p-2">วันที่</th>
                     <th class="border p-2">รอบ</th>
@@ -50,6 +51,14 @@
 @endsection
 @section("scripts")
     <script>
+        function copyTable() {
+            var urlField = document.getElementById('user-table')
+            var range = document.createRange()
+            range.selectNode(urlField)
+            window.getSelection().addRange(range)
+            document.execCommand('copy')
+        }
+
         function search() {
             var value = $('#searchInput').val().toLowerCase();
             $("#userTable tr").filter(function() {

@@ -10,11 +10,16 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 
 class WebController extends Controller
 {
+    public function test()
+    {
+        // return abort(419);
+    }
     public function loginPage()
     {
         return view('login');
@@ -122,8 +127,11 @@ class WebController extends Controller
             return view('changepassword')->with(compact('user'));
         }
 
-        $projects = Project::where('project_delete', false)->get();
-        $myItem   = Transaction::where('user', Auth::user()->userid)
+        $projects = Project::where('project_delete', false)
+            ->where('last_register_datetime', '>=', date('Y-m-d'))
+            ->get();
+
+        $myItem = Transaction::where('user', Auth::user()->userid)
             ->where('transaction_active', true)
             ->orderBy('date', 'asc')
             ->get();
@@ -383,6 +391,8 @@ class WebController extends Controller
         $user->password         = Hash::make($req->userid);
         $user->password_changed = false;
         $user->save();
+
+        $sessions = DB::table('sessions')->where('user_id', $user->id)->delete();
 
         $data = [
             'status'  => 'success',

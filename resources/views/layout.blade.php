@@ -77,19 +77,19 @@
         <form class="h-24" id="logout-form" action="{{ env("APP_URL") }}/logout" method="POST">
             @csrf
         </form>
-        <div class="fixed left-0 right-0 top-0 z-10 flex h-24 w-full flex-row bg-[#c1dccd] p-3 shadow md:justify-end md:gap-6">
-            <div class="flex-1 md:flex-none">
+        <div class="fixed left-0 right-0 top-0 z-10 flex h-24 w-full flex-row bg-[#c1dccd] p-3 shadow lg:justify-end lg:gap-6">
+            <div class="flex-1 lg:flex-none">
                 <a href="{{ env("APP_URL") }}/">
                     <img class="aspect-auto h-16" src="{{ url("images/Side Logo.png") }}" alt="">
                 </a>
             </div>
-            <div class="flex text-end text-[#143429] md:hidden">
+            <div class="flex text-end text-[#143429] lg:hidden">
                 <a class="pe-6 pt-6" href="{{ env("APP_URL") }}/"><i class="fa-solid fa-house"></i> Home</a>
                 <button class="cursor-pointer p-4 text-end text-2xl text-[#1a3f34]" type="button" onclick="mobileMenu()">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
-            <div class="hidden pt-6 text-[#143429] md:flex md:flex-1 md:gap-6">
+            <div class="hidden pt-6 text-[#143429] lg:flex lg:flex-1 lg:gap-6">
                 <a href="{{ env("APP_URL") }}/">รายการที่เปิดลงทะเบียน</a>
                 <a href="{{ env("APP_URL") }}/history">ประวัติการลงทะเบียน</a>
                 @if (auth()->user()->admin)
@@ -97,18 +97,17 @@
                     <a href="{{ env("APP_URL") }}/admin/users">Users Management</a>
                 @endif
             </div>
-            <div class="hidden text-center md:block md:text-end">
+            <div class="hidden w-[20%] text-center lg:block lg:text-end">
                 <div class="">{{ Auth::user()->userid }} {{ session("name") }}</div>
                 <div class="">{{ session("department") }}</div>
                 <div class="flex flex-row gap-3">
-                    <a class="flex-1 text-start" href="{{ env("APP_URL") }}/changePassword">เปลี่ยนรหัสผ่าน</a>
-                    <button class="flex-1 cursor-pointer text-end text-red-600 md:p-0" onclick="logout()">ออกจากระบบ</button>
+                    <a class="flex-1 text-clip" href="{{ env("APP_URL") }}/changePassword">เปลี่ยนรหัสผ่าน</a>
+                    <button class="flex-1 cursor-pointer text-end text-red-600 lg:p-0" onclick="logout()">ออกจากระบบ</button>
                 </div>
             </div>
-            <span class="absolute bottom-0 left-4 text-sm text-[#143429] md:hidden">{{ Auth::user()->userid }} {{ session("name") }}</span>
+            <span class="absolute bottom-0 left-4 text-sm text-[#143429] lg:hidden">{{ Auth::user()->userid }} {{ session("name") }}</span>
         </div>
-        <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 text-[#143429] shadow md:hidden" id="mobileMenu">
-
+        <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 text-[#143429] shadow lg:hidden" id="mobileMenu">
             <a class="mt-3 block" href="{{ env("APP_URL") }}/">รายการที่เปิดลงทะเบียน</a>
             <a class="mt-3 block" href="{{ env("APP_URL") }}/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->admin)
@@ -117,9 +116,9 @@
             @endif
             <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>
             <div class="block">{{ session("department") }}</div>
-            <div class="mb-3 flex flex-row gap-3">
+            <div class="mb-3 mt-3 flex flex-row gap-3">
                 <a class="flex-1 text-start" href="{{ env("APP_URL") }}/changePassword">เปลี่ยนรหัสผ่าน</a>
-                <button class="flex-1 text-end text-red-600 md:p-0" onclick="logout()">ออกจากระบบ</button>
+                <button class="flex-1 text-end text-red-600 lg:p-0" onclick="logout()">ออกจากระบบ</button>
             </div>
         </div>
     @endauth

@@ -9,7 +9,7 @@
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center">รายชื่อผู้ลงทะเบียนทั้งหมด</div>
                 </a>
                 <a class="flex-1" href="{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}">
-                    <div class="cursor-pointer rounded bg-blue-200 p-3 text-center">Check In ผู้ลงชื่อเข้าทดสอบ</div>
+                    <div class="cursor-pointer rounded bg-blue-200 p-3 text-center">Approve ผู้ลงทะเบียน</div>
                 </a>
             </div>
             <div class="text-2xl font-bold">วันที่เปิดลงทะเบียน</div>

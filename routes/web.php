@@ -5,7 +5,7 @@ use App\Http\Middleware\adminAuth;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [WebController::class, 'intiAppData']);
+Route::get('/test', [WebController::class, 'test']);
 
 Route::get('/login', [WebController::class, 'loginPage']);
 Route::post('/login', [WebController::class, 'loginRequest']);

@@ -4,12 +4,13 @@
         <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
             <div class="text-3xl text-[#1a3f34]"><a class="text-blue-600" href="{{ env("APP_URL") }}/">รายการลงทะเบียน</a> / {{ $project->project_name }}</div>
             <hr class="border-[#eaf7ab] shadow">
+            <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
             @if ($isRegister)
                 <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 shadow">
-                    <div class="m-auto w-[20%] p-3 text-center md:w-[30%]">
-                        <div>{{ $transaction->item->slot->dateThai }}</div>
-                        <div class="text-4xl text-[#008387]">{{ date("d", strtotime($transaction->item->slot->slot_date)) }}</div>
-                        <div>{{ date("M Y", strtotime($transaction->item->slot->slot_date)) }}</div>
+                    <div class="m-auto w-[30%] text-center">
+                        <div class="text-sm">{{ $transaction->item->slot->dateThai }}</div>
+                        <div class="text-3xl text-[#008387]">{{ date("d", strtotime($transaction->item->slot->slot_date)) }}</div>
+                        <div>{{ $transaction->item->slot->monthThai }}</div>
                     </div>
                     <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
