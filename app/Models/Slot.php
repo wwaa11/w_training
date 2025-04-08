@@ -1,9 +1,12 @@
 <?php
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\App;
 
 class Slot extends Model
 {
@@ -12,6 +15,16 @@ class Slot extends Model
         'slot_name',
         'slot_active',
     ];
+
+    protected function dateThai(): Attribute
+    {
+        App::setLocale('th');
+        $dayOfWeek = Carbon::createFromTimestamp($this->slot_date)->translatedFormat('l');
+
+        return new Attribute(
+            get: fn() => $dayOfWeek,
+        );
+    }
 
     public function project(): BelongsTo
     {

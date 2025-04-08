@@ -7,10 +7,11 @@
             @if ($isRegister)
                 <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 shadow">
                     <div class="m-auto w-[20%] p-3 text-center md:w-[30%]">
+                        <div>{{ $transaction->item->slot->dateThai }}</div>
                         <div class="text-4xl text-[#008387]">{{ date("d", strtotime($transaction->item->slot->slot_date)) }}</div>
                         <div>{{ date("M Y", strtotime($transaction->item->slot->slot_date)) }}</div>
                     </div>
-                    <div class="relative flex-1 border-l-2 px-3">
+                    <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
                         <div class="mt-2"><i class="fa-regular fa-clock text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                         @if ($transaction->item->item_note_1_active)
@@ -40,29 +41,31 @@
             <hr class="border-[#eaf7ab] shadow">
             <div class="flex flex-col">
                 @foreach ($project->slots as $slot)
-                    <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 font-bold shadow" onclick="openID('#date_{{ $slot->id }}')">
-                        <div class="flex-1 p-3 text-xl">{{ $slot->slot_name }}</div>
-                        <div class="p-3 text-xl font-bold"><i class="fa-solid fa-angle-down"></i></div>
-                    </div>
-                    <div class="flex hidden flex-col gap-6 bg-white" id="date_{{ $slot->id }}">
-                        @foreach ($slot->items as $item)
-                            <div class="flex rounded p-3">
-                                <div class="flex-1 p-3">{{ $item->item_name }}</div>
-                                {{-- <div class="flex p-3">{{ $item->item_available }}</div> --}}
-                                @if ($isRegister)
-                                    @if ($item->item_available > 0)
-                                        <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
+                    @if ($slot->slot_date >= date("Y-m-d"))
+                        <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 font-bold shadow" onclick="openID('#date_{{ $slot->id }}')">
+                            <div class="flex-1 p-3 text-xl">{{ $slot->slot_name }}</div>
+                            <div class="p-3 text-xl font-bold"><i class="fa-solid fa-angle-down"></i></div>
+                        </div>
+                        <div class="flex hidden flex-col gap-6 bg-white" id="date_{{ $slot->id }}">
+                            @foreach ($slot->items as $item)
+                                <div class="flex rounded p-3">
+                                    <div class="flex-1 p-3">{{ $item->item_name }}</div>
+                                    {{-- <div class="flex p-3">{{ $item->item_available }}</div> --}}
+                                    @if ($isRegister)
+                                        @if ($item->item_available > 0)
+                                            <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
+                                        @else
+                                            <div class="flex cursor-pointer rounded bg-red-600 p-3 text-white">เต็มแล้ว</div>
+                                        @endif
+                                    @elseif($item->item_available > 0)
+                                        <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $item->id }}','{{ $slot->slot_name }}','{{ $item->item_name }}')">ลงทะเบียน</div>
                                     @else
-                                        <div class="flex cursor-pointer rounded bg-red-600 p-3 text-white">เต็มแล้ว</div>
+                                        <div class="flex cursor-pointer rounded bg-red-600 p-3 text-white">ปิดการลงทะเบียน</div>
                                     @endif
-                                @elseif($item->item_available > 0)
-                                    <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $item->id }}','{{ $slot->slot_name }}','{{ $item->item_name }}')">ลงทะเบียน</div>
-                                @else
-                                    <div class="flex cursor-pointer rounded bg-red-600 p-3 text-white">ปิดการลงทะเบียน</div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 @endforeach
             </div>
         </div>

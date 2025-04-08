@@ -395,8 +395,17 @@ class WebController extends Controller
     {
         $project      = Project::find($project_id);
         $transactions = Transaction::where('project_id', $project_id)->where('transaction_active', true)->where('checkin', true)->where('hr_approve', false)->get();
+        $select       = 'not approve';
 
-        return view('admin.Project_checkin')->with(compact('project', 'transactions'));
+        return view('admin.Project_checkin')->with(compact('project', 'transactions', 'select'));
+    }
+    public function adminapprovedProject($project_id)
+    {
+        $project      = Project::find($project_id);
+        $transactions = Transaction::where('project_id', $project_id)->where('transaction_active', true)->where('checkin', true)->where('hr_approve', true)->get();
+        $select       = 'approved';
+
+        return view('admin.Project_checkin')->with(compact('project', 'transactions', 'select'));
     }
     public function admincheckinProjectApprove(Request $req)
     {

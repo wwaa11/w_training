@@ -7,12 +7,13 @@
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
             @foreach ($myItem as $transaction)
                 @if ($transaction->item->slot->slot_date >= date("Y-m-d"))
-                    <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#ffffff] p-3 shadow">
+                    <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 shadow">
                         <div class="m-auto w-[20%] p-3 text-center md:w-[30%]">
+                            <div>{{ $transaction->item->slot->dateThai }}</div>
                             <div class="text-4xl text-[#008387]">{{ date("d", strtotime($transaction->item->slot->slot_date)) }}</div>
                             <div>{{ date("M Y", strtotime($transaction->item->slot->slot_date)) }}</div>
                         </div>
-                        <div class="relative flex-1 border-l-2 px-3">
+                        <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
                             <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
                             <div class="mt-2"><i class="fa-regular fa-clock text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                             @if ($transaction->item->item_note_1_active)

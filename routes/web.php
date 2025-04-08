@@ -41,6 +41,7 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/admin/exceldate/{id}', [WebController::class, 'adminExcelProjectDate']);
 
     Route::get('/admin/checkin/{id}', [WebController::class, 'admincheckinProject']);
+    Route::get('/admin/approved/{id}', [WebController::class, 'adminapprovedProject']);
     Route::post('/admin/approveCheckin', [WebController::class, 'admincheckinProjectApprove']);
 
 });

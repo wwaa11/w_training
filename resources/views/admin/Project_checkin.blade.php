@@ -4,7 +4,15 @@
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/admin">Admin Management</a> / <a class="text-blue-600" href="{{ env("APP_URL") }}/admin/project/{{ $project->id }}">{{ $project->project_name }}</a> / Approve</div>
             <hr>
-            <input class="mt-3 w-full rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
+            <div class="flex flex-row gap-3">
+                <input class="mt-3 w-full flex-1 rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
+                <div class="m-auto">
+                    <select class="mt-2 flex-none rounded border bg-gray-200 p-2" id="searchType" onchange="changeSearch()">
+                        <option @if ($select == "not approve") selected @endif value="notapprove">Not Approve</option>
+                        <option @if ($select == "approved") selected @endif value="approve">Approved</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="w-full rounded p-3">
             <table class="w-full">
@@ -27,9 +35,13 @@
                             <td class="border p-2">{{ $transcation->userData->name }}</td>
                             <td class="border p-2">{{ $transcation->userData->position }}</td>
                             <td class="border p-2">{{ $transcation->userData->department }}</td>
-                            <td class="border p-2 text-center text-green-600">{{ substr($transcation->checkin_datetime, 11, 5) }}</td>
+                            <td class="border p-2 text-center text-green-600">{{ date("d/m/Y H:i", strtotime($transcation->checkin_datetime)) }}</td>
                             <td class="border p-3 text-center">
-                                <button class="cursor-pointer rounded p-3 text-red-600" onclick="approve('{{ $transcation->id }}','{{ $transcation->item->slot->slot_name }}','{{ $transcation->item->item_name }}','{{ $transcation->userData->userid }}','{{ $transcation->userData->name }}','{{ $transcation->userData->position }}','{{ $transcation->userData->department }}')" type="button">Approve</button>
+                                @if ($transcation->hr_approve == false)
+                                    <button class="cursor-pointer rounded p-3 text-red-600" onclick="approve('{{ $transcation->id }}','{{ $transcation->item->slot->slot_name }}','{{ $transcation->item->item_name }}','{{ $transcation->userData->userid }}','{{ $transcation->userData->name }}','{{ $transcation->userData->position }}','{{ $transcation->userData->department }}')" type="button">Approve</button>
+                                @else
+                                    {{ date("d/m/Y H:i", strtotime($transcation->hr_approve_datetime)) }}
+                                @endif
                             </td>
                         </tr>
                     @endforeach
@@ -40,6 +52,15 @@
 @endsection
 @section("scripts")
     <script>
+        function changeSearch() {
+            type = $('#searchType').find(":selected").val();
+            if (type == 'notapprove') {
+                window.location.replace('{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}');
+            } else {
+                window.location.replace('{{ env("APP_URL") }}/admin/approved/{{ $project->id }}');
+            }
+        }
+
         function search() {
             var value = $('#searchInput').val().toLowerCase();
             $("#userTable tr").filter(function() {
