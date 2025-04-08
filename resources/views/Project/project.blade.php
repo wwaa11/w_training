@@ -17,7 +17,7 @@
                             <div class="mt-2"><i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
                         @endif
                         @if (!$transaction->checkin)
-                            <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}')"><i class="fa-solid fa-trash"></i></span>
+                            <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
                         @endif
                         @if (date("Y-m-d") == $transaction->item->slot->slot_date)
                             @if (!$transaction->checkin)
@@ -105,9 +105,9 @@
                 });
             }
         }
-        async function deleteTransaction(id) {
+        async function deleteTransaction(id, name) {
             alert = await Swal.fire({
-                title: "ยืนยันการเปลี่ยนวันที่ลงทะเบียน {{ $project->project_name }}",
+                title: "ยืนยันการเปลี่ยนวันที่ลงทะเบียน " + name,
                 // html: "การเปลี่ยนรอบการลงทะเบียน ระบบจะทำการลบข้อมูลการลงทะเบียนออกจึงจะสามารถเปลี่ยนรอบการลงทะเบียนได้<br><span class=\"text-red-600\">*กรณีที่วันที่เลือกวันที่ต้องการลงทะเบียนไม่ได้ และ วันที่ลงทะเบียนขณะนี้เต็ม จะต้องทำการเปลี่ยนวันที่ใหม่ไม่สามารถนำวันที่ลงทะเบียนเดิมกลับมาได้</span>",
                 icon: 'warning',
                 allowOutsideClick: false,

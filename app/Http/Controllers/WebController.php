@@ -21,10 +21,10 @@ class WebController extends Controller
     }
     public function loginRequest(Request $req)
     {
-        $userid = $req->userid;
+        $userid   = $req->userid;
         $password = $req->password;
-        $data = [
-            'status' => 'failed',
+        $data     = [
+            'status'  => 'failed',
             'message' => null,
         ];
 
@@ -41,21 +41,21 @@ class WebController extends Controller
         if ($response['status'] == 1) {
             $userData = User::where('userid', $req->userid)->first();
 
-            if (!$userData) {
-                $newUser = new User();
-                $newUser->userid = $userid;
-                $newUser->password = Hash::make($userid);
-                $newUser->name = $response['user']['name'];
-                $newUser->position = $response['user']['position'];
-                $newUser->department = $response['user']['department'];
-                $newUser->division = $response['user']['division'];
+            if (! $userData) {
+                $newUser              = new User();
+                $newUser->userid      = $userid;
+                $newUser->password    = Hash::make($userid);
+                $newUser->name        = $response['user']['name'];
+                $newUser->position    = $response['user']['position'];
+                $newUser->department  = $response['user']['department'];
+                $newUser->division    = $response['user']['division'];
                 $newUser->last_update = date('Y-m-d H:i:s');
                 $newUser->save();
             } else {
-                $userData->name = $response['user']['name'];
-                $userData->position = $response['user']['position'];
-                $userData->department = $response['user']['department'];
-                $userData->division = $response['user']['division'];
+                $userData->name        = $response['user']['name'];
+                $userData->position    = $response['user']['position'];
+                $userData->department  = $response['user']['department'];
+                $userData->division    = $response['user']['division'];
                 $userData->last_update = date('Y-m-d H:i:s');
                 $userData->save();
             }
@@ -64,14 +64,14 @@ class WebController extends Controller
 
             if (Auth::attempt(['userid' => $userid, 'password' => $password])) {
                 session([
-                    'name' => $response['user']['name'],
-                    'position' => $response['user']['position'],
+                    'name'       => $response['user']['name'],
+                    'position'   => $response['user']['position'],
                     'department' => $response['user']['department'],
-                    'division' => $response['user']['division'],
-                    'email' => $response['user']['email'],
+                    'division'   => $response['user']['division'],
+                    'email'      => $response['user']['email'],
                 ]);
 
-                $data['status'] = 'success';
+                $data['status']  = 'success';
                 $data['message'] = 'เข้าสู่ระบบสำเร็จ';
             }
         }
@@ -87,35 +87,62 @@ class WebController extends Controller
 
         return redirect('/');
     }
+    public function IndexchangePassword()
+    {
+        $user = Auth::user();
+
+        return view('changepassword')->with(compact('user'));
+    }
     public function changePassword(Request $request)
     {
-        $password = $request->password;
+        $user         = Auth::user();
+        $old_password = $request->old_password;
+        $password     = $request->password;
+        if (Hash::check($old_password, $user->password)) {
+            $user->password         = Hash::make($password);
+            $user->password_changed = true;
+            $user->save();
 
-        $user = Auth::user();
-        $user->password = Hash::make($password);
-        $user->password_changed = true;
-        $user->save();
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+            return redirect('/');
+        } else {
 
-        return redirect('/');
+            return view('changepassword')->with(compact('user'))->withErrors('Password mismatch!');
+        }
+
     }
     public function index()
     {
         $user = Auth::user();
+        if (! $user->password_changed) {
+
+            return view('changepassword')->with(compact('user'));
+        }
+
         $projects = Project::where('project_delete', false)->get();
-        $myItem = Transaction::where('user', Auth::user()->userid)
+        $myItem   = Transaction::where('user', Auth::user()->userid)
             ->where('transaction_active', true)
             ->orderBy('date', 'asc')
             ->get();
 
         return view('Project.index')->with(compact('user', 'myItem', 'projects'));
+
+    }
+    public function history()
+    {
+        $transactions = Transaction::where('user', Auth::user()->userid)
+            ->where('transaction_active', true)
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('Project.history')->with(compact('transactions'));
     }
     public function ProjectIndex($project_id)
     {
-        $project = Project::find($project_id);
+        $project     = Project::find($project_id);
         $transaction = Transaction::where('project_id', $project_id)
             ->where('user', Auth::user()->userid)
             ->where('transaction_active', true)
@@ -127,7 +154,7 @@ class WebController extends Controller
     public function TransactionSave(Request $req)
     {
         $response = [
-            'status' => 'failed',
+            'status'  => 'failed',
             'message' => 'รอบที่เลือกเต็มแล้ว!',
         ];
         $item = Item::find($req->item_id);
@@ -135,15 +162,15 @@ class WebController extends Controller
             $item->item_available -= 1;
             $item->save();
 
-            $new = new Transaction();
+            $new             = new Transaction();
             $new->project_id = $req->project_id;
-            $new->item_id = $req->item_id;
-            $new->user = Auth::user()->userid;
-            $new->date = $item->slot->slot_date;
+            $new->item_id    = $req->item_id;
+            $new->user       = Auth::user()->userid;
+            $new->date       = $item->slot->slot_date;
             $new->save();
 
             $response = [
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'ทำการลงทำเบียนสำเร็จ!',
             ];
         }
@@ -165,7 +192,7 @@ class WebController extends Controller
         $item->save();
 
         $response = [
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'ทำการเปลี่ยนรอบการลงทะเบียนสำเร็จ!',
         ];
 
@@ -173,13 +200,13 @@ class WebController extends Controller
     }
     public function TransactionSign(Request $req)
     {
-        $transaction = Transaction::find($req->transaction_id);
-        $transaction->checkin = true;
+        $transaction                   = Transaction::find($req->transaction_id);
+        $transaction->checkin          = true;
         $transaction->checkin_datetime = date('Y-m-d H:i');
         $transaction->save();
 
         $response = [
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'ลงชื่อสำเร็จ!',
         ];
 
@@ -193,16 +220,14 @@ class WebController extends Controller
     }
     public function adminCreateProject()
     {
-
         return view('admin.Project_create');
     }
     public function FulldateTH($date)
     {
         $dateTime = strtotime($date);
-
-        $day = date('d', $dateTime);
-        $month = date('m', $dateTime);
-        $year = date('Y', $dateTime);
+        $day      = date('d', $dateTime);
+        $month    = date('m', $dateTime);
+        $year     = date('Y', $dateTime);
 
         switch ($month) {
             case '01':
@@ -245,8 +270,8 @@ class WebController extends Controller
         $year = $year + 543;
 
         $birthDate = date_create($date);
-        $nowDate = date_create(date('Y-m-d'));
-        $diff = $birthDate->diff($nowDate);
+        $nowDate   = date_create(date('Y-m-d'));
+        $diff      = $birthDate->diff($nowDate);
 
         $data = $day . ' ' . $fullmonth . ' ' . $year;
 
@@ -256,17 +281,17 @@ class WebController extends Controller
     {
         $dates = [];
         $start = $req->start;
-        $end = $req->end;
+        $end   = $req->end;
 
         $startDate = new \DateTime($start);
-        $endDate = new \DateTime($end . ' +1 Days');
+        $endDate   = new \DateTime($end . ' +1 Days');
 
-        $interval = new \DateInterval('P1D'); // 1 day interval
+        $interval  = new \DateInterval('P1D'); // 1 day interval
         $dateRange = new \DatePeriod($startDate, $interval, $endDate);
 
         foreach ($dateRange as $date) {
             $dates[] = [
-                'date' => $date->format('Y-m-d'),
+                'date'  => $date->format('Y-m-d'),
                 'title' => $this->FulldateTH($date->format('Y-m-d')),
             ];
         }
@@ -282,42 +307,42 @@ class WebController extends Controller
             return back()->with('message', 'ข้อมูลไม่ถูกต้อง!');
         }
         if ($validate) {
-            $project = new Project();
-            $project->project_name = $req->project_name;
+            $project                 = new Project();
+            $project->project_name   = $req->project_name;
             $project->project_detail = $req->project_detail;
             $project->save();
             $slotindex = 0;
             foreach ($req->slot as $sl) {
                 $slotindex += 1;
-                $slot = new Slot();
+                $slot             = new Slot();
                 $slot->project_id = $project->id;
                 $slot->slot_index = $slotindex;
-                $slot->slot_date = $sl['date'];
-                $slot->slot_name = $sl['title'];
+                $slot->slot_date  = $sl['date'];
+                $slot->slot_name  = $sl['title'];
                 $slot->save();
 
                 $listIndex = 0;
                 foreach ($req->item['list'] as $list) {
                     $listIndex += 1;
-                    $li = new Item();
-                    $li->slot_id = $slot->id;
-                    $li->item_index = $listIndex;
-                    $li->item_name = $list['name'];
+                    $li              = new Item();
+                    $li->slot_id     = $slot->id;
+                    $li->item_index  = $listIndex;
+                    $li->item_name   = $list['name'];
                     $li->item_detail = $list['detail'];
                     if ($req->item['item_note_1_title'] !== null) {
                         $li->item_note_1_active = true;
-                        $li->item_note_1_title = $req->item['item_note_1_title'];
-                        $li->item_note_1_value = $list['note_1_value'];
+                        $li->item_note_1_title  = $req->item['item_note_1_title'];
+                        $li->item_note_1_value  = $list['note_1_value'];
                     }
                     if ($req->item['item_note_2_title'] !== null) {
                         $li->item_note_2_active = true;
-                        $li->item_note_2_title = $req->item['item_note_2_title'];
-                        $li->item_note_2_value = $list['note_2_value'];
+                        $li->item_note_2_title  = $req->item['item_note_2_title'];
+                        $li->item_note_2_value  = $list['note_2_value'];
                     }
                     if ($req->item['item_note_3_title'] !== null) {
                         $li->item_note_3_active = true;
-                        $li->item_note_3_title = $req->item['item_note_3_title'];
-                        $li->item_note_3_value = $list['note_3_value'];
+                        $li->item_note_3_title  = $req->item['item_note_3_title'];
+                        $li->item_note_3_value  = $list['note_3_value'];
                     }
                     $li->item_available = $list['avabile'];
                     $li->save();
@@ -342,46 +367,46 @@ class WebController extends Controller
     public function adminExcelProjectDate($item_id)
     {
         $item = Item::find($item_id);
-        $pdf = Pdf::loadView('admin.Project_export', compact('item'));
+        $pdf  = Pdf::loadView('admin.Project_export', compact('item'));
 
         return $pdf->stream('test.pdf');
     }
-    function adminUser() 
+    public function adminUser()
     {
         $users = User::orderBy('admin', 'desc')->orderBy('userid', 'asc')->get();
 
         return view('admin.Users_Management')->with(compact('users'));
     }
-    function adminUserResetPassword(Request $req)
+    public function adminUserResetPassword(Request $req)
     {
-        $user = User::where('userid', $req->userid)->first();
-        $user->password = Hash::make($req->userid);
+        $user                   = User::where('userid', $req->userid)->first();
+        $user->password         = Hash::make($req->userid);
         $user->password_changed = false;
         $user->save();
 
         $data = [
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'รีเซ็ตรหัสผ่านสำเร็จ',
         ];
 
         return response()->json($data, 200);
     }
-    function admincheckinProject($project_id)
+    public function admincheckinProject($project_id)
     {
-        $project = Project::find($project_id);
+        $project      = Project::find($project_id);
         $transactions = Transaction::where('project_id', $project_id)->where('transaction_active', true)->where('checkin', true)->where('hr_approve', false)->get();
 
-        return view('admin.Project_checkin')->with(compact('project','transactions'));
+        return view('admin.Project_checkin')->with(compact('project', 'transactions'));
     }
-    function admincheckinProjectApprove(Request $req)
+    public function admincheckinProjectApprove(Request $req)
     {
-        $transaction = Transaction::find($req->id);
-        $transaction->hr_approve = true;
+        $transaction                      = Transaction::find($req->id);
+        $transaction->hr_approve          = true;
         $transaction->hr_approve_datetime = date('Y-m-d H:i:s');
         $transaction->save();
 
         $data = [
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'Approve สำเร็จ',
         ];
 

@@ -12,9 +12,11 @@ Route::post('/login', [WebController::class, 'loginRequest']);
 Route::post('/logout', [WebController::class, 'logoutRequest']);
 
 Route::middleware([pr9Auth::class])->group(function () {
+    Route::get('/changePassword', [WebController::class, 'IndexchangePassword']);
     Route::post('/changePassword', [WebController::class, 'changePassword']);
 
     Route::get('/', [WebController::class, 'index']);
+    Route::get('/history', [WebController::class, 'history']);
 
     Route::get('/project/{id}', [WebController::class, 'ProjectIndex']);
     Route::post('/save', [WebController::class, 'TransactionSave']);
@@ -28,17 +30,17 @@ Route::middleware([adminAuth::class])->group(function () {
 
     Route::get('/admin/users', [WebController::class, 'adminUser']);
     Route::post('/admin/resetpassword', [WebController::class, 'adminUserResetPassword']);
-    
+
     Route::get('/admin/createProject', [WebController::class, 'adminCreateProject']);
     Route::post('/admin/createProject', [WebController::class, 'adminStoreProject']);
     Route::post('/admin/addDate', [WebController::class, 'adminCreateProject_AddDate']);
 
     Route::get('/admin/excel/{id}', [WebController::class, 'Project_allTransactions']);
-    
+
     Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
     Route::get('/admin/exceldate/{id}', [WebController::class, 'adminExcelProjectDate']);
 
     Route::get('/admin/checkin/{id}', [WebController::class, 'admincheckinProject']);
     Route::post('/admin/approveCheckin', [WebController::class, 'admincheckinProjectApprove']);
-    
+
 });
