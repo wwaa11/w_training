@@ -1,25 +1,25 @@
 @extends("layout")
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
-        <div class="mb-6 rounded-lg bg-[#c1dccd] p-3 shadow">
+        <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
             <div class="text-3xl text-[#1a3f34]">รายการลงทะเบียนของฉัน</div>
-            <hr class="border-[#1a3f34]">
+            <hr class="border-[#eaf7ab] shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
             @foreach ($myItem as $transaction)
                 @if ($transaction->item->slot->slot_date >= date("Y-m-d"))
-                    <div class="mt-3 flex flex-row rounded bg-[#dbe9e1] p-3 shadow">
+                    <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#ffffff] p-3 shadow">
                         <div class="m-auto w-[20%] p-3 text-center md:w-[30%]">
                             <div class="text-4xl text-[#008387]">{{ date("d", strtotime($transaction->item->slot->slot_date)) }}</div>
                             <div>{{ date("M Y", strtotime($transaction->item->slot->slot_date)) }}</div>
                         </div>
                         <div class="relative flex-1 border-l-2 px-3">
                             <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
-                            <div class="mt-2"><i class="fa-regular fa-calendar text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
+                            <div class="mt-2"><i class="fa-regular fa-clock text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                             @if ($transaction->item->item_note_1_active)
                                 <div class="mt-2"><i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
                             @endif
                             @if (!$transaction->checkin)
-                                <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
+                                <span class="absolute bottom-0 right-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
                             @endif
                             @if (date("Y-m-d") == $transaction->item->slot->slot_date)
                                 @if (!$transaction->checkin)
@@ -38,13 +38,13 @@
                 @endif
             @endforeach
         </div>
-        <div class="rounded-lg bg-[#c1dccd] p-3 shadow">
+        <div class="rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
             <div class="text-3xl text-[#1a3f34]">รายการที่เปิดลงทะเบียน</div>
-            <hr>
-            @foreach ($projects as $project)
+            <hr class="border-[#eaf7ab] shadow">
+            @foreach ($projects as $index => $project)
                 <a href="{{ env("APP_URL") }}/project/{{ $project->id }}">
-                    <div class="m-3 cursor-pointer rounded bg-[#dbe9e1] p-6">
-                        <div class="text-2xl">{{ $project->project_name }}</div>
+                    <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
+                        <div class="text-2xl">{{ $index + 1 }}. {{ $project->project_name }}</div>
                         <div class="text-gray-500"><i class="fa-regular fa-calendar text-[#008387]"></i> {{ $project->project_detail }}</div>
                     </div>
                 </a>
