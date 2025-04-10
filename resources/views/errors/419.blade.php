@@ -25,6 +25,14 @@
         });
 
         function login() {
+
+            Swal.fire({
+                title: 'กำลังเข้าสู่ระบบ',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+            })
+
             userid = $('#userid').val()
             password = $('#password').val()
 

@@ -23,13 +23,21 @@
                         @endif
                         @if (date("Y-m-d") == $transaction->item->slot->slot_date)
                             @if (!$transaction->checkin)
-                                <div class="mt-2 cursor-pointer rounded text-lg text-red-600" onclick="sign('{{ $transaction->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-location-dot"></i> Check-IN</div>
+                                <button class="mt-3 cursor-pointer rounded border border-[#eaf7ab] bg-red-500 p-3 text-white" onclick="sign('{{ $transaction->id }}','{{ $transaction->item->slot->project->project_name }}')">
+                                    <i class="fa-solid fa-location-dot"></i> CHECK IN
+                                </button>
                             @else
-                                <div class="mt-2 text-green-700"><i class="fa-solid fa-location-dot"></i> Check-IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}</div>
+                                <div class="mt-2 text-green-700">
+                                    <i class="fa-solid fa-location-dot"></i> CHECK IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}
+                                </div>
                                 @if ($transaction->hr_approve)
-                                    <div class="mt-2 text-green-700">HR : อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}</div>
+                                    <div class="mt-2 text-green-700">
+                                        HR : อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}
+                                    </div>
                                 @else
-                                    <div class="mt-2 text-red-600">HR : รอการอนุมัติ</div>
+                                    <div class="mt-2 text-red-600">
+                                        HR : รอการอนุมัติ
+                                    </div>
                                 @endif
                             @endif
                         @endif
@@ -142,7 +150,7 @@
         }
         async function sign(id, project_name) {
             alert = await Swal.fire({
-                title: "ลงชื่อ " + project_name,
+                title: "ลงชื่อ : " + project_name,
                 icon: 'warning',
                 allowOutsideClick: false,
                 showConfirmButton: true,

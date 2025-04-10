@@ -33,37 +33,31 @@ class WebController extends Controller
             'message' => null,
         ];
 
-        $response = Http::withHeaders([
-            'token' => env('API_KEY'),
-        ])
+        $response = Http::withHeaders(['token' => env('API_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/getuser', [
                 'userid' => $req->userid,
             ])
             ->json();
 
-        $data['message'] = 'ไม่พบรหัสพนักงานนี้ กรุณาติดต่อแผนก HR';
+        $data['message'] = 'ไม่พบรหัสพนักงานนี้';
 
         if ($response['status'] == 1) {
             $userData = User::where('userid', $req->userid)->first();
 
             if (! $userData) {
-                $newUser              = new User();
-                $newUser->userid      = $userid;
-                $newUser->password    = Hash::make($userid);
-                $newUser->name        = $response['user']['name'];
-                $newUser->position    = $response['user']['position'];
-                $newUser->department  = $response['user']['department'];
-                $newUser->division    = $response['user']['division'];
-                $newUser->last_update = date('Y-m-d H:i:s');
-                $newUser->save();
-            } else {
-                $userData->name        = $response['user']['name'];
-                $userData->position    = $response['user']['position'];
-                $userData->department  = $response['user']['department'];
-                $userData->division    = $response['user']['division'];
-                $userData->last_update = date('Y-m-d H:i:s');
-                $userData->save();
+                $userData           = new User();
+                $userData->userid   = $userid;
+                $userData->password = Hash::make($userid);
             }
+            $userData->name        = $response['user']['name'];
+            $userData->position    = $response['user']['position'];
+            $userData->department  = $response['user']['department'];
+            $userData->division    = $response['user']['division'];
+            $userData->hn          = $response['user']['HN'];
+            $userData->refNo       = $response['user']['refID'];
+            $userData->passport    = $response['user']['passport'];
+            $userData->last_update = date('Y-m-d H:i:s');
+            $userData->save();
 
             $data['message'] = 'รหัสพนักงาน หรือ รหัสผ่านผิด';
 

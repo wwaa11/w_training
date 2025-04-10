@@ -15,11 +15,13 @@
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
                         <div class="mt-2"><i class="fa-regular fa-clock text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                         @if ($transaction->item->item_note_1_active)
-                            <div class="mt-2"><i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
+                            <div class="mt-2">
+                                <i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}
+                            </div>
                         @endif
                         @if ($transaction->checkin_datetime !== null)
                             <div class="mt-2 text-green-700">
-                                <i class="fa-solid fa-location-dot"></i> Check-IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}
+                                <i class="fa-solid fa-location-dot"></i> CHECK IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}
                             </div>
                         @endif
                         @if ($transaction->hr_approve_datetime !== null)
