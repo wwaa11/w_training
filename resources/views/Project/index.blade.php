@@ -26,9 +26,9 @@
                                 @if (!$transaction->checkin)
                                     <div class="mt-2 cursor-pointer rounded text-lg text-red-600" onclick="sign('{{ $transaction->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-location-dot"></i> Check-IN</div>
                                 @else
-                                    <div class="mt-2 text-green-700"><i class="fa-solid fa-location-dot"></i> Check-IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}</div>
+                                    <div class="mt-2 text-green-700"><i class="fa-solid fa-location-dot"></i> Check-IN {{ date("H:i", strtotime($transaction->checkin_datetime)) }}</div>
                                     @if ($transaction->hr_approve)
-                                        <div class="mt-2 text-green-700">HR : อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}</div>
+                                        <div class="mt-2 text-green-700">HR : อนุมัติ {{ date("H:i", strtotime($transaction->hr_approve_datetime)) }}</div>
                                     @else
                                         <div class="mt-2 text-red-600">HR : รอการอนุมัติ</div>
                                     @endif

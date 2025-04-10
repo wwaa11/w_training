@@ -47,7 +47,7 @@
                             <div class="flex-1 p-3 text-xl">{{ $slot->slot_name }}</div>
                             <div class="p-3 text-xl font-bold"><i class="fa-solid fa-angle-down"></i></div>
                         </div>
-                        <div class="flex hidden flex-col gap-6 bg-white" id="date_{{ $slot->id }}">
+                        <div class="hidden flex-col gap-6 bg-white" id="date_{{ $slot->id }}">
                             @foreach ($slot->items as $item)
                                 <div class="flex rounded p-3">
                                     <div class="flex-1 p-3">{{ $item->item_name }}</div>
