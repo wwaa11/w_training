@@ -49,26 +49,27 @@
         <thead>
             <tr>
                 <th colspan="3"><img style="padding: 3px" height="64px" src="{{ public_path("images/Side Logo.png") }}"></th>
-                <th colspan="4" style="text-align: center; padding: 5px">ใบลงทะเบียน</th>
+                <th colspan="5" style="text-align: center; padding: 5px">ใบลงทะเบียน</th>
             </tr>
             <tr>
                 <th>วันที่</th>
                 <th colspan="2">{{ $item->slot->slot_name }}</th>
                 <th>เวลา</th>
-                <th colspan="3">{{ $item->item_name }}</th>
+                <th colspan="4">{{ $item->item_name }}</th>
             </tr>
             <tr>
                 <th>เรื่อง</th>
-                <th colspan="6">{{ $item->slot->project->project_name }}</th>
+                <th colspan="7">{{ $item->slot->project->project_name }}</th>
             </tr>
             <tr>
-                <th style="width: 7%;">ลำดับ</th>
-                <th style="width: 10%;">รหัสพนักงาน</th>
-                <th style="width: 25%;">ชื่อ - สกุล</th>
+                <th style="">ลำดับ</th>
+                <th style="">รหัสพนักงาน</th>
+                <th style="">ชื่อ - สกุล</th>
                 <th style="">ตำแหน่ง</th>
                 <th style="">แผนก</th>
-                <th style="width: 12%">ลายเช็น</th>
-                <th style="width: 12%">HR</th>
+                <th style="">ลายเช็น</th>
+                <th style="width: 70px;">CHECK IN</th>
+                <th style="">HR</th>
             </tr>
         </thead>
         <tbody>
@@ -77,11 +78,16 @@
                     <td style="text-align: center">{{ $index + 1 }}</td>
                     <td style="text-align: center">{{ $transaction->user }}</td>
                     <td style="padding-left: 5px">{{ $transaction->userData->name }}</td>
-                    <td style="overflow-wrap: anywhere;">
+                    <td>
                         {{ $transaction->userData->position }}
                     </td>
                     <td>
                         {{ $transaction->userData->department }}
+                    </td>
+                    <td style="text-align: center">
+                        @if ($transaction->userData->sign !== null && $transaction->checkin_datetime !== null)
+                            <img width="80px" src="{{ $transaction->userData->sign }}">
+                        @endif
                     </td>
                     <td style="text-align: center">
                         @if ($transaction->checkin_datetime !== null)
@@ -101,7 +107,7 @@
             @endforeach
             <tr>
                 <th style="text-align: right" colspan="6">รวม</th>
-                <th style="text-align: center">{{ count($item->transactions) }}</th>
+                <th style="text-align: center" colspan="2">{{ count($item->transactions) }}</th>
             </tr>
         </tbody>
     </table>

@@ -89,7 +89,7 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
-            <div class="hidden pt-6 text-[#143429] lg:flex lg:flex-1 lg:gap-6">
+            <div class="hidden pt-7 text-[#143429] lg:flex lg:flex-1 lg:gap-6">
                 <a href="{{ env("APP_URL") }}/">รายการที่เปิดลงทะเบียน</a>
                 <a href="{{ env("APP_URL") }}/history">ประวัติการลงทะเบียน</a>
                 @if (auth()->user()->admin)
@@ -99,10 +99,10 @@
             </div>
             <div class="hidden w-[20%] text-center lg:block lg:text-end">
                 <div class="">{{ Auth::user()->userid }} {{ session("name") }}</div>
-                <div class="">{{ session("department") }}</div>
+                <div class="text-nowrap">{{ session("department") }}</div>
                 <div class="flex flex-row gap-3">
-                    <a class="flex-1 text-clip" href="{{ env("APP_URL") }}/changePassword">เปลี่ยนรหัสผ่าน</a>
-                    <button class="flex-1 cursor-pointer text-end text-red-600 lg:p-0" onclick="logout()">ออกจากระบบ</button>
+                    <a class="flex-1 text-clip text-nowrap" href="{{ env("APP_URL") }}/changePassword">เปลี่ยนรหัสผ่าน</a>
+                    <button class="flex-1 cursor-pointer text-clip text-nowrap text-end text-red-600 lg:p-0" onclick="logout()">ออกจากระบบ</button>
                 </div>
             </div>
             <span class="absolute bottom-0 left-4 text-sm text-[#143429] lg:hidden">{{ Auth::user()->userid }} {{ session("name") }}</span>

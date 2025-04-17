@@ -17,13 +17,13 @@
             @foreach ($project->slots as $slot)
                 <table class="mb-3 table w-full border-collapse">
                     <thead class="bg-gray-200">
-                        <th class="border p-3">{{ $slot->slot_name }}</th>
+                        <th class="border p-3 text-start">{{ $slot->slot_name }}</th>
                         <th class="w-36 border p-3">จำนวนลงทะเบียน</th>
                     </thead>
                     <tbody>
                         @foreach ($slot->items as $item)
                             <tr class="bg-white">
-                                <td class="border p-3">{{ $item->item_name }} <a class="float-end text-green-600" href="{{ env("APP_URL") }}/admin/exceldate/{{ $item->id }}"><i class="fa-solid fa-file-excel"></i> excel</a></td>
+                                <td class="border p-3">{{ $item->item_name }} <a class="float-end text-red-600" href="{{ env("APP_URL") }}/admin/exceldate/{{ $item->id }}"><i class="fa-regular fa-file-pdf"></i></a></td>
                                 <td class="border p-3 text-center">{{ count($item->transactions) }} / {{ $item->item_available + count($item->transactions) }}</td>
                             </tr>
                         @endforeach

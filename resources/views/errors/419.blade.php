@@ -18,6 +18,10 @@
 @endsection
 @section("scripts")
     <script>
+        $(document).ready(function() {
+            window.location.href = '{{ env("APP_URL") }}/'
+        });
+
         $('#password').keyup(function(e) {
             if (e.keyCode === 13) {
                 login()

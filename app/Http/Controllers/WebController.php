@@ -100,7 +100,24 @@ class WebController extends Controller
         if (Hash::check($old_password, $user->password)) {
             $user->password         = Hash::make($password);
             $user->password_changed = true;
+            $user->refNo            = $request->refno;
+            $user->sign             = $request->sign;
             $user->save();
+
+            $sign = DB::connection('STAFF')
+                ->table('signs')
+                ->where('userid', $user->userid)
+                ->first();
+            if ($sign == null) {
+                $sign = DB::connection('STAFF')
+                    ->table('signs')
+                    ->insert(['userid' => $user->userid, 'sign' => $request->sign, 'sign_time' => date('Y-m-d H:i:s'), 'consent_witness' => 0]);
+            } else {
+                $sign = DB::connection('STAFF')
+                    ->table('signs')
+                    ->where('userid', $user->userid)
+                    ->update(['sign' => $request->sign, 'sign_time' => date('Y-m-d H:i:s')]);
+            }
 
             Auth::logout();
             $request->session()->invalidate();
