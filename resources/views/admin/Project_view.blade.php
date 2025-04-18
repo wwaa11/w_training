@@ -14,7 +14,17 @@
             </div>
             <div class="flex-col">
                 <a class="flex-1" href="{{ env("APP_URL") }}/admin/excel/project/{{ $project->id }}">
-                    <div class="cursor-pointer rounded py-3 text-green-600"><i class="fa-solid fa-file-excel"></i> Excel ดาวน์โหลดข้อมูลผู้ลงทะเบียนทั้งหมด หลักสูตร {{ $project->project_name }}</div>
+                    <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel ดาวน์โหลดข้อมูลผู้ลงทะเบียนทั้งหมด หลักสูตร {{ $project->project_name }}</div>
+                </a>
+            </div>
+            <div class="flex-col">
+                <a class="flex-1" href="{{ env("APP_URL") }}/admin/dbd/project/{{ $project->id }}">
+                    <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel แบบฟอร์มกรมพัฒน์ หลักสูตร {{ $project->project_name }}</div>
+                </a>
+            </div>
+            <div class="flex-col">
+                <a class="flex-1" href="{{ env("APP_URL") }}/admin/onebook/project/{{ $project->id }}">
+                    <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel Onebook หลักสูตร {{ $project->project_name }}</div>
                 </a>
             </div>
             <div class="text-2xl font-bold">วันที่เปิดลงทะเบียน</div>

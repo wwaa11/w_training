@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\DBDExport;
+use App\Exports\OnebookExport;
 use App\Exports\ProjectExport;
 use App\Exports\SlotExport;
 use App\Http\Controllers\WebController;
@@ -59,6 +61,7 @@ class WebController extends Controller
             $userData->department  = $response['user']['department'];
             $userData->division    = $response['user']['division'];
             $userData->hn          = $response['user']['HN'];
+            $userData->gender      = $response['user']['gender'];
             $userData->refNo       = $response['user']['refID'];
             $userData->passport    = $response['user']['passport'];
             $userData->last_update = date('Y-m-d H:i:s');
@@ -413,6 +416,20 @@ class WebController extends Controller
         $name = $slot->project->project_name . '_' . $slot->slot_name;
 
         return Excel::download(new SlotExport($slot_id), $name . '.xlsx');
+    }
+    public function adminExcelOnebook($project_id)
+    {
+        $project = Project::find($project_id);
+        $name    = 'Onebook_' . $project->project_name;
+
+        return Excel::download(new OnebookExport($project_id), $name . '.xlsx');
+    }
+    public function adminExcelDBD($project_id)
+    {
+        $project = Project::find($project_id);
+        $name    = 'DBD_' . $project->project_name;
+
+        return Excel::download(new DBDExport($project_id), $name . '.xlsx');
     }
 
     // User Management

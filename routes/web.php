@@ -42,6 +42,8 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/admin/pdf/slot/{id}', [WebController::class, 'adminPDFSlot']);
     Route::get('/admin/excel/project/{id}', [WebController::class, 'adminExcelDate']);
     Route::get('/admin/excel/slot/{id}', [WebController::class, 'adminExcelSlot']);
+    Route::get('/admin/onebook/project/{id}', [WebController::class, 'adminExcelOnebook']);
+    Route::get('/admin/dbd/project/{id}', [WebController::class, 'adminExcelDBD']);
 
     Route::get('/admin/checkin/{id}', [WebController::class, 'admincheckinProject']);
     Route::get('/admin/approved/{id}', [WebController::class, 'adminapprovedProject']);
