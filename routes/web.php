@@ -38,7 +38,10 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/admin/excel/{id}', [WebController::class, 'Project_allTransactions']);
 
     Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
-    Route::get('/admin/exceldate/{id}', [WebController::class, 'adminExcelProjectDate']);
+
+    Route::get('/admin/pdf/slot/{id}', [WebController::class, 'adminPDFSlot']);
+    Route::get('/admin/excel/project/{id}', [WebController::class, 'adminExcelDate']);
+    Route::get('/admin/excel/slot/{id}', [WebController::class, 'adminExcelSlot']);
 
     Route::get('/admin/checkin/{id}', [WebController::class, 'admincheckinProject']);
     Route::get('/admin/approved/{id}', [WebController::class, 'adminapprovedProject']);

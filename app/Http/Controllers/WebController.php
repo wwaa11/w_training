@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\ProjectExport;
+use App\Exports\SlotExport;
 use App\Http\Controllers\WebController;
 use App\Models\Item;
 use App\Models\Project;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Maatwebsite\Excel\Facades\Excel;
 
 class WebController extends Controller
 {
@@ -20,6 +23,8 @@ class WebController extends Controller
     {
         // return abort(419);
     }
+
+    // Auth Management
     public function loginPage()
     {
         return view('login');
@@ -130,6 +135,8 @@ class WebController extends Controller
         }
 
     }
+
+    // User Management
     public function index()
     {
         $user = Auth::user();
@@ -231,6 +238,8 @@ class WebController extends Controller
 
         return response()->json($response, 200);
     }
+
+    // Project management
     public function adminIndex()
     {
         $projects = Project::where('project_delete', false)->get();
@@ -383,13 +392,30 @@ class WebController extends Controller
 
         return view('admin.Project_allTransactions')->with(compact('project'));
     }
-    public function adminExcelProjectDate($item_id)
+    // Proejct Export
+    public function adminPDFSlot($item_id)
     {
         $item = Item::find($item_id);
-        $pdf  = Pdf::loadView('admin.Project_export', compact('item'));
+        $pdf  = Pdf::loadView('admin.export.slot', compact('item'));
 
         return $pdf->stream('test.pdf');
     }
+    public function adminExcelDate($project_id)
+    {
+        $project = Project::find($project_id);
+        $name    = $project->project_name;
+
+        return Excel::download(new ProjectExport($project_id), $name . '.xlsx');
+    }
+    public function adminExcelSlot($slot_id)
+    {
+        $slot = Slot::find($slot_id);
+        $name = $slot->project->project_name . '_' . $slot->slot_name;
+
+        return Excel::download(new SlotExport($slot_id), $name . '.xlsx');
+    }
+
+    // User Management
     public function adminUser()
     {
         $users = User::orderBy('admin', 'desc')->orderBy('userid', 'asc')->get();

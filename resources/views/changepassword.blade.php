@@ -78,6 +78,10 @@
                 cansend = false;
                 Textdetail = Textdetail + '<br>เลขบัตรประจำตัวประชาชน';
             }
+            if (ref.length != 13) {
+                cansend = false;
+                Textdetail = Textdetail + '<br>เลขบัตรประจำตัวประชาชนไม่ถูกต้อง';
+            }
             if (signaturePad.isEmpty() && '{{ $user->sign }}' == '') {
                 cansend = false;
                 Textdetail = Textdetail + '<br>ลายเซ็นต์';
