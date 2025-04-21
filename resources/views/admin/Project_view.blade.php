@@ -5,11 +5,14 @@
             <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/admin">Admin Management</a> / {{ $project->project_name }}</div>
             <hr>
             <div class="flex gap-3 p-3">
-                <a class="flex-1" href="{{ env("APP_URL") }}/admin/excel/{{ $project->id }}">
-                    <div class="cursor-pointer rounded bg-blue-200 p-3 text-center">รายชื่อผู้ลงทะเบียนทั้งหมด</div>
+                <a class="flex-1" href="{{ env("APP_URL") }}/admin/project/user/{{ $project->id }}">
+                    <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-users"></i> รายชื่อผู้ลงทะเบียนทั้งหมด</div>
                 </a>
                 <a class="flex-1" href="{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}">
-                    <div class="cursor-pointer rounded bg-blue-200 p-3 text-center">Approve ผู้ลงทะเบียน</div>
+                    <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
+                </a>
+                <a class="flex-1" href="{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}">
+                    <div class="cursor-pointer rounded bg-gray-200 p-3 text-center"><i class="fa-solid fa-gear"></i> การจัดการ Project</div>
                 </a>
             </div>
             <div class="flex-col">

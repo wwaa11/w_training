@@ -171,14 +171,21 @@ class WebController extends Controller
     }
     public function ProjectIndex($project_id)
     {
-        $project     = Project::find($project_id);
-        $transaction = Transaction::where('project_id', $project_id)
-            ->where('user', Auth::user()->userid)
-            ->where('transaction_active', true)
-            ->first();
-        $isRegister = $transaction == null ? false : true;
+        $project = Project::find($project_id);
+        if (date("Y-m-d") >= date("Y-m-d", strtotime($project->start_register_datetime)) &&
+            date("Y-m-d") <= date("Y-m-d", strtotime($project->last_register_datetime))) {
 
-        return view('Project.project')->with(compact('isRegister', 'transaction', 'project'));
+            $transaction = Transaction::where('project_id', $project_id)
+                ->where('user', Auth::user()->userid)
+                ->where('transaction_active', true)
+                ->first();
+
+            $isRegister = $transaction == null ? false : true;
+
+            return view('Project.project')->with(compact('isRegister', 'transaction', 'project'));
+        }
+
+        return redirect(env('APP_URL') . '/');
     }
     public function TransactionSave(Request $req)
     {
@@ -338,9 +345,11 @@ class WebController extends Controller
             return back()->with('message', 'ข้อมูลไม่ถูกต้อง!');
         }
         if ($validate) {
-            $project                 = new Project();
-            $project->project_name   = $req->project_name;
-            $project->project_detail = $req->project_detail;
+            $project                          = new Project();
+            $project->project_name            = $req->project_name;
+            $project->project_detail          = $req->project_detail;
+            $project->start_register_datetime = date('Y-m-d', strtotime(array_key_first($req->slot) . "+1 days"));
+            $project->last_register_datetime  = date('Y-m-d', strtotime(array_key_last($req->slot) . "-1 days"));
             $project->save();
             $slotindex = 0;
             foreach ($req->slot as $sl) {
@@ -383,17 +392,35 @@ class WebController extends Controller
 
         return redirect(env('APP_URL') . '/admin/project/' . $project->id);
     }
+
     public function adminViewProject($id)
     {
         $project = Project::find($id);
 
         return view('admin.Project_view')->with(compact('project'));
     }
-    public function Project_allTransactions($id)
+    public function adminProjectUser($id)
     {
         $project = Project::find($id);
 
-        return view('admin.Project_allTransactions')->with(compact('project'));
+        return view('admin.Project_users')->with(compact('project'));
+    }
+    public function adminProjectUserDelete(Request $req)
+    {
+        $transaction                     = Transaction::find($req->transaction_id);
+        $transaction->transaction_active = false;
+        $transaction->save();
+
+        $item                 = Item::find($transaction->item_id);
+        $item->item_available = $item->item_available + 1;
+        $item->save();
+
+        $data = [
+            'status'  => 'success',
+            'message' => 'ลบข้อมูลการลงทะเบียนสำเร็จ',
+        ];
+
+        return response()->json($data, 200);
     }
     // Proejct Export
     public function adminPDFSlot($item_id)

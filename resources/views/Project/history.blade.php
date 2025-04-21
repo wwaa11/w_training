@@ -13,20 +13,20 @@
                     </div>
                     <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
-                        <div class="mt-2"><i class="fa-regular fa-clock text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
+                        <div class="mt-2"><i class="fa-regular fa-clock w-8 text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                         @if ($transaction->item->item_note_1_active)
                             <div class="mt-2">
-                                <i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}
+                                <i class="fa-solid fa-map-pin w-8 text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}
                             </div>
                         @endif
                         @if ($transaction->checkin_datetime !== null)
                             <div class="mt-2 text-green-700">
-                                <i class="fa-solid fa-location-dot"></i> CHECK IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}
+                                <i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}
                             </div>
                         @endif
                         @if ($transaction->hr_approve_datetime !== null)
                             <div class="mt-2 text-green-700">
-                                <i class="fa-solid fa-location-dot"></i> HR : อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}
+                                <i class="fa-solid fa-h w-4"></i><i class="fa-solid fa-r w-4"></i> อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}
                             </div>
                         @endif
                     </div>

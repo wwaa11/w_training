@@ -16,13 +16,14 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/changePassword', [WebController::class, 'changePassword']);
 
     Route::get('/', [WebController::class, 'index']);
-    Route::get('/history', [WebController::class, 'history']);
 
     Route::get('/project/{id}', [WebController::class, 'ProjectIndex']);
+
     Route::post('/save', [WebController::class, 'TransactionSave']);
     Route::post('/delete', [WebController::class, 'TransactionDelete']);
     Route::post('/sign', [WebController::class, 'TransactionSign']);
 
+    Route::get('/history', [WebController::class, 'history']);
 });
 
 Route::middleware([adminAuth::class])->group(function () {
@@ -35,9 +36,10 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::post('/admin/createProject', [WebController::class, 'adminStoreProject']);
     Route::post('/admin/addDate', [WebController::class, 'adminCreateProject_AddDate']);
 
-    Route::get('/admin/excel/{id}', [WebController::class, 'Project_allTransactions']);
-
     Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
+
+    Route::get('/admin/project/user/{id}', [WebController::class, 'adminProjectUser']);
+    Route::post('/admin/project/user/delete', [WebController::class, 'adminProjectUserDelete']);
 
     Route::get('/admin/pdf/slot/{id}', [WebController::class, 'adminPDFSlot']);
     Route::get('/admin/excel/project/{id}', [WebController::class, 'adminExcelDate']);

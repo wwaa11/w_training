@@ -14,9 +14,9 @@
                     </div>
                     <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
-                        <div class="mt-2"><i class="fa-regular fa-clock text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
+                        <div class="mt-2"><i class="fa-regular fa-clock w-8 text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                         @if ($transaction->item->item_note_1_active)
-                            <div class="mt-2"><i class="fa-solid fa-map-pin text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
+                            <div class="mt-2"><i class="fa-solid fa-map-pin w-8 text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
                         @endif
                         @if (!$transaction->checkin)
                             <span class="absolute bottom-0 right-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
@@ -24,19 +24,31 @@
                         @if (date("Y-m-d") == $transaction->item->slot->slot_date)
                             @if (!$transaction->checkin)
                                 <button class="mt-3 cursor-pointer rounded border border-[#eaf7ab] bg-red-500 p-3 text-white" onclick="sign('{{ $transaction->id }}','{{ $transaction->item->slot->project->project_name }}')">
-                                    <i class="fa-solid fa-location-dot"></i> CHECK IN
+                                    <i class="fa-solid fa-location-dot w-8"></i> CHECK IN
                                 </button>
                             @else
                                 <div class="mt-2 text-green-700">
-                                    <i class="fa-solid fa-location-dot"></i> CHECK IN {{ date("d/m/Y H:i", strtotime($transaction->checkin_datetime)) }}
+                                    <i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("H:i", strtotime($transaction->checkin_datetime)) }}
                                 </div>
                                 @if ($transaction->hr_approve)
                                     <div class="mt-2 text-green-700">
-                                        HR : อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}
+                                        <i class="fa-solid fa-h w-4"></i><i class="fa-solid fa-r w-4"></i> อนุมัติ {{ date("H:i", strtotime($transaction->hr_approve_datetime)) }}
                                     </div>
+                                    @if ($transaction->item->slot->project->link !== null)
+                                        <div class="mt-3 cursor-pointer rounded-t bg-red-500 p-3 text-white">
+                                            <i class="fa-regular fa-file-lines"></i> ข้อสอบ
+                                        </div>
+                                        <div class="rounded-b border border-red-500">
+                                            @foreach (json_decode($transaction->item->slot->project->link->links) as $link)
+                                                <a href="{{ $link->url }}" target="blank">
+                                                    <div class="m-3 rounded bg-green-400 p-3">{{ $link->title }}</div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 @else
                                     <div class="mt-2 text-red-600">
-                                        HR : รอการอนุมัติ
+                                        <i class="fa-solid fa-h w-4"></i><i class="fa-solid fa-r w-4"></i> รอการอนุมัติ
                                     </div>
                                 @endif
                             @endif

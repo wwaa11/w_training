@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Project extends Model
 {
@@ -11,6 +12,11 @@ class Project extends Model
         'project_detail',
         'project_active',
     ];
+
+    public function link(): HasOne
+    {
+        return $this->hasOne(Links::class);
+    }
 
     public function slots(): HasMany
     {

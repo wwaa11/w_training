@@ -18,6 +18,7 @@
                     <th class="border p-2">แผนก</th>
                     <th class="border p-2">Check-In</th>
                     <th class="border p-2">HR Approve</th>
+                    <th class="border p-2"></th>
                 </thead>
                 <tbody id="userTable">
                     @foreach ($project->slots as $slot)
@@ -39,6 +40,9 @@
                                         @if ($transaction->hr_approve_datetime !== null)
                                             {{ date("d/m/y H:i", strtotime($transaction->hr_approve_datetime)) }}
                                         @endif
+                                    </td>
+                                    <td class="border p-2 text-center">
+                                        <button class="cursor-pointer text-red-600" onclick="deleteRegister('{{ $transaction->id }}','{{ $transaction->user }} {{ $transaction->userData->name }}')">ลบข้อมูลการลงทะเบียน</button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -64,6 +68,36 @@
             $("#userTable tr").filter(function() {
                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
             });
+        }
+
+        async function deleteRegister(id, name) {
+            alert = await Swal.fire({
+                title: "ยืนยันลบข้อมูลการลงทะเบียน " + name,
+                icon: 'warning',
+                showConfirmButton: true,
+                confirmButtonColor: 'red',
+                confirmButtonText: 'ยืนยัน',
+                showCancelButton: true,
+                cancelButtonColor: 'gray',
+                cancelButtonText: 'ยกเลิก',
+            })
+
+            if (alert.isConfirmed) {
+                axios.post('{{ env("APP_URL") }}/admin/project/user/delete', {
+                    'transaction_id': id
+                }).then((res) => {
+                    Swal.fire({
+                        title: res['data']['message'],
+                        icon: 'success',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: 'green'
+                    }).then(function(isConfirmed) {
+                        if (isConfirmed) {
+                            window.location.reload()
+                        }
+                    })
+                });
+            }
         }
     </script>
 @endsection
