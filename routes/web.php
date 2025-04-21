@@ -36,6 +36,9 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::post('/admin/createProject', [WebController::class, 'adminStoreProject']);
     Route::post('/admin/addDate', [WebController::class, 'adminCreateProject_AddDate']);
 
+    Route::get('/admin/edit/{id}', [WebController::class, 'adminEditProject']);
+    Route::post('/admin/update', [WebController::class, 'adminUpdateProject']);
+
     Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
 
     Route::get('/admin/project/user/{id}', [WebController::class, 'adminProjectUser']);

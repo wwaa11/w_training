@@ -11,10 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->string('link_id')->nullable();
-        });
-
         Schema::create('links', function (Blueprint $table) {
             $table->id();
             $table->string('project_id');
@@ -28,10 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->dropColumn('link_id');
-        });
-
         Schema::dropIfExists('links');
     }
 };

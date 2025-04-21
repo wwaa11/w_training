@@ -38,9 +38,9 @@
                                                 <i class="fa-regular fa-file-lines"></i> ข้อสอบ
                                             </div>
                                             <div class="rounded-b border border-red-500">
-                                                @foreach (json_decode($transaction->item->slot->project->link->links) as $link)
-                                                    <a href="{{ $link->url }}" target="blank">
-                                                        <div class="m-3 rounded bg-green-400 p-3">{{ $link->title }}</div>
+                                                @foreach ($transaction->item->slot->project->link->links as $link)
+                                                    <a href="{{ $link["url"] }}" target="blank">
+                                                        <div class="m-3 rounded bg-green-400 p-3">{{ $link["title"] }}</div>
                                                     </a>
                                                 @endforeach
                                             </div>

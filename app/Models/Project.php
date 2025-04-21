@@ -15,7 +15,7 @@ class Project extends Model
 
     public function link(): HasOne
     {
-        return $this->hasOne(Links::class);
+        return $this->hasOne(Link::class);
     }
 
     public function slots(): HasMany

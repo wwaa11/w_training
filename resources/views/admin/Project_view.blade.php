@@ -11,7 +11,7 @@
                 <a class="flex-1" href="{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}">
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}">
+                <a class="flex-1" href="{{ env("APP_URL") }}/admin/edit/{{ $project->id }}">
                     <div class="cursor-pointer rounded bg-gray-200 p-3 text-center"><i class="fa-solid fa-gear"></i> การจัดการ Project</div>
                 </a>
             </div>

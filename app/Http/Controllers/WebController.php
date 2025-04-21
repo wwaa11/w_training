@@ -7,6 +7,7 @@ use App\Exports\ProjectExport;
 use App\Exports\SlotExport;
 use App\Http\Controllers\WebController;
 use App\Models\Item;
+use App\Models\Link;
 use App\Models\Project;
 use App\Models\Slot;
 use App\Models\Transaction;
@@ -391,6 +392,39 @@ class WebController extends Controller
         }
 
         return redirect(env('APP_URL') . '/admin/project/' . $project->id);
+    }
+    public function adminEditProject($project_id)
+    {
+        $project = Project::find($project_id);
+
+        return view('admin.Project_Edit')->with(compact('project'));
+    }
+    public function adminUpdateProject(Request $req)
+    {
+        $project_id = $req->project_id;
+        if ($req->link !== null) {
+            $array = [];
+            foreach ($req->link as $link) {
+                if ($link['title'] !== null) {
+
+                    $array[] = [
+                        "title" => $link['title'],
+                        "url"   => $link['url'],
+                    ];
+                }
+            }
+
+            $link             = Link::firstOrNew(['project_id' => $project_id]);
+            $link->project_id = $project_id;
+            $link->links      = $array;
+            $link->save();
+        } else {
+
+            $link = Link::where('project_id', $project_id);
+            $link->delete();
+        }
+
+        return redirect(env('APP_URL') . '/admin/edit/' . $project_id);
     }
 
     public function adminViewProject($id)
