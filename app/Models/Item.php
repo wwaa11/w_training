@@ -4,6 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Item extends Model
 {
@@ -26,7 +27,12 @@ class Item extends Model
 
     public function slot(): BelongsTo
     {
-        return $this->belongsTo(Slot::class)->orderBy('slot_date','asc')->orderBy('slot_index','asc');
+        return $this->belongsTo(Slot::class)->orderBy('slot_date', 'asc')->orderBy('slot_index', 'asc');
+    }
+
+    public function seats(): HasOne
+    {
+        return $this->hasOne(Seat::class);
     }
 
     public function transactions(): HasMany

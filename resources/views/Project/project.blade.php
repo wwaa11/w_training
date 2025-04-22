@@ -2,7 +2,10 @@
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
-            <div class="text-3xl text-[#1a3f34]"><a class="text-blue-600" href="{{ env("APP_URL") }}/">รายการลงทะเบียน</a> / {{ $project->project_name }}</div>
+            <div class="flex text-3xl text-[#1a3f34]">
+                <div class="flex-1"><a class="text-blue-600" href="{{ env("APP_URL") }}/">รายการลงทะเบียน</a> / {{ $project->project_name }}</div>
+                <div class="cursor-pointer text-lg" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i> อัพเดตข้อมูล</div>
+            </div>
             <hr class="border-[#eaf7ab] shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
             @if ($isRegister)
@@ -15,6 +18,16 @@
                     <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
                         <div class="mt-2"><i class="fa-regular fa-clock w-8 text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
+                        @if ($transaction->seat !== null)
+                            <div class="mt-2 flex rounded bg-red-500 p-3 text-white lg:hidden">
+                                <div class="pt-2">เลขที่นั้งสอบ</div>
+                                <div class="flex-1 text-end text-3xl">{{ $transaction->seat }}</div>
+                            </div>
+                            <div class="right-0 top-0 hidden lg:absolute lg:block">
+                                <div class="text-center text-6xl text-red-600">{{ $transaction->seat }}</div>
+                                <div class="text-sm">เลขที่นั้งสอบ</div>
+                            </div>
+                        @endif
                         @if ($transaction->item->item_note_1_active)
                             <div class="mt-2"><i class="fa-solid fa-map-pin w-8 text-[#008387]"></i></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
                         @endif

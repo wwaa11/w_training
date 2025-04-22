@@ -2,7 +2,10 @@
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
-            <div class="text-3xl text-[#1a3f34]">ประวัติการลงทะเบียน</div>
+            <div class="flex text-3xl text-[#1a3f34]">
+                <div class="flex-1">ประวัติการลงทะเบียน</div>
+                <div class="cursor-pointer text-lg" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i> อัพเดตข้อมูล</div>
+            </div>
             <hr class="border-[#eaf7ab] shadow">
             @foreach ($transactions as $transaction)
                 <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 shadow">

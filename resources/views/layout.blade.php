@@ -133,6 +133,10 @@
     function mobileMenu() {
         $('#mobileMenu').toggle()
     }
+
+    function refreshPage() {
+        window.location.reload()
+    }
 </script>
 
 </html>

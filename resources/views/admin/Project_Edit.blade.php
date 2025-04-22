@@ -9,7 +9,7 @@
                     <input type="hidden" name="project_id" value="{{ $project->id }}">
                     @csrf
                     <div class="flex flex-row">
-                        <div class="mb-3 flex-1 text-xl">ข้อสอบ URL</div>
+                        <div class="mb-3 flex-1 text-xl">URL ข้อสอบ</div>
                         <div class="cursor-pointer p-3 text-xl text-green-600" onclick="addUrl()"><i class="fa-solid fa-plus"></i> URL ข้อสอบ</div>
                     </div>
                     <div id="url_section">

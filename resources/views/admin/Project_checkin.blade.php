@@ -17,6 +17,7 @@
         <div class="w-full rounded p-3">
             <table class="w-full">
                 <thead class="bg-gray-200">
+                    <th class="border p-3">เลขที่นั้ง</th>
                     <th class="border p-3">วันที่</th>
                     <th class="border p-3">รอบ</th>
                     <th class="border p-3">รหัสพนักงาน</th>
@@ -29,6 +30,7 @@
                 <tbody id="userTable">
                     @foreach ($transactions as $transcation)
                         <tr>
+                            <td class="border p-2 text-center font-bold">{{ $transcation->seat }}</td>
                             <td class="border p-2 text-center">{{ $transcation->item->slot->slot_name }}</td>
                             <td class="border p-2 text-center">{{ $transcation->item->item_name }}</td>
                             <td class="border p-2 text-center">{{ $transcation->userData->userid }}</td>

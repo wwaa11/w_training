@@ -6,9 +6,11 @@ use App\Exports\OnebookExport;
 use App\Exports\ProjectExport;
 use App\Exports\SlotExport;
 use App\Http\Controllers\WebController;
+use App\Jobs\SeatAssign;
 use App\Models\Item;
 use App\Models\Link;
 use App\Models\Project;
+use App\Models\Seat;
 use App\Models\Slot;
 use App\Models\Transaction;
 use App\Models\User;
@@ -24,7 +26,98 @@ class WebController extends Controller
 {
     public function test()
     {
-        // return abort(419);
+        // $transactions = Transaction::where('transaction_active', true)
+        //     ->whereNull('seat')
+        //     ->get();
+
+        // foreach ($transactions as $transaction) {
+        //     $seatArray = Seat::firstOrNew(['item_id' => $transaction->item_id]);
+        //     if ($seatArray->seats == null) {
+        //         $arrayTemp = [];
+        //         $items     = Item::where('id', $transaction->item_id)->first();
+        //         for ($i = 0; $i < $items->item_max_available; $i++) {
+        //             $arrayTemp[] = [
+        //                 'dept' => null,
+        //                 'user' => null,
+        //             ];
+        //         }
+        //         $seatArray->seats = $arrayTemp;
+        //         $seatArray->save();
+        //     }
+        //     $maxSeat       = count($seatArray->seats);
+        //     $maxSeat_range = $maxSeat - 1;
+        //     $tempSeatArray = $seatArray->seats;
+        //     $success       = false;
+        //     $newUser       = [
+        //         'dept' => $transaction->userData->department,
+        //         'user' => $transaction->user,
+        //     ];
+
+        //     for ($i = 0; $i <= $maxSeat_range; $i++) {
+        //         $seatNumber = $i + 1;
+        //         if ($tempSeatArray[$i]['user'] == null) {
+        //             switch ($i) {
+        //                 case 0:
+        //                     $tempSeatArray[$i] = $newUser;
+        //                     $success           = true;
+        //                     break;
+        //                 case $max_range:
+        //                     if ($tempSeatArray[$i - 1]['dept'] !== $newUser['dept']) {
+        //                         $tempSeatArray[$i] = $newUser;
+        //                         $success           = true;
+        //                     }
+        //                     break;
+        //                 default:
+        //                     if ($tempSeatArray[$i - 1]['dept'] !== $newUser['dept'] && $tempSeatArray[$i + 1]['dept'] !== $newUser['dept']) {
+        //                         $tempSeatArray[$i] = $newUser;
+        //                         $success           = true;
+        //                     }
+        //                     break;
+        //             }
+        //         }
+        //         if ($success) {
+        //             break;
+        //         }
+        //     }
+
+        //     if (! $success) {
+        //         for ($i = 0; $i <= $maxSeat_range; $i++) {
+        //             $seatNumber = $i + 1;
+        //             if ($tempSeatArray[$i]['user'] == null) {
+        //                 $tempSeatArray[$i] = $newUser;
+        //             }
+        //         }
+        //     }
+        //     if ($success) {
+        //         dump('success');
+        //         $transaction->seat = $seatNumber;
+        //         // $transaction->save();
+
+        //         $seatArray->seats = $tempSeatArray;
+        //         // $seatArray->save();
+        //         dump($seatArray->seats);
+        //     }
+        // }
+    }
+    public function clearDeleteProject()
+    {
+        $projects = Project::where('project_delete', true)->get();
+        foreach ($projects as $project) {
+            foreach ($project->slots as $slot) {
+                foreach ($slot->items as $item) {
+                    foreach ($item->transactions as $transaction) {
+                        $transaction->delete();
+                    }
+                    $item->delete();
+                }
+                $slot->delete();
+            }
+            $project->delete();
+        }
+    }
+    public function dispatchServices()
+    {
+        SeatAssign::dispatch();
     }
 
     // Auth Management
@@ -228,6 +321,13 @@ class WebController extends Controller
         $item->item_available += 1;
         $item->save();
 
+        $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
+        $temp                                 = $seatArray->seats;
+        $temp[$transaction->seat - 1]['user'] = null;
+        $temp[$transaction->seat - 1]['dept'] = null;
+        $seatArray->seats                     = $temp;
+        $seatArray->save();
+
         $response = [
             'status'  => 'success',
             'message' => 'ทำการเปลี่ยนรอบการลงทะเบียนสำเร็จ!',
@@ -385,7 +485,8 @@ class WebController extends Controller
                         $li->item_note_3_title  = $req->item['item_note_3_title'];
                         $li->item_note_3_value  = $list['note_3_value'];
                     }
-                    $li->item_available = $list['avabile'];
+                    $li->item_available     = $list['avabile'];
+                    $li->item_max_available = $list['avabile'];
                     $li->save();
                 }
             }
@@ -448,6 +549,12 @@ class WebController extends Controller
         $item                 = Item::find($transaction->item_id);
         $item->item_available = $item->item_available + 1;
         $item->save();
+
+        $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
+        $temp                                 = $seatArray->seats;
+        $temp[$transaction->seat - 1]['user'] = null;
+        $seatArray->seats                     = $temp;
+        $seatArray->save();
 
         $data = [
             'status'  => 'success',
@@ -519,16 +626,28 @@ class WebController extends Controller
     public function admincheckinProject($project_id)
     {
         $project      = Project::find($project_id);
-        $transactions = Transaction::where('project_id', $project_id)->where('transaction_active', true)->where('checkin', true)->where('hr_approve', false)->get();
-        $select       = 'not approve';
+        $transactions = Transaction::where('project_id', $project_id)
+            ->where('transaction_active', true)
+            ->where('checkin', true)
+            ->whereDate('checkin_datetime', date('Y-m-d'))
+            ->where('hr_approve', false)
+            ->orderBy('seat', 'ASC')
+            ->get();
+        $select = 'not approve';
 
         return view('admin.Project_checkin')->with(compact('project', 'transactions', 'select'));
     }
     public function adminapprovedProject($project_id)
     {
         $project      = Project::find($project_id);
-        $transactions = Transaction::where('project_id', $project_id)->where('transaction_active', true)->where('checkin', true)->where('hr_approve', true)->get();
-        $select       = 'approved';
+        $transactions = Transaction::where('project_id', $project_id)
+            ->where('transaction_active', true)
+            ->where('checkin', true)
+            ->whereDate('checkin_datetime', date('Y-m-d'))
+            ->where('hr_approve', true)
+            ->orderBy('seat', 'ASC')
+            ->get();
+        $select = 'approved';
 
         return view('admin.Project_checkin')->with(compact('project', 'transactions', 'select'));
     }
