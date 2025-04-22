@@ -26,77 +26,46 @@ class WebController extends Controller
 {
     public function test()
     {
-        // $transactions = Transaction::where('transaction_active', true)
-        //     ->whereNull('seat')
-        //     ->get();
-
-        // foreach ($transactions as $transaction) {
-        //     $seatArray = Seat::firstOrNew(['item_id' => $transaction->item_id]);
-        //     if ($seatArray->seats == null) {
-        //         $arrayTemp = [];
-        //         $items     = Item::where('id', $transaction->item_id)->first();
-        //         for ($i = 0; $i < $items->item_max_available; $i++) {
-        //             $arrayTemp[] = [
-        //                 'dept' => null,
-        //                 'user' => null,
-        //             ];
-        //         }
-        //         $seatArray->seats = $arrayTemp;
-        //         $seatArray->save();
+        // $items = Item::get();
+        // foreach ($items as $item) {
+        //     if ($item->slot == null) {
+        //         continue;
         //     }
-        //     $maxSeat       = count($seatArray->seats);
-        //     $maxSeat_range = $maxSeat - 1;
-        //     $tempSeatArray = $seatArray->seats;
-        //     $success       = false;
-        //     $newUser       = [
-        //         'dept' => $transaction->userData->department,
-        //         'user' => $transaction->user,
-        //     ];
-
-        //     for ($i = 0; $i <= $maxSeat_range; $i++) {
-        //         $seatNumber = $i + 1;
-        //         if ($tempSeatArray[$i]['user'] == null) {
-        //             switch ($i) {
-        //                 case 0:
-        //                     $tempSeatArray[$i] = $newUser;
-        //                     $success           = true;
-        //                     break;
-        //                 case $max_range:
-        //                     if ($tempSeatArray[$i - 1]['dept'] !== $newUser['dept']) {
-        //                         $tempSeatArray[$i] = $newUser;
-        //                         $success           = true;
-        //                     }
-        //                     break;
-        //                 default:
-        //                     if ($tempSeatArray[$i - 1]['dept'] !== $newUser['dept'] && $tempSeatArray[$i + 1]['dept'] !== $newUser['dept']) {
-        //                         $tempSeatArray[$i] = $newUser;
-        //                         $success           = true;
-        //                     }
-        //                     break;
-        //             }
-        //         }
-        //         if ($success) {
+        //     $slot_date       = date('Y-m-d', strtotime($item->slot->slot_date));
+        //     $item->link_time = true;
+        //     switch ($item->item_name) {
+        //         case 'เช้า':
+        //             $start = '08:00';
+        //             $end   = '12:00';
         //             break;
-        //         }
+        //         case 'เย็น':
+        //             $start = '13:00';
+        //             $end   = '17:00';
+        //             break;
+        //         case '08.30 - 10.00 น.':
+        //             $start = '08:30';
+        //             $end   = '10:00';
+        //             break;
+        //         case '10.30 - 12.00 น.':
+        //             $start = '10:30';
+        //             $end   = '12:00';
+        //             break;
+        //         case '13.30 - 15.00 น.':
+        //             $start = '13:30';
+        //             $end   = '15:00';
+        //             break;
+        //         case '15.30 - 17.00 น.':
+        //             $start = '15:30';
+        //             $end   = '17:00';
+        //             break;
+        //         default:
+        //             $start = null;
+        //             $end   = null;
+        //             break;
         //     }
-
-        //     if (! $success) {
-        //         for ($i = 0; $i <= $maxSeat_range; $i++) {
-        //             $seatNumber = $i + 1;
-        //             if ($tempSeatArray[$i]['user'] == null) {
-        //                 $tempSeatArray[$i] = $newUser;
-        //             }
-        //         }
-        //     }
-        //     if ($success) {
-        //         dump('success');
-        //         $transaction->seat = $seatNumber;
-        //         // $transaction->save();
-
-        //         $seatArray->seats = $tempSeatArray;
-        //         // $seatArray->save();
-        //         dump($seatArray->seats);
-        //     }
+        //     $item->link_start = $slot_date . ' ' . $start;
+        //     $item->link_end   = $slot_date . ' ' . $end;
+        //     $item->save();
         // }
     }
     public function clearDeleteProject()
