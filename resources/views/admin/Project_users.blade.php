@@ -12,6 +12,7 @@
                 <thead class="bg-gray-200">
                     <th class="border p-2">วันที่</th>
                     <th class="border p-2">รอบ</th>
+                    <th class="border p-2">ที่นั้ง</th>
                     <th class="border p-2">รหัสพนักงาน</th>
                     <th class="border p-2">ชื่อ - สกุล</th>
                     <th class="border p-2">ตำแหน่ง</th>
@@ -25,8 +26,9 @@
                         @foreach ($slot->items as $item)
                             @foreach ($item->transactions as $index => $transaction)
                                 <tr>
-                                    <td class="border p-2">{{ $slot->slot_name }}</td>
-                                    <td class="border p-2">{{ $item->item_name }}</td>
+                                    <td class="border p-2 text-center">{{ $slot->slot_name }}</td>
+                                    <td class="border p-2 text-center">{{ $item->item_name }}</td>
+                                    <td class="border p-2 text-center">{{ $transaction->seat }}</td>
                                     <td class="border p-2 text-center">{{ $transaction->user }}</td>
                                     <td class="border p-2">{{ $transaction->userData->name }}</td>
                                     <td class="border p-2">{{ $transaction->userData->position }}</td>

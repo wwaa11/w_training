@@ -21,12 +21,12 @@
                             <div class="mt-2"><i class="fa-regular fa-clock w-8 text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
                             @if ($transaction->seat !== null)
                                 <div class="mt-2 flex rounded bg-red-500 p-3 text-white lg:hidden">
-                                    <div class="pt-2">เลขที่นั้งสอบ</div>
+                                    <div class="pt-2">เลขที่นั่งสอบ</div>
                                     <div class="flex-1 text-end text-3xl">{{ $transaction->seat }}</div>
                                 </div>
                                 <div class="right-0 top-0 hidden lg:absolute lg:block">
                                     <div class="text-center text-6xl text-red-600">{{ $transaction->seat }}</div>
-                                    <div class="text-sm">เลขที่นั้งสอบ</div>
+                                    <div class="text-sm">เลขที่นั่งสอบ</div>
                                 </div>
                             @endif
                             @if ($transaction->item->item_note_1_active)

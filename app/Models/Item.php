@@ -37,7 +37,7 @@ class Item extends Model
 
     public function transactions(): HasMany
     {
-        return $this->hasMany(Transaction::class)->where('transaction_active', true)->orderBy('user', 'asc');
+        return $this->hasMany(Transaction::class)->where('transaction_active', true)->orderBy('seat', 'asc');
     }
 
 }

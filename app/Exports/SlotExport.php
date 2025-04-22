@@ -50,9 +50,10 @@ class SlotExport implements FromArray, ShouldAutoSize, WithHeadings
                 }
             }
         }
-        usort($transactionArray, function ($item1, $item2) {
-            return $item1[1] <=> $item2[1];
-        });
+
+        // usort($transactionArray, function ($item1, $item2) {
+        //     return $item1[1] <=> $item2[1];
+        // });
 
         return $transactionArray;
     }

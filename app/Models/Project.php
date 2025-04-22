@@ -20,6 +20,6 @@ class Project extends Model
 
     public function slots(): HasMany
     {
-        return $this->hasMany(Slot::class)->where('slot_active', true)->orderBy('slot_index', 'asc');
+        return $this->hasMany(Slot::class)->where('slot_active', true)->orderBy('slot_date', 'asc');
     }
 }
