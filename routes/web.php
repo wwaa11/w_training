@@ -12,9 +12,11 @@ Route::post('/login', [WebController::class, 'loginRequest']);
 Route::post('/logout', [WebController::class, 'logoutRequest']);
 
 Route::middleware([pr9Auth::class])->group(function () {
+
     Route::get('/changePassword', [WebController::class, 'IndexchangePassword']);
     Route::post('/changePassword', [WebController::class, 'changePassword']);
     Route::post('/updateReferance', [WebController::class, 'updateReferance']);
+    Route::post('/updateSign', [WebController::class, 'updateSign']);
 
     Route::get('/', [WebController::class, 'index']);
 

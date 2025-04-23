@@ -177,6 +177,14 @@ class WebController extends Controller
 
         return response()->json($response, 200);
     }
+    public function updateSign(Request $request)
+    {
+        $user       = Auth::user();
+        $user->sign = $request->sign;
+        $user->save();
+
+        return redirect('/');
+    }
     public function changePassword(Request $request)
     {
         $user         = Auth::user();

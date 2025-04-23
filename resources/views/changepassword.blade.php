@@ -9,7 +9,7 @@
             <div class="mb-3 text-2xl font-bold text-[#008387]">อัพเดตข้อมูลส่วนตัว</div>
             <div class="flex flex-row">
                 <div class="flex-1">ลายเซ็นต์</div>
-                <div class="cursor-pointer text-red-600" onclick="clearSign()">clear</div>
+                <div class="cursor-pointer text-red-600" onclick="clearSign()">เซ็นต์อีกครั้ง</div>
                 <input id="sign" type="hidden" name="sign">
             </div>
             <div class="p-3">

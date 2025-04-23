@@ -28,7 +28,7 @@
                                     <div class="flex-1 text-end text-3xl">{{ $transaction->seat }}</div>
                                 </div>
                                 <div class="right-0 top-0 hidden lg:absolute lg:block">
-                                    <div class="text-center text-6xl text-red-600">{{ $transaction->seat }}</div>
+                                    <div class="text-center text-5xl text-red-600">{{ $transaction->seat }}</div>
                                     <div class="text-sm">เลขที่นั่งสอบ</div>
                                 </div>
                             @endif
