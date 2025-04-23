@@ -4,7 +4,11 @@
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="text-2xl font-bold">Users Management</div>
             <hr>
-            <input class="mt-3 w-full bg-white p-3" id="searchInput" onkeyup="search()" type="text" placeholder="ค้นหา">
+            <div class="flex">
+                <div class="my-2 w-12 cursor-pointer rounded-s bg-gray-300 p-3 text-center" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i></div>
+                <input class="my-2 w-full flex-1 border border-gray-300 bg-white p-3" id="searchInput" autocomplete="off" onkeyup="search()" type="text" placeholder="รหัสพนักงาน">
+                <div class="my-2 w-24 cursor-pointer rounded-e bg-gray-300 p-3 text-center" onclick="searchUser()">ค้นหา</div>
+            </div>
             <table class="my-3 w-full rounded bg-white p-3">
                 <thead class="bg-gray-200">
                     <th class="border p-3">รหัสพนักงาน</th>
@@ -37,6 +41,12 @@
 @endsection
 @section("scripts")
     <script>
+        $('#searchInput').keypress(function(e) {
+            if (e.which == 13) {
+                searchUser();
+            }
+        });
+
         function search() {
             var value = $('#searchInput').val().toLowerCase();
             $("#userTable tr").filter(function() {
@@ -44,10 +54,33 @@
             });
         }
 
+        function searchUser() {
+            var userid = $('#searchInput').val().toLowerCase();
+
+            axios.post('{{ env("APP_URL") }}/admin/users/search', {
+                'userid': userid,
+            }).then((res) => {
+                html = '';
+                $.each(res.data.data, function(index, value) {
+                    html += '<tr id="user' + value.userid + '">' +
+                        '<td class="border p-2">' + value.userid + '</td>' +
+                        '<td class="border p-2">' + value.name + '</td>' +
+                        '<td class="border p-2">' + value.position + '</td>' +
+                        '<td class="border p-2">' + value.department + '</td>' +
+                        '<td class="border p-2 text-center">' +
+                        '<button class="cursor-pointer rounded p-3 text-red-600" onclick="reserPassword(\'' + value.userid + '\')">รีเซ็ตรหัสผ่าน</button>' +
+                        '</td>' +
+                        '</tr>';
+                });
+                $('#userTable').html(html);
+
+            });
+        }
+
         async function reserPassword(userid) {
             alert = await Swal.fire({
                 title: "ยืนยันการรีเซ็ตรหัสผ่าน : " + userid,
-                html: "รหัสผ่านที่ถูกรีเซ็ต จะถูกเปลี่ยนเป็น <span class=\"text-red-600\">รหัสพนักงาน (" + userid + ")</span> อีกครั้ง ",
+                html: "รหัสผ่านที่ถูกรีเซ็ต จะถูกเปลี่ยนเป็น <span class=\"text-red-600\"><br>รหัสพนักงาน : " + userid + "</span> ",
                 icon: 'warning',
                 allowOutsideClick: false,
                 showConfirmButton: true,

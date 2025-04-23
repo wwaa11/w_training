@@ -126,6 +126,55 @@
     @yield("content")
 </body>
 @yield("scripts")
+@auth
+    @if (Auth::user()->refNo == null)
+        <script>
+            $(document).ready(function() {
+                alertRef()
+            });
+
+            async function alertRef() {
+                var alert = await Swal.fire({
+                    title: 'โปรดระบุ รหัสประจำตัวประชาชน อีกครั้ง',
+                    text: 'เนื่องจากระบบมีความผิดพลาดในการบันทึก กรุณาใส่รหัสประจำตัวอีกครั้ง',
+                    icon: 'info',
+                    input: 'text',
+                    inputPlaceholder: 'เลขบัตรประจำตัวประชาชน',
+                    allowOutsideClick: false,
+                    confirmButtonColor: 'green',
+                    confirmButtonText: 'บันทึก'
+                });
+                var cansend = false;
+                if (alert.value != '' && alert.value.length == 13) {
+                    cansend = true;
+                } else if (alert.value == '-') {
+                    cansend = true;
+                } else {
+                    alertRef()
+                }
+
+                if (cansend) {
+                    axios.post('{{ env("APP_URL") }}/updateReferance', {
+                        'refno': alert.value
+                    }).then((res) => {
+                        if (res['data']['status'] == 'success') {
+                            Swal.fire({
+                                title: res['data']['message'],
+                                icon: 'success',
+                                confirmButtonText: 'ตกลง',
+                                confirmButtonColor: 'green'
+                            }).then(function(isConfirmed) {
+                                if (isConfirmed) {
+                                    window.location.reload()
+                                }
+                            })
+                        }
+                    });
+                }
+            }
+        </script>
+    @endif
+@endauth
 <script>
     function logout() {
         $('#logout-form').submit();

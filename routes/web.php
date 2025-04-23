@@ -14,6 +14,7 @@ Route::post('/logout', [WebController::class, 'logoutRequest']);
 Route::middleware([pr9Auth::class])->group(function () {
     Route::get('/changePassword', [WebController::class, 'IndexchangePassword']);
     Route::post('/changePassword', [WebController::class, 'changePassword']);
+    Route::post('/updateReferance', [WebController::class, 'updateReferance']);
 
     Route::get('/', [WebController::class, 'index']);
 
@@ -30,6 +31,7 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/admin', [WebController::class, 'adminIndex']);
 
     Route::get('/admin/users', [WebController::class, 'adminUser']);
+    Route::post('/admin/users/search', [WebController::class, 'adminUserSearch']);
     Route::post('/admin/resetpassword', [WebController::class, 'adminUserResetPassword']);
 
     Route::get('/admin/createProject', [WebController::class, 'adminCreateProject']);
@@ -40,6 +42,7 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::post('/admin/update', [WebController::class, 'adminUpdateProject']);
 
     Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
+    Route::post('/admin/project/createtransaction', [WebController::class, 'adminCreateTransaction']);
 
     Route::get('/admin/project/user/{id}', [WebController::class, 'adminProjectUser']);
     Route::post('/admin/project/user/delete', [WebController::class, 'adminProjectUserDelete']);

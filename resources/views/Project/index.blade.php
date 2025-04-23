@@ -56,13 +56,13 @@
                                             <div class="rounded-b border border-red-500">
                                                 @if (!$transaction->item->link_time)
                                                     @foreach ($transaction->item->slot->project->link->links as $link)
-                                                        <a href="{{ $link["url"] }}" target="blank">
+                                                        <a href="{{ $link["url"] }}" target="_blank">
                                                             <div class="m-3 rounded bg-green-400 p-3">{{ $link["title"] }}</div>
                                                         </a>
                                                     @endforeach
                                                 @elseif(date("Y-m-d H:i") >= date("Y-m-d H:i", strtotime($transaction->item->link_start)) && date("Y-m-d H:i") <= date("Y-m-d H:i", strtotime($transaction->item->link_end)))
                                                     @foreach ($transaction->item->slot->project->link->links as $link)
-                                                        <a href="{{ $link["url"] }}" target="blank">
+                                                        <a href="{{ $link["url"] }}" target="_blank">
                                                             <div class="m-3 rounded bg-green-400 p-3">{{ $link["title"] }}</div>
                                                         </a>
                                                     @endforeach

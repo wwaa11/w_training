@@ -44,8 +44,26 @@
                     <tbody>
                         @foreach ($slot->items as $item)
                             <tr class="bg-white">
-                                <td class="border p-3">{{ $item->item_name }} <a class="float-end text-red-600" href="{{ env("APP_URL") }}/admin/pdf/slot/{{ $item->id }}"><i class="fa-regular fa-file-pdf"></i></a></td>
-                                <td class="border p-3 text-center">{{ count($item->transactions) }} / {{ $item->item_available + count($item->transactions) }}</td>
+                                <td class="border p-3">
+                                    <div class="flex gap-3">
+                                        @if (date("Y-m-d") == $slot->slot_date)
+                                            @if (count($item->transactions) == $item->item_max_available)
+                                                <div class="lg:w-42 flex-1 cursor-pointer text-red-600 lg:flex-none">
+                                                    <i class="fa-solid fa-ban"></i>&nbsp;มีผู้ลงทะเบียนเต็มแล้ว
+                                                </div>
+                                            @else
+                                                <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="addTransaction('{{ $item->id }}','{{ $item->item_name }}')">
+                                                    <i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน
+                                                </div>
+                                            @endif
+                                        @endif
+                                        <div class="flex-1">{{ $item->item_name }} </div>
+                                        <a class="flex-none text-end text-red-600" href="{{ env("APP_URL") }}/admin/pdf/slot/{{ $item->id }}">
+                                            <i class="fa-regular fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="border p-3 text-center">{{ count($item->transactions) }} / {{ $item->item_max_available }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -55,4 +73,67 @@
     </div>
 @endsection
 @section("scripts")
+    <script>
+        async function addTransaction(id, title) {
+            alert = await Swal.fire({
+                title: "ยืนยันข้อมูลการลงทะเบียน",
+                html: 'รอบ ' + title + '<br>',
+                input: "text",
+                inputPlaceholder: "รหัสพนักงาน",
+                icon: 'question',
+                showConfirmButton: true,
+                confirmButtonColor: 'green',
+                confirmButtonText: 'ยืนยัน',
+                showCancelButton: true,
+                cancelButtonColor: 'gray',
+                cancelButtonText: 'ยกเลิก',
+            })
+            if (alert.isConfirmed) {
+                if (alert.value == '') {
+                    Swal.fire({
+                        title: "โปรดใส่รหัสพนักงาน",
+                        icon: 'error',
+                        showConfirmButton: true,
+                        confirmButtonColor: 'red',
+                        confirmButtonText: 'ยืนยัน',
+                    })
+
+                    return;
+                }
+                Swal.fire({
+                    title: 'กรุณารอสักครู่',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                })
+                axios.post('{{ env("APP_URL") }}/admin/project/createtransaction', {
+                    'project_id': '{{ $project->id }}',
+                    'item_id': id,
+                    'user': alert.value
+                }).then((res) => {
+                    if (res['data']['status'] == 'success') {
+                        Swal.fire({
+                            title: res['data']['message'],
+                            html: res['data']['name'] + ' รอบ ' + res['data']['slot'],
+                            icon: 'success',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: 'green'
+                        }).then(function(isConfirmed) {
+                            if (isConfirmed) {
+                                window.location.reload()
+                            }
+                        })
+                    } else {
+                        Swal.fire({
+                            title: res['data']['message'],
+                            icon: 'error',
+                            confirmButtonText: 'red',
+                            confirmButtonColor: 'green'
+                        })
+                    }
+
+                });
+            }
+        }
+    </script>
 @endsection

@@ -118,15 +118,16 @@ class WebController extends Controller
                 $userData           = new User();
                 $userData->userid   = $userid;
                 $userData->password = Hash::make($userid);
+
+                $userData->hn       = $response['user']['HN'];
+                $userData->gender   = $response['user']['gender'];
+                $userData->refNo    = $response['user']['refID'];
+                $userData->passport = $response['user']['passport'];
             }
             $userData->name        = $response['user']['name'];
             $userData->position    = $response['user']['position'];
             $userData->department  = $response['user']['department'];
             $userData->division    = $response['user']['division'];
-            $userData->hn          = $response['user']['HN'];
-            $userData->gender      = $response['user']['gender'];
-            $userData->refNo       = $response['user']['refID'];
-            $userData->passport    = $response['user']['passport'];
             $userData->last_update = date('Y-m-d H:i:s');
             $userData->save();
 
@@ -162,6 +163,19 @@ class WebController extends Controller
         $user = Auth::user();
 
         return view('changepassword')->with(compact('user'));
+    }
+    public function updateReferance(Request $request)
+    {
+        $user        = Auth::user();
+        $user->refNo = $request->refno;
+        $user->save();
+
+        $response = [
+            'status'  => 'success',
+            'message' => 'บันทึกสำเร็จ!',
+        ];
+
+        return response()->json($response, 200);
     }
     public function changePassword(Request $request)
     {
@@ -463,11 +477,69 @@ class WebController extends Controller
 
         return redirect(env('APP_URL') . '/admin/project/' . $project->id);
     }
+
     public function adminEditProject($project_id)
     {
         $project = Project::find($project_id);
 
         return view('admin.Project_Edit')->with(compact('project'));
+    }
+    public function adminCreateTransaction(Request $req)
+    {
+        $response = [
+            'status'  => 'failed',
+            'message' => 'รอบที่เลือกเต็มแล้ว!',
+        ];
+        $userid   = $req->user;
+        $userData = User::where('userid', $userid)->first();
+        if ($userData == null) {
+            $responseAPI = Http::withHeaders(['token' => env('API_KEY')])
+                ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                    'userid' => $userid,
+                ])
+                ->json();
+            $response['message'] = 'ไม่พบรหัสพนักงานนี้';
+
+            if ($responseAPI['status'] == 1) {
+                $userData              = new User();
+                $userData->userid      = $userid;
+                $userData->password    = Hash::make($userid);
+                $userData->name        = $responseAPI['user']['name'];
+                $userData->position    = $responseAPI['user']['position'];
+                $userData->department  = $responseAPI['user']['department'];
+                $userData->division    = $responseAPI['user']['division'];
+                $userData->hn          = $responseAPI['user']['HN'];
+                $userData->gender      = $responseAPI['user']['gender'];
+                $userData->refNo       = $responseAPI['user']['refID'];
+                $userData->passport    = $responseAPI['user']['passport'];
+                $userData->last_update = date('Y-m-d H:i:s');
+                $userData->save();
+            }
+        }
+
+        if ($userData !== null) {
+            $item = Item::find($req->item_id);
+            if ($item->item_available > 0) {
+                $item->item_available -= 1;
+                $item->save();
+
+                $new             = new Transaction();
+                $new->project_id = $req->project_id;
+                $new->item_id    = $req->item_id;
+                $new->user       = $req->user;
+                $new->date       = $item->slot->slot_date;
+                $new->save();
+
+                $response = [
+                    'status'  => 'success',
+                    'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                    'slot'    => $item->item_name,
+                    'name'    => $userData->userid . ' ' . $userData->name,
+                ];
+            }
+        }
+
+        return response()->json($response, 200);
     }
     public function adminUpdateProject(Request $req)
     {
@@ -563,6 +635,9 @@ class WebController extends Controller
     }
     public function adminExcelDBD($project_id)
     {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
         $project = Project::find($project_id);
         $name    = 'DBD_' . $project->project_name;
 
@@ -572,9 +647,28 @@ class WebController extends Controller
     // User Management
     public function adminUser()
     {
-        $users = User::orderBy('admin', 'desc')->orderBy('userid', 'asc')->get();
+        $users = User::where('admin', true)->orderBy('userid', 'asc')->get();
 
         return view('admin.Users_Management')->with(compact('users'));
+    }
+    public function adminUserSearch(Request $req)
+    {
+        $users = User::where('userid', 'LIKE', $req->userid . '%')->orderBy('userid', 'asc')->get();
+        $array = [];
+        foreach ($users as $user) {
+            $array[] = [
+                'userid'     => $user->userid,
+                'name'       => $user->name,
+                'position'   => $user->position,
+                'department' => $user->department,
+            ];
+        }
+        $data = [
+            'status' => 'success',
+            'data'   => $array,
+        ];
+
+        return response()->json($data, 200);
     }
     public function adminUserResetPassword(Request $req)
     {

@@ -78,7 +78,7 @@
                 cansend = false;
                 Textdetail = Textdetail + '<br>เลขบัตรประจำตัวประชาชน';
             }
-            if (ref.length != 13) {
+            if (ref.length != 13 && ref != '-') {
                 cansend = false;
                 Textdetail = Textdetail + '<br>เลขบัตรประจำตัวประชาชนไม่ถูกต้อง';
             }
