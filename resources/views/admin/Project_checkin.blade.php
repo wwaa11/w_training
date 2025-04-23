@@ -31,7 +31,7 @@
                     @if ($select == "not approve")
                         <th class="border p-3"><input class="h-6 w-6 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="selectall" type="checkbox" name="sample" /></th>
                     @endif
-                    <th class="border p-3">เลขที่นั้ง</th>
+                    <th class="border p-3">เลขที่นั่ง</th>
                     <th class="border p-3">วันที่</th>
                     <th class="border p-3">รอบ</th>
                     <th class="border p-3">รหัสพนักงาน</th>

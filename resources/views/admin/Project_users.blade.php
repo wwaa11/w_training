@@ -12,7 +12,7 @@
                 <thead class="bg-gray-200">
                     <th class="border p-2">วันที่</th>
                     <th class="border p-2">รอบ</th>
-                    <th class="border p-2">ที่นั้ง</th>
+                    <th class="border p-2">ที่นั่ง</th>
                     <th class="border p-2">รหัสพนักงาน</th>
                     <th class="border p-2">ชื่อ - สกุล</th>
                     <th class="border p-2">ตำแหน่ง</th>
