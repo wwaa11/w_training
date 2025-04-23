@@ -43,19 +43,19 @@ class WebController extends Controller
         //             $end   = '17:00';
         //             break;
         //         case '08.30 - 10.00 น.':
-        //             $start = '08:30';
+        //             $start = '08:25';
         //             $end   = '10:00';
         //             break;
         //         case '10.30 - 12.00 น.':
-        //             $start = '10:30';
+        //             $start = '10:25';
         //             $end   = '12:00';
         //             break;
         //         case '13.30 - 15.00 น.':
-        //             $start = '13:30';
+        //             $start = '13:25';
         //             $end   = '15:00';
         //             break;
         //         case '15.30 - 17.00 น.':
-        //             $start = '15:30';
+        //             $start = '15:25';
         //             $end   = '17:00';
         //             break;
         //         default:
@@ -228,6 +228,11 @@ class WebController extends Controller
     public function index()
     {
         $user = Auth::user();
+        if ($user->password_changed && $user->sign == null) {
+
+            return view('updateSign');
+        }
+
         if (! $user->password_changed) {
 
             return view('changepassword')->with(compact('user'));
@@ -522,6 +527,30 @@ class WebController extends Controller
                 $userData->passport    = $responseAPI['user']['passport'];
                 $userData->last_update = date('Y-m-d H:i:s');
                 $userData->save();
+            }
+        }
+
+        $old_transaction = Transaction::where('project_id', $req->project_id)
+            ->where('user', $userid)
+            ->where('transaction_active', true)
+            ->first();
+
+        if ($old_transaction !== null) {
+
+            $old_transaction->transaction_active = false;
+            $old_transaction->save();
+
+            $item = Item::where('id', $old_transaction->item_id)->first();
+            $item->item_available += 1;
+            $item->save();
+
+            if ($old_transaction->seat !== null) {
+                $seatArray                                = Seat::where('item_id', $old_transaction->item_id)->first();
+                $temp                                     = $seatArray->seats;
+                $temp[$old_transaction->seat - 1]['user'] = null;
+                $temp[$old_transaction->seat - 1]['dept'] = null;
+                $seatArray->seats                         = $temp;
+                $seatArray->save();
             }
         }
 
