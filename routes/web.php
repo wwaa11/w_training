@@ -53,6 +53,7 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/admin/checkin/{id}', [WebController::class, 'admincheckinProject']);
     Route::get('/admin/approved/{id}', [WebController::class, 'adminapprovedProject']);
     Route::post('/admin/approveCheckin', [WebController::class, 'admincheckinProjectApprove']);
+    Route::post('/admin/approveCheckinArray', [WebController::class, 'admincheckinProjectApproveArray']);
 
     Route::get('/admin/services', [WebController::class, 'dispatchServices']);
 });

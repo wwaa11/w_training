@@ -75,7 +75,7 @@
         <tbody>
             @foreach ($item->transactions as $index => $transaction)
                 <tr>
-                    <td style="text-align: center">{{ $index + 1 }}</td>
+                    <td style="text-align: center">{{ $transaction->seat }}</td>
                     <td style="text-align: center">{{ $transaction->user }}</td>
                     <td style="padding-left: 5px">{{ $transaction->userData->name }}</td>
                     <td>

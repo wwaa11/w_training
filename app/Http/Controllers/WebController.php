@@ -634,4 +634,20 @@ class WebController extends Controller
 
         return response()->json($data, 200);
     }
+    public function admincheckinProjectApproveArray(Request $req)
+    {
+        $transactions = Transaction::whereIn('id', $req->id)->get();
+        foreach ($transactions as $transaction) {
+
+            $transaction->hr_approve          = true;
+            $transaction->hr_approve_datetime = date('Y-m-d H:i:s');
+            $transaction->save();
+        }
+        $data = [
+            'status'  => 'success',
+            'message' => 'Approve สำเร็จ',
+        ];
+
+        return response()->json($data, 200);
+    }
 }

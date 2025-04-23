@@ -14,7 +14,7 @@ class Transaction extends Model
 
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Item::class)->orderBy('item_index','asc');
+        return $this->belongsTo(Item::class)->orderBy('item_index', 'asc');
     }
 
     public function userData(): BelongsTo
