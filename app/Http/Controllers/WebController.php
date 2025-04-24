@@ -705,26 +705,34 @@ class WebController extends Controller
     // User Management
     public function adminUser()
     {
-        $users = User::where('admin', true)->orderBy('userid', 'asc')->get();
+        $users = User::orderBy('created_at', 'desc')->paginate(300);
 
         return view('admin.Users_Management')->with(compact('users'));
     }
     public function adminUserSearch(Request $req)
     {
-        $users = User::where('userid', 'LIKE', $req->userid . '%')->orderBy('userid', 'asc')->get();
-        $array = [];
-        foreach ($users as $user) {
-            $array[] = [
-                'userid'     => $user->userid,
-                'name'       => $user->name,
-                'position'   => $user->position,
-                'department' => $user->department,
-            ];
-        }
         $data = [
             'status' => 'success',
-            'data'   => $array,
+            'data'   => [],
         ];
+
+        if ($req->userid !== null) {
+
+            $users = User::where('userid', 'LIKE', $req->userid . '%')->orderBy('userid', 'asc')->get();
+            $array = [];
+            foreach ($users as $user) {
+                $array[] = [
+                    'userid'     => $user->userid,
+                    'name'       => $user->name,
+                    'position'   => $user->position,
+                    'department' => $user->department,
+                ];
+            }
+            $data = [
+                'status' => 'success',
+                'data'   => $array,
+            ];
+        }
 
         return response()->json($data, 200);
     }

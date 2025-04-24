@@ -9,6 +9,9 @@
                 <input class="my-2 w-full flex-1 border border-gray-300 bg-white p-3" id="searchInput" autocomplete="off" onkeyup="search()" type="text" placeholder="รหัสพนักงาน">
                 <div class="my-2 w-24 cursor-pointer rounded-e bg-gray-300 p-3 text-center" onclick="searchUser()">ค้นหา</div>
             </div>
+            <div class="mt-4">
+                {{ $users->links() }}
+            </div>
             <table class="my-3 w-full rounded bg-white p-3">
                 <thead class="bg-gray-200">
                     <th class="border p-3">รหัสพนักงาน</th>
@@ -20,7 +23,7 @@
                 <tbody id="userTable">
                     @foreach ($users as $user)
                         <tr id="user{{ $user->userid }}">
-                            <td class="border p-2">
+                            <td class="border p-2 text-center">
                                 @if ($user->admin)
                                     <span class="text-red-600">(Admin)</span>
                                 @endif
