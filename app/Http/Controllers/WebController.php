@@ -185,6 +185,14 @@ class WebController extends Controller
 
         return redirect('/');
     }
+    public function updateGender(Request $request)
+    {
+        $user         = Auth::user();
+        $user->gender = $request->gender;
+        $user->save();
+
+        return redirect('/');
+    }
     public function changePassword(Request $request)
     {
         $user         = Auth::user();
@@ -233,6 +241,10 @@ class WebController extends Controller
             return view('updateSign');
         }
 
+        if ($user->password_changed && $user->gender == null) {
+
+            return view('updateGender');
+        }
         if (! $user->password_changed) {
 
             return view('changepassword')->with(compact('user'));
@@ -647,28 +659,37 @@ class WebController extends Controller
         $item = Item::find($item_id);
         $pdf  = Pdf::loadView('admin.export.slot', compact('item'));
 
-        return $pdf->stream('test.pdf');
+        return $pdf->stream($item->item_name . '.pdf');
     }
     public function adminExcelDate($project_id)
     {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
         $project = Project::find($project_id);
         $name    = $project->project_name;
 
-        return Excel::download(new ProjectExport($project_id), $name . '.xlsx');
+        return Excel::download(new ProjectExport($project_id), $name . date('d-m-Y') . '.xlsx');
     }
     public function adminExcelSlot($slot_id)
     {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
         $slot = Slot::find($slot_id);
         $name = $slot->project->project_name . '_' . $slot->slot_name;
 
-        return Excel::download(new SlotExport($slot_id), $name . '.xlsx');
+        return Excel::download(new SlotExport($slot_id), $name . date('d-m-Y') . '.xlsx');
     }
     public function adminExcelOnebook($project_id)
     {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
         $project = Project::find($project_id);
         $name    = 'Onebook_' . $project->project_name;
 
-        return Excel::download(new OnebookExport($project_id), $name . '.xlsx');
+        return Excel::download(new OnebookExport($project_id), $name . date('d-m-Y') . '.xlsx');
     }
     public function adminExcelDBD($project_id)
     {
@@ -678,7 +699,7 @@ class WebController extends Controller
         $project = Project::find($project_id);
         $name    = 'DBD_' . $project->project_name;
 
-        return Excel::download(new DBDExport($project_id), $name . '.xlsx');
+        return Excel::download(new DBDExport($project_id), $name . date('d-m-Y') . '.xlsx');
     }
 
     // User Management

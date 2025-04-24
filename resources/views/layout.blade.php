@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title inertia>PR9 HRD</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
-    <script src="https://kit.fontawesome.com/a20e89230f.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url("css/all.min.css") }}">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

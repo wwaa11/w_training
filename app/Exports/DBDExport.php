@@ -5,11 +5,13 @@ use App\Models\Project;
 use App\Models\Transaction;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithDrawings;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class DBDExport implements FromView, WithDrawings
+class DBDExport implements FromView, WithDrawings, WithColumnFormatting
 {
     protected $project_id;
 
@@ -67,5 +69,12 @@ class DBDExport implements FromView, WithDrawings
             ->get();
 
         return view('admin.export.DBD')->with(compact('project', 'transactions'));
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => NumberFormat::FORMAT_TEXT, // Set column B to text format
+        ];
     }
 }

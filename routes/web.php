@@ -17,6 +17,7 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/changePassword', [WebController::class, 'changePassword']);
     Route::post('/updateReferance', [WebController::class, 'updateReferance']);
     Route::post('/updateSign', [WebController::class, 'updateSign']);
+    Route::post('/updateGender', [WebController::class, 'updateGender']);
 
     Route::get('/', [WebController::class, 'index']);
 
