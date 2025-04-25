@@ -33,6 +33,28 @@
                         <i class="fa-solid fa-h w-4"></i><i class="fa-solid fa-r w-4"></i> อนุมัติ {{ date("H:i", strtotime($transaction->hr_approve_datetime)) }}
                     </div>
                 @endif
+                @if ($transaction->item->slot->project->link !== null)
+                    <div class="mt-3 cursor-pointer rounded-t bg-red-500 p-3 text-white">
+                        <i class="fa-regular fa-file-lines"></i> ข้อสอบ {{ date("H:i", strtotime($transaction->item->link_start)) }} - {{ date("H:i", strtotime($transaction->item->link_end)) }}
+                    </div>
+                    <div class="rounded-b border border-red-500">
+                        @if (!$transaction->item->link_time)
+                            @foreach ($transaction->item->slot->project->link->links as $link)
+                                <a href="{{ $link["url"] }}" target="_blank">
+                                    <div class="m-3 rounded bg-green-400 p-3">{{ $link["title"] }}</div>
+                                </a>
+                            @endforeach
+                        @elseif(date("Y-m-d H:i") >= date("Y-m-d H:i", strtotime($transaction->item->link_start)) && date("Y-m-d H:i") <= date("Y-m-d H:i", strtotime($transaction->item->link_end)))
+                            @foreach ($transaction->item->slot->project->link->links as $link)
+                                <a href="{{ $link["url"] }}" target="_blank">
+                                    <div class="m-3 rounded bg-green-400 p-3">{{ $link["title"] }}</div>
+                                </a>
+                            @endforeach
+                        @else
+                            <div class="m-3 rounded bg-red-600 p-3 text-white">ไม่สามารถใช้งานได้</div>
+                        @endif
+                    </div>
+                @endif
             @endif
         @endif
     </div>

@@ -68,7 +68,7 @@ class DBDExport implements FromView, WithDrawings, WithColumnFormatting
             ->orderby('user', 'ASC')
             ->get();
 
-        return view('admin.export.DBD')->with(compact('project', 'transactions'));
+        return view('hr.admin.export.DBD')->with(compact('project', 'transactions'));
     }
 
     public function columnFormats(): array

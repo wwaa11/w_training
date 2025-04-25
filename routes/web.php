@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\CoreController;
 use App\Http\Controllers\HumanResourceControler;
-use App\Http\Controllers\WebController;
 use App\Http\Middleware\adminAuth;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
@@ -35,36 +34,30 @@ Route::middleware([pr9Auth::class])->group(function () {
 });
 
 Route::middleware([adminAuth::class])->group(function () {
+    Route::get('/dev/services', [CoreController::class, 'DispatchServices']);
+
+    Route::get('/admin/users', [CoreController::class, 'AllUser']);
+    Route::post('/admin/users/search', [CoreController::class, 'UserSearch']);
+    Route::post('/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
 
     Route::get('/hr/admin', [HumanResourceControler::class, 'adminIndex']);
     Route::get('/hr/admin/project/{id}', [HumanResourceControler::class, 'adminProjectManagement']);
 
-    Route::get('/admin/users', [WebController::class, 'adminUser']);
-    Route::post('/admin/users/search', [WebController::class, 'adminUserSearch']);
-    Route::post('/admin/resetpassword', [WebController::class, 'adminUserResetPassword']);
+    Route::get('/hr/admin/link/{id}', [HumanResourceControler::class, 'adminProjectLink']);
+    Route::post('/hr/admin/link/update', [HumanResourceControler::class, 'adminProjectLinkUpdate']);
 
-    Route::get('/admin/createProject', [WebController::class, 'adminCreateProject']);
-    Route::post('/admin/createProject', [WebController::class, 'adminStoreProject']);
-    Route::post('/admin/addDate', [WebController::class, 'adminCreateProject_AddDate']);
+    Route::get('/hr/admin/transactions/{id}', [HumanResourceControler::class, 'adminProjectTransactions']);
+    Route::post('/hr/admin/createTransaction', [HumanResourceControler::class, 'adminProjectCreateTransaction']);
+    Route::post('/hr/admin/deleteTransaction', [HumanResourceControler::class, 'adminProjectDeleteTransaction']);
 
-    Route::post('/admin/update', [WebController::class, 'adminUpdateProject']);
+    Route::get('/hr/admin/approve', [HumanResourceControler::class, 'adminProjectApprove']);
+    Route::post('/hr/admin/approveUser', [HumanResourceControler::class, 'adminProjectApproveUser']);
+    Route::post('/hr/admin/approveUserArray', [HumanResourceControler::class, 'adminProjectApproveUserArray']);
 
-    Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
-    Route::post('/admin/project/createtransaction', [WebController::class, 'adminCreateTransaction']);
+    Route::get('/hr/admin/export/pdf/time/{item_id}', [HumanResourceControler::class, 'PDFTimeExport']);
+    Route::get('/hr/admin/export/excel/date/{slot_id}', [HumanResourceControler::class, 'ExcelDateExport']);
+    Route::get('/hr/admin/export/excel/all_date/{project_id}', [HumanResourceControler::class, 'ExcelAllDateExport']);
+    Route::get('/hr/admin/export/excel/onebook/{project_id}', [HumanResourceControler::class, 'ExcelOneBookExport']);
+    Route::get('/hr/admin/export/excel/dbd/{project_id}', [HumanResourceControler::class, 'ExcelDBDExport']);
 
-    Route::get('/admin/project/user/{id}', [WebController::class, 'adminProjectUser']);
-    Route::post('/admin/project/user/delete', [WebController::class, 'adminProjectUserDelete']);
-
-    Route::get('/admin/pdf/slot/{id}', [WebController::class, 'adminPDFSlot']);
-    Route::get('/admin/excel/project/{id}', [WebController::class, 'adminExcelDate']);
-    Route::get('/admin/excel/slot/{id}', [WebController::class, 'adminExcelSlot']);
-    Route::get('/admin/onebook/project/{id}', [WebController::class, 'adminExcelOnebook']);
-    Route::get('/admin/dbd/project/{id}', [WebController::class, 'adminExcelDBD']);
-
-    Route::get('/admin/checkin/{id}', [WebController::class, 'admincheckinProject']);
-    Route::get('/admin/approved/{id}', [WebController::class, 'adminapprovedProject']);
-    Route::post('/admin/approveCheckin', [WebController::class, 'admincheckinProjectApprove']);
-    Route::post('/admin/approveCheckinArray', [WebController::class, 'admincheckinProjectApproveArray']);
-
-    Route::get('/admin/services', [WebController::class, 'dispatchServices']);
 });

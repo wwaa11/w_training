@@ -18,6 +18,6 @@ class OnebookExport implements FromView
     {
         $transactions = Transaction::where('project_id', $this->project_id)->where('transaction_active', true)->get();
 
-        return view('admin.export.onebook')->with(compact('transactions'));
+        return view('hr.admin.export.onebook')->with(compact('transactions'));
     }
 }

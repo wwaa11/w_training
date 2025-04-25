@@ -8,7 +8,6 @@
     <title inertia>PR9 HRD</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="{{ url("css/all.min.css") }}">
-    <script src="{{ asset("js/hr_user.js") }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -50,7 +49,7 @@
             <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->admin)
                 <a href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
-                <a href="{{ env("APP_URL") }}/hr/admin/users">Users Management</a>
+                <a href="{{ env("APP_URL") }}/admin/users">Users Management</a>
             @endif
         </div>
         <div class="hidden w-[20%] pt-1 text-center lg:block lg:text-end">
@@ -65,7 +64,7 @@
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->admin)
             <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
-            <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin/users">Users Management</a>
+            <a class="mt-3 block" href="{{ env("APP_URL") }}/admin/users">Users Management</a>
         @endif
         <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>
         <div class="mb-3 block">{{ session("department") }}</div>

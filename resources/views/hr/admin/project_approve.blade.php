@@ -1,25 +1,29 @@
-@extends("layout")
+@extends("layouts.hr")
 @section("meta")
     <meta http-equiv="Refresh" content="300">
 @endsection
 @section("content")
     <div class="m-auto">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
-            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/admin">Admin Management</a> / <a class="text-blue-600" href="{{ env("APP_URL") }}/admin/project/{{ $project->id }}">{{ $project->project_name }}</a> / Approve</div>
+            <div class="text-2xl font-bold">
+                <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
+                / <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+                / Approve
+            </div>
             <hr>
             <div class="flex flex-row gap-3">
                 <input class="mt-3 w-full flex-1 rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
                 <div class="m-auto">
                     <select class="mt-2 flex-none rounded border bg-gray-200 p-2" id="searchType" onchange="changeSearch()">
-                        <option @if ($select == "not approve") selected @endif value="notapprove">Not Approve</option>
-                        <option @if ($select == "approved") selected @endif value="approve">Approved</option>
+                        <option @if ($select == "false") selected @endif value="false">Not Approve</option>
+                        <option @if ($select == "true") selected @endif value="true">Approved</option>
                     </select>
                 </div>
             </div>
         </div>
         <div class="w-full rounded p-3">
             <table class="w-full">
-                @if ($select == "not approve")
+                @if ($select == "false")
                     <thead>
                         <td class="text-center" colspan="3">
                             <div class="mb-1 cursor-pointer rounded bg-green-300 p-3" onclick="approveArray()">Approve Select User</div>
@@ -28,7 +32,7 @@
                     </thead>
                 @endif
                 <thead class="bg-gray-200">
-                    @if ($select == "not approve")
+                    @if ($select == "false")
                         <th class="border p-3"><input class="h-6 w-6 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="selectall" type="checkbox" name="sample" /></th>
                     @endif
                     <th class="border p-3">เลขที่นั่ง</th>
@@ -44,9 +48,9 @@
                 <tbody id="userTable">
                     @foreach ($transactions as $transcation)
                         <tr class="cursor-pointer">
-                            @if ($select == "not approve")
+                            @if ($select == "false")
                                 <td class="border p-2 text-center font-bold">
-                                    <input class="checkselfCheckbox h-6 w-6 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="checkbox_{{ $transcation->user }}" onchange="ChangecheckBox('#checkbox_{{ $transcation->user }}')" name='checkbox[]' value="{{ $transcation->id }}" type="checkbox">
+                                    <input class="checkselfCheckbox h-6 w-6 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="checkbox_{{ $transcation->user }}" onchange="ChangeCheckBox('#checkbox_{{ $transcation->user }}')" name='checkbox[]' value="{{ $transcation->id }}" type="checkbox">
                                 </td>
                             @endif
                             <td class="border p-2 text-center font-bold" onclick="checkBox('#checkbox_{{ $transcation->user }}')">
@@ -77,6 +81,18 @@
     <script>
         var arraycheckbox = [];
 
+        function search() {
+            var value = $('#searchInput').val().toLowerCase();
+            $("#userTable tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        }
+
+        function changeSearch() {
+            type = $('#searchType').find(":selected").val();
+            window.location.replace('{{ env("APP_URL") }}/hr/admin/approve?project={{ $project->id }}&approve=' + type);
+        }
+
         $('#selectall').click(function() {
             if ($(this).is(':checked')) {
                 $('input.checkselfCheckbox').each(function() {
@@ -95,10 +111,9 @@
             console.log(arraycheckbox)
         });
 
-        function ChangecheckBox(id) {
+        function ChangeCheckBox(id) {
             var value = $(id).val();
             if ($(id).is(':checked')) {
-
                 arraycheckbox.push(value)
             } else {
                 var index = arraycheckbox.indexOf(value);
@@ -106,7 +121,6 @@
                     arraycheckbox.splice(index, 1);
                 }
             }
-            console.log(arraycheckbox)
         }
 
         function checkBox(id) {
@@ -122,23 +136,6 @@
                 $(id).prop('checked', true)
                 arraycheckbox.push(value)
             }
-            console.log(arraycheckbox)
-        }
-
-        function changeSearch() {
-            type = $('#searchType').find(":selected").val();
-            if (type == 'notapprove') {
-                window.location.replace('{{ env("APP_URL") }}/admin/checkin/{{ $project->id }}');
-            } else {
-                window.location.replace('{{ env("APP_URL") }}/admin/approved/{{ $project->id }}');
-            }
-        }
-
-        function search() {
-            var value = $('#searchInput').val().toLowerCase();
-            $("#userTable tr").filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-            });
         }
 
         async function approve(id, date, time, userid, name, position, department) {
@@ -156,7 +153,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/admin/approveCheckin', {
+                axios.post('{{ env("APP_URL") }}/hr/admin/approveUser', {
                     'id': id,
                 }).then((res) => {
                     Swal.fire({
@@ -185,7 +182,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/admin/approveCheckinArray', {
+                axios.post('{{ env("APP_URL") }}/hr/admin/approveUserArray', {
                     'id': arraycheckbox,
                 }).then((res) => {
                     Swal.fire({

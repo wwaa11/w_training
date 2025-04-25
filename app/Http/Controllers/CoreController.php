@@ -11,9 +11,9 @@ class CoreController extends Controller
 {
     public function TEST_FUNCTION()
     {
-
+        die();
     }
-    public function Services()
+    public function DispatchServices()
     {
         SeatAssign::dispatch();
     }
@@ -22,7 +22,7 @@ class CoreController extends Controller
     public function Login()
     {
 
-        return view('auth/login');
+        return view('auth.login');
     }
     public function LoginRequest(Request $req)
     {
@@ -173,4 +173,54 @@ class CoreController extends Controller
         return redirect('/');
     }
 
+    // Admin
+    public function AllUser()
+    {
+        $users = User::orderBy('admin', 'desc')->orderBy('created_at', 'desc')->paginate(300);
+
+        return view('admin.users', compact('users'));
+    }
+    public function UserSearch(Request $request)
+    {
+        $data = [
+            'status' => 'success',
+            'data'   => [],
+        ];
+
+        if ($req->userid !== null) {
+
+            $users = User::where('userid', 'LIKE', $req->userid . '%')->orderBy('userid', 'asc')->get();
+            $array = [];
+            foreach ($users as $user) {
+                $array[] = [
+                    'userid'     => $user->userid,
+                    'name'       => $user->name,
+                    'position'   => $user->position,
+                    'department' => $user->department,
+                ];
+            }
+            $data = [
+                'status' => 'success',
+                'data'   => $array,
+            ];
+        }
+
+        return response()->json($data, 200);
+    }
+    public function UserResetPassword(Request $request)
+    {
+        $user                   = User::where('userid', $req->userid)->first();
+        $user->password         = Hash::make($req->userid);
+        $user->password_changed = false;
+        $user->save();
+
+        $sessions = DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        $data = [
+            'status'  => 'success',
+            'message' => 'รีเซ็ตรหัสผ่านสำเร็จ',
+        ];
+
+        return response()->json($data, 200);
+    }
 }

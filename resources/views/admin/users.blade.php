@@ -1,4 +1,4 @@
-@extends("layout")
+@extends("layouts.hr")
 @section("content")
     <div class="m-auto flex">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
@@ -33,7 +33,7 @@
                             <td class="border p-2">{{ $user->position }}</td>
                             <td class="border p-2">{{ $user->department }}</td>
                             <td class="border p-3 text-center">
-                                <button class="cursor-pointer rounded p-3 text-red-600" onclick="reserPassword('{{ $user->userid }}')" type="button">รีเซ็ตรหัสผ่าน</button>
+                                <button class="cursor-pointer rounded p-3 text-red-600" onclick="resetPassword('{{ $user->userid }}')" type="button">รีเซ็ตรหัสผ่าน</button>
                             </td>
                         </tr>
                     @endforeach
@@ -44,6 +44,10 @@
 @endsection
 @section("scripts")
     <script>
+        function refreshPage() {
+            window.location.reload();
+        }
+
         $('#searchInput').keypress(function(e) {
             if (e.which == 13) {
                 searchUser();
@@ -80,7 +84,7 @@
             });
         }
 
-        async function reserPassword(userid) {
+        async function resetPassword(userid) {
             alert = await Swal.fire({
                 title: "ยืนยันการรีเซ็ตรหัสผ่าน : " + userid,
                 html: "รหัสผ่านที่ถูกรีเซ็ต จะถูกเปลี่ยนเป็น <span class=\"text-red-600\"><br>รหัสพนักงาน : " + userid + "</span> ",

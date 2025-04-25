@@ -6,7 +6,7 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class SlotExport implements FromArray, ShouldAutoSize, WithHeadings
+class DateExport implements FromArray, ShouldAutoSize, WithHeadings
 {
     protected $slot_id;
 

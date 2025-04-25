@@ -1,11 +1,14 @@
-@extends("layout")
+@extends("layouts.hr")
 @section("content")
     <div class="m-auto flex">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
-            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/admin">Admin Management</a> / <a class="text-blue-600" href="{{ env("APP_URL") }}/admin/project/{{ $project->id }}">{{ $project->project_name }}</a> / Setting</div>
+            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
+                /<a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+                /Setting
+            </div>
             <hr>
             <div class="mt-6 rounded border border-gray-200 bg-gray-50 p-3 shadow">
-                <form action="{{ env("APP_URL") }}/admin/update" method="POST">
+                <form action="{{ env("APP_URL") }}/hr/admin/link/update" method="POST">
                     <input type="hidden" name="project_id" value="{{ $project->id }}">
                     @csrf
                     <div class="flex flex-row">

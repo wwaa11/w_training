@@ -1,13 +1,16 @@
-@extends("layout")
+@extends("layouts.hr")
 @section("content")
     <div>
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
-            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/admin">Admin Management</a> / <a class="text-blue-600" href="{{ env("APP_URL") }}/admin/project/{{ $project->id }}">{{ $project->project_name }}</a> / รายชื่อผู้ลงทะเบียนทั้งหมด</div>
+            <div class="text-2xl font-bold">
+                <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
+                / <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+                / รายชื่อผู้ลงทะเบียนทั้งหมด
+            </div>
             <hr>
             <input class="mt-3 w-full rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
         </div>
         <div class="w-full rounded p-3">
-            {{-- <button class="" id="copy-button" onclick="copyTable()">Copy Table to Excel</button> --}}
             <table class="w-full" id="user-table">
                 <thead class="bg-gray-200">
                     <th class="border p-2">วันที่</th>
@@ -85,7 +88,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/admin/project/user/delete', {
+                axios.post('{{ env("APP_URL") }}/hr/admin/deleteTransaction', {
                     'transaction_id': id
                 }).then((res) => {
                     Swal.fire({
