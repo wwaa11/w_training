@@ -53,7 +53,7 @@ class SeatAssign implements ShouldQueue
             for ($i = 0; $i <= $maxSeat_range; $i++) {
                 $seatNumber = $i + 1;
                 if ($tempSeatArray[$i]['user'] == null) {
-                    switch ($i) {
+                    switch ($seatNumber) {
                         case 0:
                             $tempSeatArray[$i] = $newUser;
                             $success           = true;
@@ -81,6 +81,8 @@ class SeatAssign implements ShouldQueue
                     $seatNumber = $i + 1;
                     if ($tempSeatArray[$i]['user'] == null) {
                         $tempSeatArray[$i] = $newUser;
+                        $success           = true;
+                        break;
                     }
                 }
             }

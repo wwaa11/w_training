@@ -11,7 +11,7 @@ class CoreController extends Controller
 {
     public function TEST_FUNCTION()
     {
-        die();
+
     }
     public function DispatchServices()
     {
