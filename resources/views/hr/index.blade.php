@@ -41,5 +41,65 @@
     </div>
 @endsection
 @section("scripts")
-    <script src="{{ asset("js/hr_user.js") }}"></script>
+    <script>
+        async function sign(id, project_name) {
+            alert = await Swal.fire({
+                title: "ลงชื่อ : " + project_name,
+                icon: "warning",
+                allowOutsideClick: false,
+                showConfirmButton: true,
+                confirmButtonColor: "green",
+                confirmButtonText: "ลงชื่อ",
+                showCancelButton: true,
+                cancelButtonColor: "gray",
+                cancelButtonText: "ยกเลิก",
+            });
+
+            if (alert.isConfirmed) {
+                axios.post('{{ env("APP_URL") }}/hr/project/sign', {
+                        transaction_id: id,
+                    })
+                    .then((res) => {
+                        Swal.fire({
+                            title: res["data"]["message"],
+                            icon: "success",
+                            confirmButtonText: "ตกลง",
+                            confirmButtonColor: "green",
+                        }).then(function(isConfirmed) {
+                            if (isConfirmed) {
+                                window.location.reload();
+                            }
+                        });
+                    });
+            }
+        }
+
+        async function deleteTransaction(projectId, name) {
+            const alert = await Swal.fire({
+                title: `ยืนยันการยกเลิกการทะเบียน ${name}`,
+                icon: "warning",
+                allowOutsideClick: false,
+                showConfirmButton: true,
+                confirmButtonColor: "red",
+                confirmButtonText: "ยืนยัน",
+                showCancelButton: true,
+                cancelButtonColor: "gray",
+                cancelButtonText: "ยกเลิก",
+            });
+
+            if (alert.isConfirmed) {
+                axios.post('{{ env("APP_URL") }}/hr/project/delete', {
+                        project_id: projectId,
+                    })
+                    .then((res) => {
+                        Swal.fire({
+                            title: res.data.message,
+                            icon: "success",
+                            confirmButtonText: "ตกลง",
+                            confirmButtonColor: "green",
+                        }).then(() => window.location.reload());
+                    });
+            }
+        }
+    </script>
 @endsection

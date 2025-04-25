@@ -41,6 +41,3 @@
         </div>
     </div>
 @endsection
-@section("scripts")
-    <script src="{{ asset("js/hr_user.js") }}"></script>
-@endsection

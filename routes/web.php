@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CoreController;
 use App\Http\Controllers\HumanResourceControler;
+use App\Http\Controllers\NurseController;
 use App\Http\Middleware\adminAuth;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
@@ -25,11 +26,13 @@ Route::middleware([pr9Auth::class])->group(function () {
     // Human Resources
     Route::get('/hr/main', [HumanResourceControler::class, 'Index']);
     Route::get('/hr/history', [HumanResourceControler::class, 'History']);
-
     Route::get('/hr/project/{id}', [HumanResourceControler::class, 'ProjectIndex']);
     Route::post('/hr/project/create', [HumanResourceControler::class, 'TransactionCreate']);
     Route::post('/hr/project/delete', [HumanResourceControler::class, 'TransactionDelete']);
     Route::post('/hr/project/sign', [HumanResourceControler::class, 'TransactionSign']);
+
+    // Nurse
+    Route::get('/nurse/main', [NurseController::class, 'Index']);
 
 });
 

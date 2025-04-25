@@ -33,7 +33,7 @@ class HumanResourceControler extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        return view('hr.user.index')->with(compact('myItem', 'projects'));
+        return view('hr.index')->with(compact('myItem', 'projects'));
     }
     public function History()
     {
@@ -42,7 +42,7 @@ class HumanResourceControler extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('hr.user.history')->with(compact('transactions'));
+        return view('hr.history')->with(compact('transactions'));
     }
     public function ProjectIndex($project_id)
     {
@@ -57,7 +57,7 @@ class HumanResourceControler extends Controller
 
             $isRegister = $transaction == null ? false : true;
 
-            return view('hr.user.project')->with(compact('isRegister', 'transaction', 'project'));
+            return view('hr.project')->with(compact('isRegister', 'transaction', 'project'));
         }
 
         return redirect(env('APP_URL') . '/');

@@ -71,6 +71,16 @@
     </div>
     @yield("content")
 </body>
+
+<script>
+    function mobileMenu() {
+        $("#mobileMenu").toggle();
+    }
+
+    function refreshPage() {
+        window.location.reload();
+    }
+</script>
 @yield("scripts")
 
 </html>

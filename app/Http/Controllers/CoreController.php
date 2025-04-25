@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -209,8 +210,8 @@ class CoreController extends Controller
     }
     public function UserResetPassword(Request $request)
     {
-        $user                   = User::where('userid', $req->userid)->first();
-        $user->password         = Hash::make($req->userid);
+        $user                   = User::where('userid', $request->userid)->first();
+        $user->password         = Hash::make($request->userid);
         $user->password_changed = false;
         $user->save();
 
