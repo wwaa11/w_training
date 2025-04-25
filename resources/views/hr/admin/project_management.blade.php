@@ -1,4 +1,4 @@
-@extends("layout")
+@extends("layouts.hr")
 @section("content")
     <div class="m-auto flex">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">

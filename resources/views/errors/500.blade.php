@@ -2,7 +2,7 @@
 @section("content")
     <div class="flex h-screen flex-col text-gray-600">
         <div class="m-auto flex w-full flex-col rounded-lg bg-[#fff] py-6 text-center text-lg shadow md:w-1/2 lg:w-2/3">
-            <div>ERROR : 419 Login Expired</div>
+            <div>ERROR : 500 Server Error</div>
             <div class="mt-4 text-sm text-gray-500" id="countdown">Redirecting in 10 seconds...</div>
         </div>
     </div>

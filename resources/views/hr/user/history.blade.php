@@ -1,4 +1,7 @@
-@extends("layout")
+@extends("layouts.hr")
+@section("meta")
+    <meta http-equiv="Refresh" content="60">
+@endsection
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
@@ -37,7 +40,4 @@
             @endforeach
         </div>
     </div>
-@endsection
-@section("scripts")
-    <script></script>
 @endsection

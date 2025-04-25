@@ -6,7 +6,6 @@ use App\Exports\OnebookExport;
 use App\Exports\ProjectExport;
 use App\Exports\SlotExport;
 use App\Http\Controllers\WebController;
-use App\Jobs\SeatAssign;
 use App\Models\Item;
 use App\Models\Link;
 use App\Models\Project;
@@ -16,7 +15,6 @@ use App\Models\Transaction;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -84,287 +82,8 @@ class WebController extends Controller
             $project->delete();
         }
     }
-    public function dispatchServices()
-    {
-        SeatAssign::dispatch();
-    }
-
-    // Auth Management
-    public function loginPage()
-    {
-        return view('login');
-    }
-    public function loginRequest(Request $req)
-    {
-        $userid   = $req->userid;
-        $password = $req->password;
-        $data     = [
-            'status'  => 'failed',
-            'message' => null,
-        ];
-
-        $response = Http::withHeaders(['token' => env('API_KEY')])
-            ->post('http://172.20.1.12/dbstaff/api/getuser', [
-                'userid' => $req->userid,
-            ])
-            ->json();
-
-        $data['message'] = 'ไม่พบรหัสพนักงานนี้';
-
-        if ($response['status'] == 1) {
-            $userData = User::where('userid', $req->userid)->first();
-
-            if (! $userData) {
-                $userData           = new User();
-                $userData->userid   = $userid;
-                $userData->password = Hash::make($userid);
-
-                $userData->hn       = $response['user']['HN'];
-                $userData->gender   = $response['user']['gender'];
-                $userData->refNo    = $response['user']['refID'];
-                $userData->passport = $response['user']['passport'];
-            }
-            $userData->name        = $response['user']['name'];
-            $userData->position    = $response['user']['position'];
-            $userData->department  = $response['user']['department'];
-            $userData->division    = $response['user']['division'];
-            $userData->last_update = date('Y-m-d H:i:s');
-            $userData->save();
-
-            $data['message'] = 'รหัสพนักงาน หรือ รหัสผ่านผิด';
-
-            if (Auth::attempt(['userid' => $userid, 'password' => $password])) {
-                session([
-                    'name'       => $response['user']['name'],
-                    'position'   => $response['user']['position'],
-                    'department' => $response['user']['department'],
-                    'division'   => $response['user']['division'],
-                    'email'      => $response['user']['email'],
-                ]);
-
-                $data['status']  = 'success';
-                $data['message'] = 'เข้าสู่ระบบสำเร็จ';
-            }
-        }
-
-        return response()->json($data, 200);
-    }
-    public function logoutRequest(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
-    public function IndexchangePassword()
-    {
-        $user = Auth::user();
-
-        return view('changepassword')->with(compact('user'));
-    }
-    public function updateReferance(Request $request)
-    {
-        $user        = Auth::user();
-        $user->refNo = $request->refno;
-        $user->save();
-
-        $response = [
-            'status'  => 'success',
-            'message' => 'บันทึกสำเร็จ!',
-        ];
-
-        return response()->json($response, 200);
-    }
-    public function updateSign(Request $request)
-    {
-        $user       = Auth::user();
-        $user->sign = $request->sign;
-        $user->save();
-
-        return redirect('/');
-    }
-    public function updateGender(Request $request)
-    {
-        $user         = Auth::user();
-        $user->gender = $request->gender;
-        $user->save();
-
-        return redirect('/');
-    }
-    public function changePassword(Request $request)
-    {
-        $user         = Auth::user();
-        $old_password = $request->old_password;
-        $password     = $request->password;
-        if (Hash::check($old_password, $user->password)) {
-            $user->password         = Hash::make($password);
-            $user->password_changed = true;
-            $user->refNo            = $request->refno;
-            $user->sign             = $request->sign;
-            $user->save();
-
-            $sign = DB::connection('STAFF')
-                ->table('signs')
-                ->where('userid', $user->userid)
-                ->first();
-            if ($sign == null) {
-                $sign = DB::connection('STAFF')
-                    ->table('signs')
-                    ->insert(['userid' => $user->userid, 'sign' => $request->sign, 'sign_time' => date('Y-m-d H:i:s'), 'consent_witness' => 0]);
-            } else {
-                $sign = DB::connection('STAFF')
-                    ->table('signs')
-                    ->where('userid', $user->userid)
-                    ->update(['sign' => $request->sign, 'sign_time' => date('Y-m-d H:i:s')]);
-            }
-
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return redirect('/');
-        } else {
-
-            return view('changepassword')->with(compact('user'))->withErrors('Password mismatch!');
-        }
-
-    }
-
-    // User Management
-    public function index()
-    {
-        $user = Auth::user();
-        if ($user->password_changed && $user->sign == null) {
-
-            return view('updateSign');
-        }
-
-        if ($user->password_changed && $user->gender == null) {
-
-            return view('updateGender');
-        }
-        if (! $user->password_changed) {
-
-            return view('changepassword')->with(compact('user'));
-        }
-
-        $projects = Project::where('project_delete', false)
-            ->where('last_register_datetime', '>=', date('Y-m-d'))
-            ->get();
-
-        $myItem = Transaction::where('user', Auth::user()->userid)
-            ->where('transaction_active', true)
-            ->orderBy('date', 'asc')
-            ->get();
-
-        return view('Project.index')->with(compact('user', 'myItem', 'projects'));
-
-    }
-    public function history()
-    {
-        $transactions = Transaction::where('user', Auth::user()->userid)
-            ->where('transaction_active', true)
-            ->orderBy('date', 'desc')
-            ->get();
-
-        return view('Project.history')->with(compact('transactions'));
-    }
-    public function ProjectIndex($project_id)
-    {
-        $project = Project::find($project_id);
-        if (date("Y-m-d") >= date("Y-m-d", strtotime($project->start_register_datetime)) &&
-            date("Y-m-d") <= date("Y-m-d", strtotime($project->last_register_datetime))) {
-
-            $transaction = Transaction::where('project_id', $project_id)
-                ->where('user', Auth::user()->userid)
-                ->where('transaction_active', true)
-                ->first();
-
-            $isRegister = $transaction == null ? false : true;
-
-            return view('Project.project')->with(compact('isRegister', 'transaction', 'project'));
-        }
-
-        return redirect(env('APP_URL') . '/');
-    }
-    public function TransactionSave(Request $req)
-    {
-        $response = [
-            'status'  => 'failed',
-            'message' => 'รอบที่เลือกเต็มแล้ว!',
-        ];
-        $item = Item::find($req->item_id);
-        if ($item->item_available > 0) {
-            $item->item_available -= 1;
-            $item->save();
-
-            $new             = new Transaction();
-            $new->project_id = $req->project_id;
-            $new->item_id    = $req->item_id;
-            $new->user       = Auth::user()->userid;
-            $new->date       = $item->slot->slot_date;
-            $new->save();
-
-            $response = [
-                'status'  => 'success',
-                'message' => 'ทำการลงทำเบียนสำเร็จ!',
-            ];
-        }
-
-        return response()->json($response, 200);
-    }
-    public function TransactionDelete(Request $req)
-    {
-        $transaction = Transaction::where('project_id', $req->project_id)
-            ->where('user', Auth::user()->userid)
-            ->where('transaction_active', true)
-            ->first();
-
-        $transaction->transaction_active = false;
-        $transaction->save();
-
-        $item = Item::where('id', $transaction->item_id)->first();
-        $item->item_available += 1;
-        $item->save();
-
-        $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
-        $temp                                 = $seatArray->seats;
-        $temp[$transaction->seat - 1]['user'] = null;
-        $temp[$transaction->seat - 1]['dept'] = null;
-        $seatArray->seats                     = $temp;
-        $seatArray->save();
-
-        $response = [
-            'status'  => 'success',
-            'message' => 'ทำการเปลี่ยนรอบการลงทะเบียนสำเร็จ!',
-        ];
-
-        return response()->json($response, 200);
-    }
-    public function TransactionSign(Request $req)
-    {
-        $transaction                   = Transaction::find($req->transaction_id);
-        $transaction->checkin          = true;
-        $transaction->checkin_datetime = date('Y-m-d H:i');
-        $transaction->save();
-
-        $response = [
-            'status'  => 'success',
-            'message' => 'ลงชื่อสำเร็จ!',
-        ];
-
-        return response()->json($response, 200);
-    }
 
     // Project management
-    public function adminIndex()
-    {
-        $projects = Project::where('project_delete', false)->get();
-
-        return view('admin.index')->with(compact('projects'));
-    }
     public function adminCreateProject()
     {
         return view('admin.Project_create');
@@ -503,12 +222,6 @@ class WebController extends Controller
         return redirect(env('APP_URL') . '/admin/project/' . $project->id);
     }
 
-    public function adminEditProject($project_id)
-    {
-        $project = Project::find($project_id);
-
-        return view('admin.Project_Edit')->with(compact('project'));
-    }
     public function adminCreateTransaction(Request $req)
     {
         $response = [
@@ -752,6 +465,7 @@ class WebController extends Controller
 
         return response()->json($data, 200);
     }
+
     public function admincheckinProject($project_id)
     {
         $project      = Project::find($project_id);

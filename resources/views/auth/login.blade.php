@@ -1,7 +1,7 @@
-@extends("layout")
+@extends("layouts.layout")
 @section("content")
     <div class="flex h-screen flex-col text-gray-600">
-        <div class="m-auto flex w-full flex-col rounded-lg bg-[#fff] py-6 text-center text-lg shadow md:w-1/2 lg:w-2/3">
+        <div class="m-auto flex w-full flex-col rounded-lg bg-[#fff] py-6 text-center text-lg md:w-1/2 lg:w-1/3">
             <img class="m-auto h-36 p-3" src="{{ url("images/Side Logo.png") }}" alt="logo">
             <div class="text-center text-xl font-bold" style="white-space: nowrap;">Human Resource Developement</div>
             <div class="mb-3 text-lg font-bold">PR9 Training</div>
@@ -17,12 +17,6 @@
 @endsection
 @section("scripts")
     <script>
-        $('#password').keyup(function(e) {
-            if (e.keyCode === 13) {
-                login()
-            }
-        });
-
         function login() {
 
             Swal.fire({
@@ -53,5 +47,11 @@
             })
 
         }
+
+        $('#password').keyup(function(e) {
+            if (e.keyCode === 13) {
+                login()
+            }
+        });
     </script>
 @endsection

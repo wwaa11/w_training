@@ -1,8 +1,8 @@
-@extends("layout")
+@extends("layouts.layout")
 @section("content")
-    @auth
-        <div class="m-auto mt-6 w-full rounded bg-[#c1dccd] p-3 shadow-lg md:w-3/4 md:p-6 lg:w-1/2">
-            <form id="saveSign" action="{{ env("APP_URL") }}/updateGender" method="POST">
+    <div class="flex h-screen flex-col text-gray-600">
+        <div class="m-auto flex w-full flex-col rounded-lg bg-[#f0f0f0] p-6 text-center text-lg md:w-1/2 lg:w-1/3">
+            <form action="{{ env("APP_URL") }}/profile/updateGender" method="POST">
                 @csrf
                 <div class="p-3 text-center">
                     <div class="mb-3 text-2xl">กรุณาระบุเพศ</div>
@@ -15,7 +15,5 @@
                 </div>
             </form>
         </div>
-    @endauth
-@endsection
-@section("scripts")
+    </div>
 @endsection

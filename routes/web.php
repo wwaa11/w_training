@@ -1,37 +1,43 @@
 <?php
 
+use App\Http\Controllers\CoreController;
+use App\Http\Controllers\HumanResourceControler;
 use App\Http\Controllers\WebController;
 use App\Http\Middleware\adminAuth;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [WebController::class, 'test']);
+Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
 
-Route::get('/login', [WebController::class, 'loginPage']);
-Route::post('/login', [WebController::class, 'loginRequest']);
-Route::post('/logout', [WebController::class, 'logoutRequest']);
+Route::get('/login', [CoreController::class, 'Login']);
+Route::post('/login', [CoreController::class, 'LoginRequest']);
+Route::post('/logout', [CoreController::class, 'LogoutRequest']);
 
 Route::middleware([pr9Auth::class])->group(function () {
 
-    Route::get('/changePassword', [WebController::class, 'IndexchangePassword']);
-    Route::post('/changePassword', [WebController::class, 'changePassword']);
-    Route::post('/updateReferance', [WebController::class, 'updateReferance']);
-    Route::post('/updateSign', [WebController::class, 'updateSign']);
-    Route::post('/updateGender', [WebController::class, 'updateGender']);
+    Route::get('/', [CoreController::class, 'Index']);
+    Route::get('/profile', [CoreController::class, 'IndexchangePassword']);
+    Route::get('/profile/changePassword', [CoreController::class, 'Profile']);
+    Route::post('/profile/changePassword', [CoreController::class, 'UpdateProfile']);
+    Route::post('/profile/updateReferance', [CoreController::class, 'UpdateReferance']);
+    Route::post('/profile/updateSign', [CoreController::class, 'UpdateSign']);
+    Route::post('/profile/updateGender', [CoreController::class, 'UpdateGender']);
 
-    Route::get('/', [WebController::class, 'index']);
+    // Human Resources
+    Route::get('/hr/main', [HumanResourceControler::class, 'Index']);
+    Route::get('/hr/history', [HumanResourceControler::class, 'History']);
 
-    Route::get('/project/{id}', [WebController::class, 'ProjectIndex']);
+    Route::get('/hr/project/{id}', [HumanResourceControler::class, 'ProjectIndex']);
+    Route::post('/hr/project/create', [HumanResourceControler::class, 'TransactionCreate']);
+    Route::post('/hr/project/delete', [HumanResourceControler::class, 'TransactionDelete']);
+    Route::post('/hr/project/sign', [HumanResourceControler::class, 'TransactionSign']);
 
-    Route::post('/save', [WebController::class, 'TransactionSave']);
-    Route::post('/delete', [WebController::class, 'TransactionDelete']);
-    Route::post('/sign', [WebController::class, 'TransactionSign']);
-
-    Route::get('/history', [WebController::class, 'history']);
 });
 
 Route::middleware([adminAuth::class])->group(function () {
-    Route::get('/admin', [WebController::class, 'adminIndex']);
+
+    Route::get('/hr/admin', [HumanResourceControler::class, 'adminIndex']);
+    Route::get('/hr/admin/project/{id}', [HumanResourceControler::class, 'adminProjectManagement']);
 
     Route::get('/admin/users', [WebController::class, 'adminUser']);
     Route::post('/admin/users/search', [WebController::class, 'adminUserSearch']);
@@ -41,7 +47,6 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::post('/admin/createProject', [WebController::class, 'adminStoreProject']);
     Route::post('/admin/addDate', [WebController::class, 'adminCreateProject_AddDate']);
 
-    Route::get('/admin/edit/{id}', [WebController::class, 'adminEditProject']);
     Route::post('/admin/update', [WebController::class, 'adminUpdateProject']);
 
     Route::get('/admin/project/{id}', [WebController::class, 'adminViewProject']);
