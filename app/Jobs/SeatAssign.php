@@ -27,7 +27,6 @@ class SeatAssign implements ShouldQueue
         $transactions = Transaction::where('transaction_active', true)
             ->whereNull('seat')
             ->get();
-
         foreach ($transactions as $transaction) {
             $seatArray = Seat::firstOrNew(['item_id' => $transaction->item_id]);
             if ($seatArray->seats == null) {
@@ -53,7 +52,7 @@ class SeatAssign implements ShouldQueue
             for ($i = 0; $i <= $maxSeat_range; $i++) {
                 $seatNumber = $i + 1;
                 if ($tempSeatArray[$i]['user'] == null) {
-                    switch ($seatNumber) {
+                    switch ($i) {
                         case 0:
                             $tempSeatArray[$i] = $newUser;
                             $success           = true;
