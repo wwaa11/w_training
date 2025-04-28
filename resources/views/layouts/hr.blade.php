@@ -55,6 +55,7 @@
         <div class="hidden w-[20%] pt-1 text-center lg:block lg:text-end">
             <div class="">{{ Auth::user()->userid }} {{ session("name") }}</div>
             <div class="">{{ session("department") }}</div>
+            <button class="flex-1 cursor-pointer text-clip text-nowrap text-end text-red-600 lg:p-0" onclick="logout()">ออกจากระบบ</button>
         </div>
         <span class="absolute bottom-0 left-4 text-sm text-[#143429] lg:hidden">{{ Auth::user()->userid }} {{ session("name") }}</span>
     </div>
@@ -68,6 +69,7 @@
         @endif
         <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>
         <div class="mb-3 block">{{ session("department") }}</div>
+        <button class="cursor-pointer text-clip text-nowrap pb-3 text-end text-red-600" onclick="logout()">ออกจากระบบ</button>
     </div>
     @yield("content")
 </body>
@@ -79,6 +81,12 @@
 
     function refreshPage() {
         window.location.reload();
+    }
+
+    function logout() {
+        axios.post('{{ env("APP_URL") }}/logout').then((res) => {
+            window.location.href = '{{ env("APP_URL") }}/login';
+        });
     }
 </script>
 @yield("scripts")

@@ -1,20 +1,10 @@
 <?php
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
-
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(Transaction::class)->where('transaction_active', true);
-    }
-
     protected $fillable = [
         'userid',
         'password',
@@ -30,5 +20,20 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class)->where('transaction_active', true);
+    }
+
+    public function nurse_lectures(): HasMany
+    {
+        return $this->hasMany(NurseLecture::class)->where('user_id', auth()->user()->userid);
+    }
+
+    public function nurse_transactions(): HasMany
+    {
+        return $this->hasMany(NurseTransaction::class)->where('user_id', auth()->user()->userid);
     }
 }

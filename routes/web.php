@@ -8,6 +8,7 @@ use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
+Route::get('/test2', [CoreController::class, 'delete']);
 
 Route::get('/login', [CoreController::class, 'Login']);
 Route::post('/login', [CoreController::class, 'LoginRequest']);
@@ -43,6 +44,7 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::post('/admin/users/search', [CoreController::class, 'UserSearch']);
     Route::post('/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
 
+    // Human Resources
     Route::get('/hr/admin', [HumanResourceControler::class, 'adminIndex']);
     Route::get('/hr/admin/project/{id}', [HumanResourceControler::class, 'adminProjectManagement']);
 
@@ -63,4 +65,9 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/hr/admin/export/excel/onebook/{project_id}', [HumanResourceControler::class, 'ExcelOneBookExport']);
     Route::get('/hr/admin/export/excel/dbd/{project_id}', [HumanResourceControler::class, 'ExcelDBDExport']);
 
+    // Nurse
+
+    Route::get('/nurse/admin', [NurseController::class, 'adminProjectIndex'])->name('NurseAdminIndex');
+    Route::get('/nurse/admin/create', [NurseController::class, 'adminProjectCreate'])->name('NurseAdminCreate');
+    Route::post('/nurse/admin/store', [NurseController::class, 'adminProjectStore'])->name('NurseAdminStore');
 });
