@@ -15,7 +15,16 @@
         <div class="rounded-lg border p-3 shadow">
             <div class="text-3xl">รายการที่เปิดลงทะเบียน</div>
             <hr class="shadow">
-
+            @foreach ($projects as $project)
+                <a href="{{ env("APP_URL") }}/nurse/project/{{ $project->id }}">
+                    <div class="m-3 cursor-pointer rounded border p-6">
+                        <div class="text-2xl">{{ $project->title }}</div>
+                        <div class="text-gray-500">
+                            <i class="fa-regular fa-calendar"></i> {{ $project->detail }}
+                        </div>
+                    </div>
+                </a>
+            @endforeach
         </div>
     </div>
 @endsection
@@ -35,7 +44,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/hr/project/sign', {
+                axios.post('{{ env("APP_URL") }}/nurse/project/sign', {
                         transaction_id: id,
                     })
                     .then((res) => {
@@ -67,7 +76,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/hr/project/delete', {
+                axios.post('{{ env("APP_URL") }}/nurse/project/delete', {
                         project_id: projectId,
                     })
                     .then((res) => {

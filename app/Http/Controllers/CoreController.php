@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Jobs\HrAssignSeat;
 use App\Models\Item;
 use App\Models\Seat;
 use App\Models\Transaction;
@@ -87,31 +88,11 @@ class CoreController extends Controller
     }
     public function delete()
     {
-        $transaction = Transaction::where('transaction_active', 1)
-            ->whereIn('project_id', [4, 5])
-            ->whereNull('seat')
-            ->orderBy('created_at', 'asc')
-            ->get();
-        foreach ($transaction as $tran) {
-            $item          = Item::find($tran->item_id);
-            $tempArraySeat = $item->seats->seats;
-            $countSeats    = count($tempArraySeat);
-            if ($countSeats !== 80) {
-                if ($tempArraySeat['-1']['user'] == null) {
-                    $seaFind = Seat::find($item->seats->id);
-                    dump($seaFind);
-                    array_splice($tempArraySeat, -1, 1);
-                    $seaFind->seats = $tempArraySeat;
-                    $seaFind->save();
-                    dump($seaFind);
-                }
 
-            }
-        }
     }
     public function DispatchServices()
     {
-        SeatAssign::dispatch();
+        HrAssignSeat::dispatch();
     }
 
     // Auth
@@ -283,9 +264,9 @@ class CoreController extends Controller
             'data'   => [],
         ];
 
-        if ($req->userid !== null) {
+        if ($request->userid !== null) {
 
-            $users = User::where('userid', 'LIKE', $req->userid . '%')->orderBy('userid', 'asc')->get();
+            $users = User::where('userid', 'LIKE', $request->userid . '%')->orderBy('userid', 'asc')->get();
             $array = [];
             foreach ($users as $user) {
                 $array[] = [

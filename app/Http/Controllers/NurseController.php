@@ -13,9 +13,26 @@ class NurseController extends Controller
 {
     public function Index()
     {
+        $projects = NurseProject::where('active', true)
+            ->where('register_start', '>=', date('Y-m-d'))
+            ->get();
 
-        return view('nurse.index');
+        return view('nurse.index', compact('projects'));
     }
+    public function ProjectIndex($project_id)
+    {
+        $project = NurseProject::find($project_id);
+        if ($project !== null &&
+            date("Y-m-d") >= date("Y-m-d", strtotime($project->register_start)) &&
+            date("Y-m-d") <= date("Y-m-d", strtotime($project->register_end))) {
+
+            return view('nurse.project', compact('project'));
+        }
+
+        return redirect()->back()->with('error', 'Project not found.');
+    }
+
+    // Admin
     public function adminProjectIndex()
     {
 

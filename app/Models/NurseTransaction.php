@@ -10,6 +10,7 @@ class NurseTransaction extends Model
 
     protected $fillable = [
         'nurse_time_id',
+        'date_time',
         'user_id',
     ];
 

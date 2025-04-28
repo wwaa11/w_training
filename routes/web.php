@@ -8,7 +8,8 @@ use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
-Route::get('/test2', [CoreController::class, 'delete']);
+Route::get('/delete', [CoreController::class, 'delete']);
+Route::get('/services', [CoreController::class, 'DispatchServices']);
 
 Route::get('/login', [CoreController::class, 'Login']);
 Route::post('/login', [CoreController::class, 'LoginRequest']);
@@ -25,7 +26,7 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/profile/updateGender', [CoreController::class, 'UpdateGender']);
 
     // Human Resources
-    Route::get('/hr/main', [HumanResourceControler::class, 'Index']);
+    Route::get('/hr', [HumanResourceControler::class, 'Index']);
     Route::get('/hr/history', [HumanResourceControler::class, 'History']);
     Route::get('/hr/project/{id}', [HumanResourceControler::class, 'ProjectIndex']);
     Route::post('/hr/project/create', [HumanResourceControler::class, 'TransactionCreate']);
@@ -33,8 +34,11 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/hr/project/sign', [HumanResourceControler::class, 'TransactionSign']);
 
     // Nurse
-    Route::get('/nurse/main', [NurseController::class, 'Index']);
-
+    Route::get('/nurse', [NurseController::class, 'Index']);
+    Route::get('/nurse/project/{id}', [NurseController::class, 'ProjectIndex']);
+    Route::post('/nurse/project/create', [NurseController::class, 'TransactionCreate']);
+    Route::post('/nurse/project/delete', [NurseController::class, 'TransactionDelete']);
+    Route::post('/nurse/project/sign', [NurseController::class, 'TransactionSign']);
 });
 
 Route::middleware([adminAuth::class])->group(function () {

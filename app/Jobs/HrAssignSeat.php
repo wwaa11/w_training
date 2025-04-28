@@ -7,21 +7,22 @@ use App\Models\Transaction;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class SeatAssign implements ShouldQueue
+class HrAssignSeat implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct()
+    public $uniqueFor = 30;
+
+    public function uniqueId(): string
     {
-        //
+        return 'HR_seat_assign';
     }
 
-    /**
-     * Execute the job.
-     */
+    public function __construct()
+    {
+
+    }
+
     public function handle(): void
     {
         $transactions = Transaction::where('transaction_active', true)
@@ -93,7 +94,6 @@ class SeatAssign implements ShouldQueue
                 $seatArray->save();
             }
         }
-
-        SeatAssign::dispatch()->delay(60);
+        HrAssignSeat::dispatch()->delay(60);
     }
 }

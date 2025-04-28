@@ -51,7 +51,9 @@ return new class extends Migration
         });
         Schema::create('nurse_transactions', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('nurse_project_id')->unsigned();
             $table->bigInteger('nurse_time_id')->unsigned();
+            $table->dateTime('date_time');
             $table->string('user_id');
             $table->dateTime('user_sign')->nullable();
             $table->dateTime('admin_sign')->nullable();

@@ -38,14 +38,14 @@
             </div>
         </div>
         <div class="flex text-end text-[#143429] lg:hidden">
-            <a class="pe-6 pt-6" href="{{ env("APP_URL") }}/hr/main"><i class="fa-solid fa-house"></i>Home <span class="block text-blue-700 lg:hidden">Training HRD Division</span></a>
+            <a class="pe-6 pt-6" href="{{ env("APP_URL") }}/hr"><i class="fa-solid fa-house"></i>Home <span class="block text-blue-700 lg:hidden">Training HRD Division</span></a>
             <button class="cursor-pointer p-4 text-end text-2xl text-[#1a3f34]" type="button" onclick="mobileMenu()">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
         <div class="hidden pt-7 text-[#143429] lg:flex lg:flex-1 lg:gap-6">
             <a href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
-            <a href="{{ env("APP_URL") }}/hr/main">รายการที่เปิดลงทะเบียน</a>
+            <a href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
             <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->admin)
                 <a href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
@@ -61,7 +61,7 @@
     </div>
     <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 text-[#143429] shadow lg:hidden" id="mobileMenu">
         <a class="mt-3 block" href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
-        <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/main">รายการที่เปิดลงทะเบียน</a>
+        <a class="mt-3 block" href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->admin)
             <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>

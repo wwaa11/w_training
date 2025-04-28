@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="flex text-end lg:hidden">
-            <a class="pe-6 pt-6" href="{{ env("APP_URL") }}/hr/main">
+            <a class="pe-6 pt-6" href="{{ env("APP_URL") }}/nurse">
                 <i class="fa-solid fa-house"></i>Home <span class="block text-blue-700 lg:hidden">Training Nursing Division</span>
             </a>
             <button class="cursor-pointer p-4 text-end text-2xl text-[#1a3f34]" type="button" onclick="mobileMenu()">
@@ -47,10 +47,10 @@
         </div>
         <div class="hidden pt-7 lg:flex lg:flex-1 lg:gap-6">
             <a href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
-            <a href="{{ env("APP_URL") }}/hr/main">รายการที่เปิดลงทะเบียน</a>
-            <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
+            <a href="{{ env("APP_URL") }}/nurse">รายการที่เปิดลงทะเบียน</a>
+            <a href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->admin)
-                <a href="{{ env("APP_URL") }}/hr/admin">Training Management</a>
+                <a href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
             @endif
         </div>
         <div class="hidden w-[20%] pt-1 text-center lg:block lg:text-end">
@@ -62,10 +62,10 @@
     </div>
     <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 shadow lg:hidden" id="mobileMenu">
         <a class="mt-3 block" href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
-        <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/main">รายการที่เปิดลงทะเบียน</a>
-        <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
+        <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse">รายการที่เปิดลงทะเบียน</a>
+        <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->admin)
-            <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin">Training Management</a>
+            <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
         @endif
         <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>
         <div class="block">{{ session("department") }}</div>

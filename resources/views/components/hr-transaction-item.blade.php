@@ -18,16 +18,16 @@
             </div>
         @endif
         <div class="mt-2"><i class="fa-solid fa-map-pin w-8 text-[#008387]"></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
-        @if (!$transaction->checkin)
+        @if (!$transaction->checkin && $transaction->item->slot->slot_date !== date("Y-m-d"))
             <span class="absolute bottom-0 right-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
         @endif
         @if (date("Y-m-d") == $transaction->item->slot->slot_date)
             @if (!$transaction->checkin)
                 <button class="mt-3 cursor-pointer rounded border border-[#eaf7ab] bg-red-500 p-3 text-white" onclick="sign('{{ $transaction->id }}','{{ $transaction->item->slot->project->project_name }}')">
-                    <i class="fa-solid fa-location-dot w-8"></i> ลงชื่อ
+                    <i class="fa-solid fa-location-dot w-8"></i> CHECK IN
                 </button>
             @else
-                <div class="mt-3 text-green-700"><i class="fa-solid fa-location-dot w-8"></i> ลงชื่อ {{ date("H:i", strtotime($transaction->checkin_datetime)) }}</div>
+                <div class="mt-3 text-green-700"><i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("H:i", strtotime($transaction->checkin_datetime)) }}</div>
                 @if ($transaction->hr_approve)
                     <div class="mt-3 text-green-700">
                         <i class="fa-solid fa-h w-4"></i><i class="fa-solid fa-r w-4"></i> อนุมัติ {{ date("H:i", strtotime($transaction->hr_approve_datetime)) }}
