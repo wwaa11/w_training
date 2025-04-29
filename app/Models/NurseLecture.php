@@ -13,9 +13,9 @@ class NurseLecture extends Model
         'user_id',
     ];
 
-    public function time()
+    public function timeData()
     {
-        return $this->belongsTo(NurseTime::class);
+        return $this->belongsTo(NurseTime::class, 'nurse_time_id');
     }
 
     public function user()

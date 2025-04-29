@@ -17,18 +17,13 @@ class NurseProject extends Model
         'register_end',
     ];
 
-    public function dates()
+    public function dateData()
     {
-        return $this->hasMany(NurseDate::class);
+        return $this->hasMany(NurseDate::class)->where('active', true)->orderBy('date', 'asc');
     }
 
     public function mytransaction()
     {
-        return $this->HasMany(NurseTransaction::class)->where('user_id', auth()->user()->userid)->where('active', true)->orderBy('date_time', 'asc');
-    }
-
-    public function projecttransaction()
-    {
-        return $this->HasOne(NurseTransaction::class)->where('user_id', auth()->user()->userid)->where('active', true);
+        return $this->HasOne(NurseTransaction::class, 'nurse_project_id')->where('user_id', auth()->user()->userid)->where('active', true);
     }
 }

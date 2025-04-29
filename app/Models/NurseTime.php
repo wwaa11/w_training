@@ -18,13 +18,13 @@ class NurseTime extends Model
         'time_end',
     ];
 
-    public function date()
+    public function dateData()
     {
-        return $this->belongsTo(NurseDate::class);
+        return $this->belongsTo(NurseDate::class, 'nurse_date_id');
     }
     public function transactions()
     {
-        return $this->hasMany(NurseTransaction::class);
+        return $this->hasMany(NurseTransaction::class)->where('active', true)->orderBy('date_time', 'asc');
     }
     public function lectures()
     {

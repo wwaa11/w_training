@@ -72,6 +72,12 @@ Route::middleware([adminAuth::class])->group(function () {
     // Nurse
 
     Route::get('/nurse/admin', [NurseController::class, 'adminProjectIndex'])->name('NurseAdminIndex');
+    Route::get('/nurse/admin/project/{project_id}', [NurseController::class, 'adminProjectManagement']);
+
     Route::get('/nurse/admin/create', [NurseController::class, 'adminProjectCreate'])->name('NurseAdminCreate');
     Route::post('/nurse/admin/store', [NurseController::class, 'adminProjectStore'])->name('NurseAdminStore');
+
+    Route::get('/nurse/admin/transactions/{project_id}', [NurseController::class, 'adminProjectTransaction']);
+    Route::post('/nurse/admin/createTransaction', [NurseController::class, 'adminProjectCreateTransaction']);
+    Route::post('/nurse/admin/deleteTransaction', [NurseController::class, 'adminProjectDeleteTransaction']);
 });

@@ -11,9 +11,9 @@
             </div>
             <hr class="shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
-            @if ($projects->mytransaction !== null)
-                <x-nurse-transaction-item :transaction="$project->projecttransaction" />
-            @endif
+            @foreach ($myTransaction as $transaction)
+                <x-nurse-transaction-item :transaction="$transaction" />
+            @endforeach
         </div>
         <div class="rounded-lg border p-3 shadow">
             <div class="text-3xl">รายการที่เปิดลงทะเบียน</div>

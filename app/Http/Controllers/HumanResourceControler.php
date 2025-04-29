@@ -173,9 +173,6 @@ class HumanResourceControler extends Controller
                 $userData->department  = $responseAPI['user']['department'];
                 $userData->division    = $responseAPI['user']['division'];
                 $userData->hn          = $responseAPI['user']['HN'];
-                $userData->gender      = $responseAPI['user']['gender'];
-                $userData->refNo       = $responseAPI['user']['refID'];
-                $userData->passport    = $responseAPI['user']['passport'];
                 $userData->last_update = date('Y-m-d H:i:s');
                 $userData->save();
             }

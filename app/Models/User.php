@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
@@ -34,6 +35,6 @@ class User extends Authenticatable
 
     public function nurse_transactions(): HasMany
     {
-        return $this->hasMany(NurseTransaction::class)->where('user_id', auth()->user()->userid);
+        return $this->hasMany(NurseTransaction::class, 'user_id')->where('user_id', auth()->user()->userid);
     }
 }

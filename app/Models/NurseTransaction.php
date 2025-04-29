@@ -15,13 +15,18 @@ class NurseTransaction extends Model
         'user_id',
     ];
 
-    public function time()
+    public function ProjectData()
     {
-        return $this->belongsTo(NurseTime::class);
+        return $this->belongsTo(NurseProject::class, 'nurse_project_id');
     }
 
-    public function user()
+    public function timeData()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(NurseTime::class, 'nurse_time_id');
+    }
+
+    public function userData()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'userid');
     }
 }

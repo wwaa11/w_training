@@ -11,25 +11,25 @@
             </div>
             <hr class="shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
-            @if ($projects->projecttransaction !== null)
-                <x-nurse-transaction-item :transaction="$project->projecttransaction" />
+            @if ($project->mytransaction !== null)
+                <x-nurse-transaction-item :transaction="$project->mytransaction" />
             @endif
         </div>
         <div class="mb-6 rounded-lg border p-3 shadow">
             <div class="rounded p-3 text-3xl">รอบการลงทะเบียนทั้งหมด</div>
             <hr class="shadow">
             <div class="flex flex-col">
-                @foreach ($project->dates as $date)
+                @foreach ($project->dateData as $date)
                     @if ($date->date >= date("Y-m-d"))
                         <div class="mt-3 flex flex-row rounded border p-3 font-bold shadow" onclick="openID('#date_{{ $date->id }}')">
                             <div class="flex-1 p-3 text-xl">{{ $date->title }}</div>
                             <div class="p-3 text-xl font-bold"><i class="fa-solid fa-angle-down"></i></div>
                         </div>
                         <div class="hidden flex-col gap-6" id="date_{{ $date->id }}">
-                            @foreach ($date->times as $time)
+                            @foreach ($date->timeData as $time)
                                 <div class="flex rounded p-3">
                                     <div class="flex-1 p-3">{{ $time->title }}</div>
-                                    @if ($project->projecttransaction == null)
+                                    @if ($project->mytransaction == null)
                                         <div class="flex cursor-pointer rounded p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
                                     @else
                                         <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>

@@ -15,15 +15,17 @@ class NurseController extends Controller
 {
     public function Index()
     {
-        if (date("Y-m-d") < date("Y-m-d 17:00")) {
-            dd('error', 'Registration is not open yet.');
-        }
-        dd(date('Y-m-d 17:00'));
         $projects = NurseProject::where('active', true)
-            ->where('register_start', '>=', date('Y-m-d'))
+            ->whereDate('register_start', '<=', date('Y-m-d'))
+            ->whereDate('register_end', '>=', date('Y-m-d'))
             ->get();
 
-        return view('nurse.index', compact('projects'));
+        $myTransaction = NurseTransaction::where('user_id', Auth::user()->userid)
+            ->where('active', true)
+            ->orderBy('date_time', 'asc')
+            ->get();
+
+        return view('nurse.index', compact('projects', 'myTransaction'));
     }
     public function ProjectIndex($project_id)
     {
@@ -88,9 +90,8 @@ class NurseController extends Controller
     }
     public function TransactionSign(Request $req)
     {
-        $transaction                   = Transaction::find($req->transaction_id);
-        $transaction->checkin          = true;
-        $transaction->checkin_datetime = date('Y-m-d H:i');
+        $transaction            = NurseTransaction::find($req->transaction_id);
+        $transaction->user_sign = date('Y-m-d H:i');
         $transaction->save();
 
         $response = [
@@ -211,5 +212,94 @@ class NurseController extends Controller
         }
 
         return redirect()->route('NurseAdminIndex')->with('success', 'Project created successfully.');
+    }
+    public function adminProjectManagement($project_id)
+    {
+        $project = NurseProject::find($project_id);
+        if ($project !== null) {
+
+            return view('nurse.admin.project_management', compact('project'));
+        }
+
+        return redirect()->back()->with('error', 'Project not found.');
+    }
+    public function adminProjectTransaction($project_id)
+    {
+        $project = NurseProject::find($project_id);
+
+        return view('nurse.admin.project_transaction', compact('project'));
+    }
+    public function adminProjectCreateTransaction(Request $request)
+    {
+        $response = [
+            'status'  => 'failed',
+            'message' => 'รอบที่เลือกเต็มแล้ว!',
+        ];
+
+        $userid   = $request->user;
+        $userData = User::where('userid', $userid)->first();
+        if ($userData == null) {
+            $responseAPI = Http::withHeaders(['token' => env('API_KEY')])
+                ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                    'userid' => $userid,
+                ])
+                ->json();
+            $response['message'] = 'ไม่พบรหัสพนักงานนี้';
+
+            if ($responseAPI['status'] == 1) {
+                $userData              = new User();
+                $userData->userid      = $userid;
+                $userData->password    = Hash::make($userid);
+                $userData->name        = $responseAPI['user']['name'];
+                $userData->position    = $responseAPI['user']['position'];
+                $userData->department  = $responseAPI['user']['department'];
+                $userData->division    = $responseAPI['user']['division'];
+                $userData->hn          = $responseAPI['user']['HN'];
+                $userData->last_update = date('Y-m-d H:i:s');
+                $userData->save();
+            }
+        }
+
+        $old_transaction = NurseTransaction::where('project_id', $request->project_id)
+            ->where('user', $userid)
+            ->where('transaction_active', true)
+            ->first();
+
+        if ($old_transaction !== null) {
+            $old_transaction->active = false;
+            $old_transaction->save();
+        }
+
+        if ($userData !== null) {
+
+            $new                   = new NurseTransaction();
+            $new->nurse_project_id = $request->project_id;
+            $new->nurse_time_id    = $request->time_id;
+            $new->date_time        = $request->time_start;
+            $new->user_id          = $request->user;
+            $new->save();
+
+            $response = [
+                'status'  => 'success',
+                'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                'time'    => $new->timeData->title,
+                'name'    => $userData->userid . ' ' . $userData->name,
+            ];
+        }
+
+        return response()->json($response, 200);
+    }
+    public function adminProjectDeleteTransaction(Request $request)
+    {
+        $transaction         = NurseTransaction::find($request->transaction_id);
+        $transaction->active = false;
+        $transaction->save();
+
+        $data = [
+            'status'  => 'success',
+            'message' => 'ลบข้อมูลการลงทะเบียนสำเร็จ',
+        ];
+
+        return response()->json($data, 200);
     }
 }
