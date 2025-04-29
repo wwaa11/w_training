@@ -5,11 +5,14 @@ use App\Models\NurseDate;
 use App\Models\NurseProject;
 use App\Models\NurseTime;
 use App\Models\NurseTransaction;
+use App\Models\User;
 use DateInterval;
 use DatePeriod;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 class NurseController extends Controller
 {
@@ -59,27 +62,13 @@ class NurseController extends Controller
     }
     public function TransactionDelete(Request $request)
     {
-        $transaction = Transaction::where('project_id', $request->project_id)
-            ->where('user', Auth::user()->userid)
-            ->where('transaction_active', true)
+        $transaction = NurseTransaction::where('nurse_project_id', $request->project_id)
+            ->where('user_id', Auth::user()->userid)
+            ->where('active', true)
             ->first();
 
-        $transaction->transaction_active = false;
+        $transaction->active = false;
         $transaction->save();
-
-        $item = Item::where('id', $transaction->item_id)->first();
-        $item->item_available += 1;
-        $item->save();
-
-        if ($transaction->seat !== null) {
-
-            $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
-            $temp                                 = $seatArray->seats;
-            $temp[$transaction->seat - 1]['user'] = null;
-            $temp[$transaction->seat - 1]['dept'] = null;
-            $seatArray->seats                     = $temp;
-            $seatArray->save();
-        }
 
         $response = [
             'status'  => 'success',
@@ -213,6 +202,7 @@ class NurseController extends Controller
 
         return redirect()->route('NurseAdminIndex')->with('success', 'Project created successfully.');
     }
+
     public function adminProjectManagement($project_id)
     {
         $project = NurseProject::find($project_id);
@@ -260,9 +250,9 @@ class NurseController extends Controller
             }
         }
 
-        $old_transaction = NurseTransaction::where('project_id', $request->project_id)
-            ->where('user', $userid)
-            ->where('transaction_active', true)
+        $old_transaction = NurseTransaction::where('nurse_project_id', $request->project_id)
+            ->where('user_id', $userid)
+            ->where('active', true)
             ->first();
 
         if ($old_transaction !== null) {
@@ -271,11 +261,12 @@ class NurseController extends Controller
         }
 
         if ($userData !== null) {
+            $NurseTime = NurseTime::find($request->time_id);
 
             $new                   = new NurseTransaction();
             $new->nurse_project_id = $request->project_id;
             $new->nurse_time_id    = $request->time_id;
-            $new->date_time        = $request->time_start;
+            $new->date_time        = $NurseTime->time_start;
             $new->user_id          = $request->user;
             $new->save();
 
@@ -298,6 +289,81 @@ class NurseController extends Controller
         $data = [
             'status'  => 'success',
             'message' => 'ลบข้อมูลการลงทะเบียนสำเร็จ',
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    public function adminProjectApprove(Request $request)
+    {
+        $query = [
+            'sign' => false,
+            'time' => null,
+        ];
+        foreach ($request->query as $q => $value) {
+            if ($q == 'project') {
+                $project_id = $value;
+            }
+            if ($q == 'sign') {
+                $sign          = $value;
+                $query['sign'] = $value;
+            }
+            if ($q == 'time') {
+                $query['time'] = $value;
+            }
+        }
+        $optionTime = [];
+        $project    = NurseProject::find($project_id);
+        foreach ($project->dateData as $date) {
+            foreach ($date->timeData as $time) {
+                $timeText = date("H:i", strtotime($time->time_start));
+                if (! in_array($timeText, $optionTime)) {
+                    $optionTime[] = $timeText;
+                }
+            }
+        }
+        $query['option'] = $optionTime;
+
+        $transactions = NurseTransaction::where('nurse_project_id', $project_id)
+            ->where('active', true)
+            ->whereDate('user_sign', date('Y-m-d'))
+            ->where(function ($q) use ($query) {
+                if ($query['sign'] == 'false') {
+                    $q->whereNull('admin_sign');
+                } else {
+                    $q->whereNotNull('admin_sign');
+                }
+                if ($query['time'] !== 'all') {
+                    $q->whereTime('date_time', $query['time']);
+                }
+            })
+            ->get();
+
+        return view('nurse.admin.project_approve', compact('project', 'transactions', 'query'));
+    }
+    public function adminProjectApproveUser(Request $request)
+    {
+        $transaction             = NurseTransaction::find($request->id);
+        $transaction->admin_sign = date('Y-m-d H:i:s');
+        $transaction->save();
+
+        $data = [
+            'status'  => 'success',
+            'message' => 'Approve สำเร็จ',
+        ];
+
+        return response()->json($data, 200);
+    }
+    public function adminProjectApproveUserArray(Request $request)
+    {
+        $transactions = NurseTransaction::whereIn('id', $request->id)->get();
+        foreach ($transactions as $transaction) {
+            $transaction->admin_sign = date('Y-m-d H:i:s');
+            $transaction->save();
+        }
+        $data = [
+            'status'  => 'success',
+            'message' => 'Approve สำเร็จ',
         ];
 
         return response()->json($data, 200);

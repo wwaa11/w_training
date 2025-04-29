@@ -21,21 +21,12 @@
             <div class="text-3xl text-[#1a3f34]">รายการที่เปิดลงทะเบียน</div>
             <hr class="border-[#eaf7ab] shadow">
             @foreach ($projects as $index => $project)
-                @if ($project->project_active == false && date("Y-m-d") >= date("Y-m-d", strtotime($project->start_register_datetime)) && date("Y-m-d") <= date("Y-m-d", strtotime($project->last_register_datetime)))
-                    <a href="{{ env("APP_URL") }}/hr/project/{{ $project->id }}">
-                        <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
-                            <div class="text-2xl">{{ $project->project_name }}</div>
-                            <div class="text-gray-500"><i class="fa-regular fa-calendar text-[#008387]"></i> {{ $project->project_detail }}</div>
-                        </div>
-                    </a>
-                @elseif($project->project_active == true && auth()->user()->admin)
-                    <a href="{{ env("APP_URL") }}/hr/project/{{ $project->id }}">
-                        <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
-                            <div class="text-2xl"><span class="text-red-600">Admin</span> - {{ $project->project_name }}</div>
-                            <div class="text-gray-500"><i class="fa-regular fa-calendar text-[#008387]"></i> {{ $project->project_detail }}</div>
-                        </div>
-                    </a>
-                @endif
+                <a href="{{ env("APP_URL") }}/hr/project/{{ $project->id }}">
+                    <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
+                        <div class="text-2xl">{{ $project->project_name }}</div>
+                        <div class="text-gray-500"><i class="fa-regular fa-calendar text-[#008387]"></i> {{ $project->project_detail }}</div>
+                    </div>
+                </a>
             @endforeach
         </div>
     </div>

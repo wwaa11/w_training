@@ -253,7 +253,7 @@ class CoreController extends Controller
     // Admin
     public function AllUser()
     {
-        $users = User::orderBy('admin', 'desc')->orderBy('created_at', 'desc')->paginate(300);
+        $users = User::orderBy('created_at', 'desc')->paginate(300);
 
         return view('admin.users', compact('users'));
     }

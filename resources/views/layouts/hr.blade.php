@@ -34,7 +34,7 @@
                 <img class="aspect-auto h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
             <div class="hidden text-blue-700 lg:block">
-                Training HRD Division
+                HRD Division
             </div>
         </div>
         <div class="flex text-end text-[#143429] lg:hidden">
@@ -47,7 +47,7 @@
             <a href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
             <a href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
             <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
-            @if (auth()->user()->admin)
+            @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
                 <a href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
                 <a href="{{ env("APP_URL") }}/admin/users">Users Management</a>
             @endif
@@ -63,7 +63,7 @@
         <a class="mt-3 block" href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
-        @if (auth()->user()->admin)
+        @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
             <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
             <a class="mt-3 block" href="{{ env("APP_URL") }}/admin/users">Users Management</a>
         @endif

@@ -3,8 +3,8 @@
     <div class="m-auto flex">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
-                /<a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
-                /Setting
+                / <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+                / URL ข้อสอบ
             </div>
             <hr>
             <div class="mt-6 rounded border border-gray-200 bg-gray-50 p-3 shadow">

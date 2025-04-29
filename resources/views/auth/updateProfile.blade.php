@@ -17,10 +17,10 @@
                 <div class="p-3">
                     <canvas class="m-auto bg-white" id="sign_Canvas" width="300px" height="150px"></canvas>
                 </div>
-                @if (Auth::user()->password_changed)
-                    <input id="password_old" name="old_password" type="hidden" value="{{ Auth::user()->userid }}">
+                @if (!Auth::user()->password_changed)
                     <div>เลขบัตรประจำตัวประชาชน</div>
                     <input class="mb-3 w-full rounded bg-gray-50 p-3 outline outline-gray-400" id="refno" name="refno" type="text" placeholder="รหัสประจำตัวประชาชน" autocomplete="off" value="{{ Auth::user()->refNo }}">
+                    <input id="password_old" name="old_password" type="hidden" value="{{ Auth::user()->userid }}">
                 @else
                     <div>เลขบัตรประจำตัวประชาชน</div>
                     <input class="mb-3 w-full rounded bg-gray-50 p-3 outline outline-gray-400" id="refno" name="refno" type="text" placeholder="รหัสประจำตัวประชาชน" autocomplete="off" value="{{ Auth::user()->refNo }}">
@@ -41,7 +41,7 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script>
         $(document).ready(function() {
-            @if (Auth::user()->password_changed == true)
+            @if (Auth::user()->password_changed == false)
                 Swal.fire({
                     title: '',
                     html: '<img src="{{ url("images/how.png") }}">',

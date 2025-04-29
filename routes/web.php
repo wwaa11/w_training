@@ -3,7 +3,8 @@
 use App\Http\Controllers\CoreController;
 use App\Http\Controllers\HumanResourceControler;
 use App\Http\Controllers\NurseController;
-use App\Http\Middleware\adminAuth;
+use App\Http\Middleware\HrAdmin;
+use App\Http\Middleware\NurseAdmin;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -41,7 +42,7 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/nurse/project/sign', [NurseController::class, 'TransactionSign']);
 });
 
-Route::middleware([adminAuth::class])->group(function () {
+Route::middleware([HrAdmin::class])->group(function () {
     Route::get('/dev/services', [CoreController::class, 'DispatchServices']);
 
     Route::get('/admin/users', [CoreController::class, 'AllUser']);
@@ -69,8 +70,10 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/hr/admin/export/excel/onebook/{project_id}', [HumanResourceControler::class, 'ExcelOneBookExport']);
     Route::get('/hr/admin/export/excel/dbd/{project_id}', [HumanResourceControler::class, 'ExcelDBDExport']);
 
-    // Nurse
+});
 
+Route::middleware([NurseAdmin::class])->group(function () {
+    // Nurse
     Route::get('/nurse/admin', [NurseController::class, 'adminProjectIndex'])->name('NurseAdminIndex');
     Route::get('/nurse/admin/project/{project_id}', [NurseController::class, 'adminProjectManagement']);
 
@@ -80,4 +83,9 @@ Route::middleware([adminAuth::class])->group(function () {
     Route::get('/nurse/admin/transactions/{project_id}', [NurseController::class, 'adminProjectTransaction']);
     Route::post('/nurse/admin/createTransaction', [NurseController::class, 'adminProjectCreateTransaction']);
     Route::post('/nurse/admin/deleteTransaction', [NurseController::class, 'adminProjectDeleteTransaction']);
+
+    Route::get('/nurse/admin/approve', [NurseController::class, 'adminProjectApprove']);
+    Route::post('/nurse/admin/approveUser', [NurseController::class, 'adminProjectApproveUser']);
+    Route::post('/nurse/admin/approveUserArray', [NurseController::class, 'adminProjectApproveUserArray']);
+
 });

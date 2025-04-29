@@ -286,6 +286,7 @@ class HumanResourceControler extends Controller
                         break;
                     case 15:
                         $time = '15.30 - 17.00 น.';
+                        break;
                     default:
                         $time = 'all';
                         break;

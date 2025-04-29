@@ -1,4 +1,4 @@
-@extends("layouts.hr")
+@extends("layouts.nurse")
 @section("content")
     <div>
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">

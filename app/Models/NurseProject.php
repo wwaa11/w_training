@@ -26,4 +26,18 @@ class NurseProject extends Model
     {
         return $this->HasOne(NurseTransaction::class, 'nurse_project_id')->where('user_id', auth()->user()->userid)->where('active', true);
     }
+
+    public function transactionData()
+    {
+        return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('active', true)->orderBy('date_time', 'asc');
+    }
+
+    public function transactionApproveData()
+    {
+        return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('active', true)->whereNull('sign')->orderBy('date_time', 'asc');
+    }
+    public function transactionNotApproveData()
+    {
+        return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('active', true)->whereNotNull('sign')->orderBy('date_time', 'asc');
+    }
 }

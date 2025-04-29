@@ -34,7 +34,7 @@
                 <img class="aspect-auto h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
             <div class="hidden text-blue-700 lg:block">
-                Training Nursing Division
+                Nursing Division
             </div>
         </div>
         <div class="flex text-end lg:hidden">
@@ -49,7 +49,7 @@
             <a href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
             <a href="{{ env("APP_URL") }}/nurse">รายการที่เปิดลงทะเบียน</a>
             <a href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
-            @if (auth()->user()->admin)
+            @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
                 <a href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
             @endif
         </div>
@@ -64,7 +64,7 @@
         <a class="mt-3 block" href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse">รายการที่เปิดลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
-        @if (auth()->user()->admin)
+        @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
             <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
         @endif
         <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>

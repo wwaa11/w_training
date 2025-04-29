@@ -8,7 +8,7 @@
             </div>
             <hr>
             <div class="my-3 flex gap-3">
-                <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/approve?project={{ $project->id }}&approve=false&time=all">
+                <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/approve?project={{ $project->id }}&sign=false&time=all">
                     <div class="cursor-pointer rounded bg-green-600 p-3 text-center text-white"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
                 </a>
                 <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/transactions/{{ $project->id }}">
@@ -31,7 +31,7 @@
                                 <td class="border p-3">
                                     <div class="flex gap-3">
                                         @if (date("Y-m-d") == date("Y-m-d", strtotime($date->date)))
-                                            <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->item_name }}')">
+                                            <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->title }}')">
                                                 <i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน
                                             </div>
                                         @endif
@@ -84,7 +84,7 @@
                 })
                 axios.post('{{ env("APP_URL") }}/nurse/admin/createTransaction', {
                     'project_id': '{{ $project->id }}',
-                    'item_id': id,
+                    'time_id': id,
                     'user': alert.value
                 }).then((res) => {
                     if (res['data']['status'] == 'success') {

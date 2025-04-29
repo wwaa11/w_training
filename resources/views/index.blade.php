@@ -5,12 +5,12 @@
             <div class="flex flex-col">
                 <a href="{{ env("APP_URL") }}/hr">
                     <div class="mt-3 rounded border-2 border-gray-400 py-12">
-                        Training HRD Division
+                        HRD Division
                     </div>
                 </a>
                 <a href="{{ env("APP_URL") }}/nurse">
                     <div class="mt-3 rounded border-2 border-gray-400 py-12">
-                        Training Nursing Division
+                        Nursing Division
                     </div>
                 </a>
             </div>

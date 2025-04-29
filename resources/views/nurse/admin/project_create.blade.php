@@ -81,6 +81,7 @@
                 '<input class="mb-3 w-full rounded border border-gray-400 bg-white p-2 text-center" type="time" name="time[' + index + '][end]" placeholder="เวลาเปิดลงทะเบียน" value="17:00" required>' +
                 '</div>' +
                 '</div>');
+            index++;
         }
     </script>
 @endsection
