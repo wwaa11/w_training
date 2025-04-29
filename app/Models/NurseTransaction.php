@@ -9,6 +9,7 @@ class NurseTransaction extends Model
     protected $table = 'nurse_transactions';
 
     protected $fillable = [
+        'nurse_project_id',
         'nurse_time_id',
         'date_time',
         'user_id',

@@ -18,8 +18,14 @@
             </div>
         @endif
         <div class="mt-2"><i class="fa-solid fa-map-pin w-8 text-[#008387]"></i> {{ $transaction->item->item_note_1_title }} : {{ $transaction->item->item_note_1_value }}</div>
-        @if (!$transaction->checkin && $transaction->item->slot->slot_date !== date("Y-m-d"))
-            <span class="absolute bottom-0 right-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
+        @if (!$transaction->checkin)
+            @if ($transaction->item->slot->slot_date !== date("Y-m-d"))
+                @if (date("Y-m-d H:i") <= date("Y-m-d 17:00") && $transaction->item->slot->slot_date == date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")))
+                    <span class="absolute bottom-0 right-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
+                @elseif($transaction->item->slot->slot_date > date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")))
+                    <span class="absolute bottom-0 right-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->item->slot->project->id }}','{{ $transaction->item->slot->project->project_name }}')"><i class="fa-solid fa-trash"></i></span>
+                @endif
+            @endif
         @endif
         @if (date("Y-m-d") == $transaction->item->slot->slot_date)
             @if (!$transaction->checkin)

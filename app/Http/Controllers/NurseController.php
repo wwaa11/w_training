@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 use App\Models\NurseDate;
 use App\Models\NurseProject;
 use App\Models\NurseTime;
+use App\Models\NurseTransaction;
 use DateInterval;
 use DatePeriod;
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class NurseController extends Controller
 {
     public function Index()
     {
+        if (date("Y-m-d") < date("Y-m-d 17:00")) {
+            dd('error', 'Registration is not open yet.');
+        }
+        dd(date('Y-m-d 17:00'));
         $projects = NurseProject::where('active', true)
             ->where('register_start', '>=', date('Y-m-d'))
             ->get();
@@ -31,12 +37,75 @@ class NurseController extends Controller
 
         return redirect()->back()->with('error', 'Project not found.');
     }
+    public function TransactionCreate(Request $request)
+    {
+        $time = NurseTime::find($request->time_id);
 
+        $new                   = new NurseTransaction();
+        $new->nurse_project_id = $request->project_id;
+        $new->nurse_time_id    = $request->time_id;
+        $new->date_time        = $time->time_start;
+        $new->user_id          = Auth::user()->userid;
+        $new->save();
+
+        $response = [
+            'status'  => 'success',
+            'message' => 'ทำการลงทำเบียนสำเร็จ!',
+        ];
+
+        return response()->json($response, 200);
+    }
+    public function TransactionDelete(Request $request)
+    {
+        $transaction = Transaction::where('project_id', $request->project_id)
+            ->where('user', Auth::user()->userid)
+            ->where('transaction_active', true)
+            ->first();
+
+        $transaction->transaction_active = false;
+        $transaction->save();
+
+        $item = Item::where('id', $transaction->item_id)->first();
+        $item->item_available += 1;
+        $item->save();
+
+        if ($transaction->seat !== null) {
+
+            $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
+            $temp                                 = $seatArray->seats;
+            $temp[$transaction->seat - 1]['user'] = null;
+            $temp[$transaction->seat - 1]['dept'] = null;
+            $seatArray->seats                     = $temp;
+            $seatArray->save();
+        }
+
+        $response = [
+            'status'  => 'success',
+            'message' => 'ทำการเปลี่ยนรอบการลงทะเบียนสำเร็จ!',
+        ];
+
+        return response()->json($response, 200);
+    }
+    public function TransactionSign(Request $req)
+    {
+        $transaction                   = Transaction::find($req->transaction_id);
+        $transaction->checkin          = true;
+        $transaction->checkin_datetime = date('Y-m-d H:i');
+        $transaction->save();
+
+        $response = [
+            'status'  => 'success',
+            'message' => 'ลงชื่อสำเร็จ!',
+        ];
+
+        return response()->json($response, 200);
+    }
     // Admin
     public function adminProjectIndex()
     {
+        $projects = NurseProject::where('active', true)->get();
 
-        return view('nurse.admin.project_index');
+        return view('nurse.admin.project_index', compact('projects'));
     }
     public function adminProjectCreate()
     {
@@ -125,17 +194,18 @@ class NurseController extends Controller
         $interval       = new DateInterval('P1D');
         $dateRange      = new DatePeriod($training_start, $interval, $training_end);
         foreach ($dateRange as $date) {
-            $date = NurseDate::create([
+            $date       = $date->format('Y-m-d');
+            $dateCreate = NurseDate::create([
                 'nurse_project_id' => $project->id,
-                'title'            => $this->FulldateTH($date->format('Y-m-d')),
-                'date'             => $date->format('Y-m-d'),
+                'title'            => $this->FulldateTH($date),
+                'date'             => $date,
             ]);
             foreach ($request->time as $time) {
                 NurseTime::create([
-                    'nurse_date_id' => $date->id,
+                    'nurse_date_id' => $dateCreate->id,
                     'title'         => $time['title'],
-                    'time_start'    => $time['start'],
-                    'time_end'      => $time['end'],
+                    'time_start'    => $date . ' ' . $time['start'],
+                    'time_end'      => $date . ' ' . $time['end'],
                 ]);
             }
         }

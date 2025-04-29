@@ -104,7 +104,6 @@ class HumanResourceControler extends Controller
         $item->save();
 
         if ($transaction->seat !== null) {
-
             $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
             $temp                                 = $seatArray->seats;
             $temp[$transaction->seat - 1]['user'] = null;
@@ -240,11 +239,13 @@ class HumanResourceControler extends Controller
         $item->item_available = $item->item_available + 1;
         $item->save();
 
-        $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
-        $temp                                 = $seatArray->seats;
-        $temp[$transaction->seat - 1]['user'] = null;
-        $seatArray->seats                     = $temp;
-        $seatArray->save();
+        if ($transaction->seat !== null) {
+            $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
+            $temp                                 = $seatArray->seats;
+            $temp[$transaction->seat - 1]['user'] = null;
+            $seatArray->seats                     = $temp;
+            $seatArray->save();
+        }
 
         $data = [
             'status'  => 'success',
@@ -274,20 +275,45 @@ class HumanResourceControler extends Controller
             if ($in == 'approve') {
                 $checkin = $value;
             }
+            if ($in == 'time') {
+                $selectTime = $value;
+                switch ($value) {
+                    case 8:
+                        $time = '08.30 - 10.00 น.';
+                        break;
+                    case 10:
+                        $time = '10.30 - 12.00 น.';
+                        break;
+                    case 13:
+                        $time = '13.30 - 15.00 น.';
+                        break;
+                    case 15:
+                        $time = '15.30 - 17.00 น.';
+                    default:
+                        $time = 'all';
+                        break;
+                }
+            }
         }
 
         $project      = Project::find($project_id);
         $transactions = Transaction::where('project_id', $project_id)
+            ->join('items', 'items.id', '=', 'transactions.item_id')
             ->where('transaction_active', true)
             ->where('checkin', true)
             ->whereDate('checkin_datetime', date('Y-m-d'))
+            ->where('item_name', $time)
             ->where('hr_approve', $checkin)
             ->orderBy('seat', 'ASC')
+            ->select(
+                'transactions.*',
+                'items.item_name'
+            )
             ->get();
 
         $select = $checkin;
 
-        return view('hr.admin.project_approve')->with(compact('project', 'transactions', 'select'));
+        return view('hr.admin.project_approve')->with(compact('project', 'transactions', 'select', 'selectTime'));
     }
     public function adminProjectApproveUser(Request $req)
     {

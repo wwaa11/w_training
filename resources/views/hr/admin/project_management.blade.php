@@ -11,7 +11,7 @@
                 <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/transactions/{{ $project->id }}">
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-users"></i> รายชื่อผู้ลงทะเบียนทั้งหมด</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/approve?project={{ $project->id }}&approve=false">
+                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/approve?project={{ $project->id }}&approve=false&time=all">
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
                 </a>
                 <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/link/{{ $project->id }}">

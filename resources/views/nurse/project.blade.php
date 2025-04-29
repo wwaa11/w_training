@@ -11,7 +11,7 @@
             </div>
             <hr class="shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
-            @if ($project->projecttransaction !== null)
+            @if ($projects->projecttransaction !== null)
                 <x-nurse-transaction-item :transaction="$project->projecttransaction" />
             @endif
         </div>
@@ -49,7 +49,7 @@
             $(id).toggle();
         }
 
-        async function register(project_id, project_name, date, item_id, time) {
+        async function register(project_id, project_name, date, time_id, time) {
             const alert = await Swal.fire({
                 title: `ยืนยันการลงทะเบียน<br>${project_name}`,
                 html: `วันที่ <span class="text-red-600">${date}</span><br>รอบ <span class="text-red-600">${time}</span><br>`,
@@ -66,7 +66,7 @@
             if (alert.isConfirmed) {
                 axios.post('{{ env("APP_URL") }}/nurse/project/create', {
                         project_id: project_id,
-                        item_id: item_id,
+                        time_id: time_id,
                     })
                     .then((res) => {
                         Swal.fire({
