@@ -49,15 +49,17 @@
                             <tr class="bg-white">
                                 <td class="border p-3">
                                     <div class="flex gap-3">
-                                        @if (date("Y-m-d") == $slot->slot_date)
+                                        @if (date("Y-m-d") == $slot->slot_date || date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")) == date("Y-m-d", strtotime($slot->slot_date)))
                                             @if (count($item->transactions) == $item->item_max_available)
                                                 <div class="lg:w-42 flex-1 cursor-pointer text-red-600 lg:flex-none">
                                                     <i class="fa-solid fa-ban"></i>&nbsp;มีผู้ลงทะเบียนเต็มแล้ว
                                                 </div>
                                             @else
-                                                <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $item->id }}','{{ $item->item_name }}')">
-                                                    <i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน
-                                                </div>
+                                                @if (date("Y-m-d") == date("Y-m-d", strtotime($slot->slot_date)) || date("H:i") >= "17:00")
+                                                    <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="addTransaction('{{ $item->id }}','{{ $item->item_name }}')">
+                                                        <i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน
+                                                    </div>
+                                                @endif
                                             @endif
                                         @endif
                                         <div class="flex-1">{{ $item->item_name }} </div>

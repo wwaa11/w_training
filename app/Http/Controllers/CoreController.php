@@ -194,7 +194,7 @@ class CoreController extends Controller
     public function Profile()
     {
 
-        return view('auth.profile');
+        return view('auth.updateProfile');
     }
     public function UpdateProfile(Request $request)
     {

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class HumanResourceControler extends Controller
@@ -112,6 +113,8 @@ class HumanResourceControler extends Controller
             $seatArray->save();
         }
 
+        Log::channel('hr_delete')->info('User : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $transaction->id);
+
         $response = [
             'status'  => 'success',
             'message' => 'ทำการเปลี่ยนรอบการลงทะเบียนสำเร็จ!',
@@ -200,6 +203,9 @@ class HumanResourceControler extends Controller
                 $seatArray->seats                         = $temp;
                 $seatArray->save();
             }
+
+            Log::channel('hr_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $old_transaction->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
+
         }
 
         if ($userData !== null) {
@@ -214,6 +220,8 @@ class HumanResourceControler extends Controller
                 $new->user       = $req->user;
                 $new->date       = $item->slot->slot_date;
                 $new->save();
+
+                Log::channel('hr_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' add transaction id: ' . $new->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
 
                 $response = [
                     'status'  => 'success',
@@ -243,6 +251,8 @@ class HumanResourceControler extends Controller
             $seatArray->seats                     = $temp;
             $seatArray->save();
         }
+
+        Log::channel('hr_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $transaction->id . ' for user: ' . $transaction->userData->userid . ' ' . $transaction->userData->name);
 
         $data = [
             'status'  => 'success',

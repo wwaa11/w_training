@@ -30,6 +30,15 @@ class NurseController extends Controller
 
         return view('nurse.index', compact('projects', 'myTransaction'));
     }
+    public function History()
+    {
+        $transactions = NurseTransaction::where('user_id', Auth::user()->userid)
+            ->where('active', true)
+            ->orderBy('date_time', 'desc')
+            ->get();
+
+        return view('nurse.history', compact('transactions'));
+    }
     public function ProjectIndex($project_id)
     {
         $project = NurseProject::find($project_id);

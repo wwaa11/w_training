@@ -19,8 +19,7 @@ Route::post('/logout', [CoreController::class, 'LogoutRequest']);
 Route::middleware([pr9Auth::class])->group(function () {
 
     Route::get('/', [CoreController::class, 'Index']);
-    Route::get('/profile', [CoreController::class, 'IndexchangePassword']);
-    Route::get('/profile/changePassword', [CoreController::class, 'Profile']);
+    Route::get('/profile', [CoreController::class, 'Profile']);
     Route::post('/profile/changePassword', [CoreController::class, 'UpdateProfile']);
     Route::post('/profile/updateReferance', [CoreController::class, 'UpdateReferance']);
     Route::post('/profile/updateSign', [CoreController::class, 'UpdateSign']);
@@ -36,6 +35,7 @@ Route::middleware([pr9Auth::class])->group(function () {
 
     // Nurse
     Route::get('/nurse', [NurseController::class, 'Index']);
+    Route::get('/nurse/history', [NurseController::class, 'History']);
     Route::get('/nurse/project/{id}', [NurseController::class, 'ProjectIndex']);
     Route::post('/nurse/project/create', [NurseController::class, 'TransactionCreate']);
     Route::post('/nurse/project/delete', [NurseController::class, 'TransactionDelete']);

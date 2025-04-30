@@ -1,18 +1,18 @@
 @extends("layouts.layout")
 @section("content")
     <div class="flex h-screen flex-col text-gray-600">
-        <div class="m-auto flex w-full flex-col rounded-lg bg-[#f0f0f0] p-6 text-center text-lg md:w-1/2 lg:w-1/3">
+        <div class="m-auto flex w-full flex-col rounded-lg bg-[#c1dccd] p-6 text-lg md:w-1/2 lg:w-1/3">
             @if ($errors->any())
                 <div class="mb-3 text-lg font-bold text-red-600">{{ $errors->first() }}</div>
             @endif
             <form id="changePassword" action="{{ env("APP_URL") }}/profile/changePassword" method="POST">
                 @csrf
-                <div class="mb-3 text-2xl font-bold text-[#008387]">อัพเดตข้อมูลส่วนตัว</div>
+                <div class="mb-3 text-2xl font-bold text-[#008387]">แก้ไขข้อมูลส่วนตัว</div>
                 <div class="flex flex-row">
                     <div class="flex-1">ลายเซ็นต์</div>
-                    <input id="sign" type="hidden" name="sign">
+                    <div class="flex-1 cursor-pointer text-end text-red-600" onclick="clearSign()">เซ็นต์อีกครั้ง</div>
                 </div>
-                <div class="cursor-pointer text-red-600" onclick="clearSign()">เซ็นต์อีกครั้ง</div>
+                <input id="sign" type="hidden" name="sign">
                 <img class="m-auto hidden bg-white" id="old_sign" src="{{ Auth::user()->sign }}" alt="">
                 <div class="p-3">
                     <canvas class="m-auto bg-white" id="sign_Canvas" width="300px" height="150px"></canvas>
