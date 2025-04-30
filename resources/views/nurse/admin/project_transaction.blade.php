@@ -26,7 +26,7 @@
                 <tbody id="userTable">
                     @foreach ($project->dateData as $date)
                         @foreach ($date->timeData as $time)
-                            @foreach ($time->transactions as $index => $transaction)
+                            @foreach ($time->transactionData as $index => $transaction)
                                 <tr>
                                     <td class="border p-2 text-center">{{ $date->title }}</td>
                                     <td class="border p-2 text-center">{{ $time->title }}</td>

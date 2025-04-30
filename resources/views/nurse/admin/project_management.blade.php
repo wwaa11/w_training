@@ -30,15 +30,21 @@
                             <tr class="bg-white">
                                 <td class="border p-3">
                                     <div class="flex gap-3">
-                                        @if (date("Y-m-d") == date("Y-m-d", strtotime($date->date)))
-                                            <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->title }}')">
-                                                <i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน
-                                            </div>
+                                        @if ($time->max == 0)
+                                            <div class="lg:w-42 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->title }}')"><i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน</div>
+                                        @elseif($time->max !== 0)
+                                            @if ($time->max == $time->transactionData->count())
+                                                <div class="lg:w-42 flex-1 cursor-pointer text-red-600 lg:flex-none">
+                                                    <i class="fa-solid fa-ban"></i>&nbsp;มีผู้ลงทะเบียนเต็มแล้ว
+                                                </div>
+                                            @elseif ($time->transactionData->count() < $time->max)
+                                                <div class="lg:w-42 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->title }}')"><i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน</div>
+                                            @endif
                                         @endif
                                         <div class="flex-1">{{ $time->title }} </div>
                                     </div>
                                 </td>
-                                <td class="border p-3 text-center">{{ count($time->transactions) }}</td>
+                                <td class="border p-3 text-center">{{ count($time->transactionData) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -90,7 +96,7 @@
                     if (res['data']['status'] == 'success') {
                         Swal.fire({
                             title: res['data']['message'],
-                            html: res['data']['name'] + ' รอบ ' + res['data']['slot'],
+                            html: res['data']['name'] + ' รอบ ' + res['data']['time'],
                             icon: 'success',
                             confirmButtonText: 'ตกลง',
                             confirmButtonColor: 'green'

@@ -4,7 +4,7 @@
 @endsection
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
-        <div class="mb-6 rounded-lg border p-3 shadow">
+        <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
             <div class="flex text-3xl text-[#1a3f34]">
                 <div class="flex-1"><a class="text-blue-600" href="{{ env("APP_URL") }}/nurse/">รายการลงทะเบียน</a> / {{ $project->title }}</div>
                 <div class="cursor-pointer text-lg" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i> อัพเดตข้อมูล</div>
@@ -15,24 +15,34 @@
                 <x-nurse-transaction-item :transaction="$project->mytransaction" />
             @endif
         </div>
-        <div class="mb-6 rounded-lg border p-3 shadow">
+        <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
             <div class="rounded p-3 text-3xl">รอบการลงทะเบียนทั้งหมด</div>
             <hr class="shadow">
             <div class="flex flex-col">
                 @foreach ($project->dateData as $date)
                     @if ($date->date >= date("Y-m-d"))
-                        <div class="mt-3 flex flex-row rounded border p-3 font-bold shadow" onclick="openID('#date_{{ $date->id }}')">
+                        <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 font-bold shadow" onclick="openID('#date_{{ $date->id }}')">
                             <div class="flex-1 p-3 text-xl">{{ $date->title }}</div>
                             <div class="p-3 text-xl font-bold"><i class="fa-solid fa-angle-down"></i></div>
                         </div>
-                        <div class="hidden flex-col gap-6" id="date_{{ $date->id }}">
+                        <div class="hidden flex-col gap-6 bg-white" id="date_{{ $date->id }}">
                             @foreach ($date->timeData as $time)
                                 <div class="flex rounded p-3">
                                     <div class="flex-1 p-3">{{ $time->title }}</div>
-                                    @if ($project->mytransaction == null)
-                                        <div class="flex cursor-pointer rounded p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
+                                    @if ($time->max == 0)
+                                        @if ($project->mytransaction == null)
+                                            <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
+                                        @else
+                                            <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
+                                        @endif
                                     @else
-                                        <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
+                                        @if ($time->transactionData->count() !== 0 && $time->transactionData->count() == $time->max)
+                                            <div class="flex cursor-pointer rounded bg-red-400 p-3 text-white">รอบการลงทะเบียนเต็มแล้ว</div>
+                                        @elseif ($time->transactionData->count() < $time->max && $project->mytransaction == null)
+                                            <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
+                                        @else
+                                            <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
+                                        @endif
                                     @endif
                                 </div>
                             @endforeach

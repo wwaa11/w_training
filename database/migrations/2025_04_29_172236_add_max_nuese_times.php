@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('nurse_times', function (Blueprint $table) {
-            $table->bigInteger('max')->nullable();
+            $table->bigInteger('max')->default(0);
         });
     }
 

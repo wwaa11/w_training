@@ -4,8 +4,8 @@
 @endsection
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
-        <div class="mb-6 rounded-lg border p-3 shadow">
-            <div class="flex text-3xl">
+        <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
+            <div class="flex text-3xl text-[#1a3f34]">
                 <div class="flex-1">รายการลงทะเบียนของฉัน</div>
                 <div class="cursor-pointer text-lg" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i> อัพเดตข้อมูล</div>
             </div>
@@ -15,15 +15,15 @@
                 <x-nurse-transaction-item :transaction="$transaction" />
             @endforeach
         </div>
-        <div class="rounded-lg border p-3 shadow">
-            <div class="text-3xl">รายการที่เปิดลงทะเบียน</div>
-            <hr class="shadow">
+        <div class="rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
+            <div class="text-3xl text-[#1a3f34]">รายการที่เปิดลงทะเบียน</div>
+            <hr class="border-[#eaf7ab] shadow">
             @foreach ($projects as $project)
                 <a href="{{ env("APP_URL") }}/nurse/project/{{ $project->id }}">
-                    <div class="m-3 cursor-pointer rounded border p-6">
+                    <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
                         <div class="text-2xl">{{ $project->title }}</div>
                         <div class="text-gray-500">
-                            <i class="fa-regular fa-calendar"></i> {{ $project->detail }}
+                            <i class="fa-regular fa-calendar text-[#008387]"></i> {{ $project->detail }}
                         </div>
                     </div>
                 </a>
