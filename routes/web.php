@@ -9,8 +9,9 @@ use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
-Route::get('/delete', [CoreController::class, 'delete']);
 Route::get('/services', [CoreController::class, 'DispatchServices']);
+
+Route::get('/hr/addDate', [HumanResourceControler::class, 'addDatetoProject']);
 
 Route::get('/login', [CoreController::class, 'Login']);
 Route::post('/login', [CoreController::class, 'LoginRequest']);

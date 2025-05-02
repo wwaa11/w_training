@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class NurseController extends Controller
 {
@@ -78,6 +79,8 @@ class NurseController extends Controller
 
         $transaction->active = false;
         $transaction->save();
+
+        Log::channel('nurse_delete')->info('User : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $transaction->id);
 
         $response = [
             'status'  => 'success',
@@ -267,6 +270,8 @@ class NurseController extends Controller
         if ($old_transaction !== null) {
             $old_transaction->active = false;
             $old_transaction->save();
+
+            Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $old_transaction->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
         }
 
         if ($userData !== null) {
@@ -278,6 +283,8 @@ class NurseController extends Controller
             $new->date_time        = $NurseTime->time_start;
             $new->user_id          = $request->user;
             $new->save();
+
+            Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' add transaction id: ' . $new->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
 
             $response = [
                 'status'  => 'success',
@@ -294,6 +301,8 @@ class NurseController extends Controller
         $transaction         = NurseTransaction::find($request->transaction_id);
         $transaction->active = false;
         $transaction->save();
+
+        Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $transaction->id);
 
         $data = [
             'status'  => 'success',

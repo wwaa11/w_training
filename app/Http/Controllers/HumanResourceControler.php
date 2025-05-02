@@ -22,6 +22,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class HumanResourceControler extends Controller
 {
+    // Dev Add Date to Project
+    public function addDatetoProject()
+    {
+
+    }
     // User
     public function Index()
     {
