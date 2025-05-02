@@ -25,7 +25,80 @@ class HumanResourceControler extends Controller
     // Dev Add Date to Project
     public function addDatetoProject()
     {
-
+        die();
+        $datetoAdd = [
+            [
+                'date'  => '2025-05-05',
+                'title' => '05 พฤษภาคม 2568',
+            ],
+            [
+                'date'  => '2025-05-06',
+                'title' => '06 พฤษภาคม 2568',
+            ],
+            [
+                'date'  => '2025-05-07',
+                'title' => '07 พฤษภาคม 2568',
+            ],
+            [
+                'date'  => '2025-05-08',
+                'title' => '08 พฤษภาคม 2568',
+            ],
+            [
+                'date'  => '2025-05-09',
+                'title' => '09 พฤษภาคม 2568',
+            ],
+        ];
+        $timetoAdd = [
+            [
+                'index'      => 1,
+                'title'      => '08.30 - 10.00 น.',
+                'link_start' => '08:25:00.000',
+                'link_end'   => '10:00:00.000',
+            ],
+            [
+                'index'      => 2,
+                'title'      => '10.30 - 12.00 น.',
+                'link_start' => '10:25:00.000',
+                'link_end'   => '12:00:00.000',
+            ],
+            [
+                'index'      => 3,
+                'title'      => '13.30 - 15.00 น.',
+                'link_start' => '13:25:00.000',
+                'link_end'   => '15:00:00.000',
+            ],
+            [
+                'index'      => 4,
+                'title'      => '15.30 - 17.00 น.',
+                'link_start' => '15:25:00.000',
+                'link_end'   => '17:00:00.000',
+            ],
+        ];
+        $dateIndex = 5;
+        foreach ($datetoAdd as $detail) {
+            $dateIndex += 1;
+            $newDate             = new Slot;
+            $newDate->project_id = 1;
+            $newDate->slot_index = $dateIndex;
+            $newDate->slot_date  = $detail['date'];
+            $newDate->slot_name  = $detail['title'];
+            $newDate->save();
+            foreach ($timetoAdd as $time) {
+                $newTime                     = new Item;
+                $newTime->slot_id            = $newDate->id;
+                $newTime->item_name          = $time['title'];
+                $newTime->item_index         = $time['index'];
+                $newTime->item_available     = 12;
+                $newTime->item_note_1_active = 1;
+                $newTime->item_note_1_title  = 'สถานที่';
+                $newTime->item_note_1_value  = 'ห้อง E-learning ชั้น 8 อาคาร A';
+                $newTime->item_max_available = 12;
+                $newTime->link_time          = 1;
+                $newTime->link_start         = $detail['date'] . ' ' . $time['link_start'];
+                $newTime->link_end           = $detail['date'] . ' ' . $time['link_end'];
+                $newTime->save();
+            }
+        }
     }
     // User
     public function Index()
