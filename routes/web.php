@@ -44,13 +44,10 @@ Route::middleware([pr9Auth::class])->group(function () {
 });
 
 Route::middleware([HrAdmin::class])->group(function () {
-    Route::get('/dev/services', [CoreController::class, 'DispatchServices']);
+    Route::get('/hr/admin/users', [CoreController::class, 'AllUserHR']);
+    Route::post('/hr/admin/users/search', [CoreController::class, 'UserSearch']);
+    Route::post('/hr/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
 
-    Route::get('/admin/users', [CoreController::class, 'AllUser']);
-    Route::post('/admin/users/search', [CoreController::class, 'UserSearch']);
-    Route::post('/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
-
-    // Human Resources
     Route::get('/hr/admin', [HumanResourceControler::class, 'adminIndex']);
     Route::get('/hr/admin/project/{id}', [HumanResourceControler::class, 'adminProjectManagement']);
 
@@ -74,7 +71,10 @@ Route::middleware([HrAdmin::class])->group(function () {
 });
 
 Route::middleware([NurseAdmin::class])->group(function () {
-    // Nurse
+    Route::get('/nurse/admin/users', [CoreController::class, 'AllUserNURSE']);
+    Route::post('/nurse/admin/users/search', [CoreController::class, 'UserSearch']);
+    Route::post('/nurse/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
+
     Route::get('/nurse/admin', [NurseController::class, 'adminProjectIndex'])->name('NurseAdminIndex');
     Route::get('/nurse/admin/project/{project_id}', [NurseController::class, 'adminProjectManagement']);
 

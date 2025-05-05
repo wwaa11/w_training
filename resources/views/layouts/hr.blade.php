@@ -49,7 +49,7 @@
             <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
                 <a href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
-                <a href="{{ env("APP_URL") }}/admin/users">Users Management</a>
+                <a href="{{ env("APP_URL") }}/hr/admin/users">Users Management</a>
             @endif
         </div>
         <div class="hidden w-[20%] pt-1 text-center lg:block lg:text-end">
@@ -68,7 +68,7 @@
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
             <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
-            <a class="mt-3 block" href="{{ env("APP_URL") }}/admin/users">Users Management</a>
+            <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/admin/users">Users Management</a>
         @endif
         <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>
         <div class="mb-3 block">{{ session("department") }}</div>

@@ -79,7 +79,7 @@
 @endsection
 @section("scripts")
     <script>
-        async function createTransaction(id, title) {
+        async function addTransaction(id, title) {
             alert = await Swal.fire({
                 title: "ยืนยันข้อมูลการลงทะเบียน",
                 html: 'รอบ ' + title + '<br>',
