@@ -11,13 +11,6 @@ class HrAssignSeat implements ShouldQueue
 {
     use Queueable;
 
-    public $uniqueFor = 30;
-
-    public function uniqueId(): string
-    {
-        return 'HR_seat_assign';
-    }
-
     public function __construct()
     {
 

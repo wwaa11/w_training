@@ -2,22 +2,57 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\HrAssignSeat;
+use App\Jobs\HrDeleteTransaction;
+use App\Models\Item;
+use App\Models\Seat;
+use App\Models\Transaction;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CoreController extends Controller
 {
     public function TEST_FUNCTION()
     {
+        $hrTransactionTodays = Transaction::whereDate('date', '<=', date('Y-m-d'))
+            ->where('transaction_active', 1)
+            ->whereNull('checkin_datetime')
+            ->whereNull('hr_approve_datetime')
+            ->orderby('date', 'asc')
+            ->get();
 
+        $nowTime = date('Y-m-d H:i');
+        foreach ($hrTransactionTodays as $transaction) {
+            $endTime = date('Y-m-d H:i', strtotime($transaction->item->link_end));
+            if ($nowTime > $endTime) {
+                $transaction->transaction_active = false;
+                // $transaction->save();
+
+                $item = Item::where('id', $transaction->item_id)->first();
+                $item->item_available += 1;
+                // $item->save();
+
+                if ($transaction->seat !== null) {
+                    $seatArray                            = Seat::where('item_id', $transaction->item_id)->first();
+                    $temp                                 = $seatArray->seats;
+                    $temp[$transaction->seat - 1]['user'] = null;
+                    $temp[$transaction->seat - 1]['dept'] = null;
+                    $seatArray->seats                     = $temp;
+                    // $seatArray->save();
+                }
+                Log::channel('hr_delete')->info('Service : delete transaction id: ' . $transaction->id . ' LAST : ' . $endTime);
+            }
+        }
+        die();
     }
     public function DispatchServices()
     {
         HrAssignSeat::dispatch();
+        HrDeleteTransaction::dispatch();
     }
 
     // Auth

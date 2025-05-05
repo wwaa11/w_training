@@ -75,7 +75,7 @@
                         '<td class="border p-2">' + value.position + '</td>' +
                         '<td class="border p-2">' + value.department + '</td>' +
                         '<td class="border p-2 text-center">' +
-                        '<button class="cursor-pointer rounded p-3 text-red-600" onclick="reserPassword(\'' + value.userid + '\')">รีเซ็ตรหัสผ่าน</button>' +
+                        '<button class="cursor-pointer rounded p-3 text-red-600" onclick="resetPassword(\'' + value.userid + '\')">รีเซ็ตรหัสผ่าน</button>' +
                         '</td>' +
                         '</tr>';
                 });
