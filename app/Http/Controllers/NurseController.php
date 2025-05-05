@@ -54,19 +54,28 @@ class NurseController extends Controller
     }
     public function TransactionCreate(Request $request)
     {
-        $time = NurseTime::find($request->time_id);
-
-        $new                   = new NurseTransaction();
-        $new->nurse_project_id = $request->project_id;
-        $new->nurse_time_id    = $request->time_id;
-        $new->date_time        = $time->time_start;
-        $new->user_id          = Auth::user()->userid;
-        $new->save();
-
         $response = [
-            'status'  => 'success',
-            'message' => 'ทำการลงทำเบียนสำเร็จ!',
+            'status'  => 'failed',
+            'message' => 'รอบที่เลือกเต็มแล้ว!',
         ];
+
+        $time = NurseTime::find($request->time_id);
+        if ($time->max !== 0 && $time->free > 0) {
+            $time->free -= 1;
+            $time->save();
+
+            $new                   = new NurseTransaction();
+            $new->nurse_project_id = $request->project_id;
+            $new->nurse_time_id    = $request->time_id;
+            $new->date_time        = $time->time_start;
+            $new->user_id          = Auth::user()->userid;
+            $new->save();
+
+            $response = [
+                'status'  => 'success',
+                'message' => 'ทำการลงทำเบียนสำเร็จ!',
+            ];
+        }
 
         return response()->json($response, 200);
     }
@@ -79,6 +88,10 @@ class NurseController extends Controller
 
         $transaction->active = false;
         $transaction->save();
+
+        $time = NurseTime::where('id', $transaction->nurse_time_id)->first();
+        $time->free += 1;
+        $time->save();
 
         Log::channel('nurse_delete')->info('User : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $transaction->id);
 
@@ -208,6 +221,8 @@ class NurseController extends Controller
                     'title'         => $time['title'],
                     'time_start'    => $date . ' ' . $time['start'],
                     'time_end'      => $date . ' ' . $time['end'],
+                    'max'           => $time['max'],
+                    'free'          => $time['max'],
                 ]);
             }
         }
@@ -271,27 +286,35 @@ class NurseController extends Controller
             $old_transaction->active = false;
             $old_transaction->save();
 
+            $time = NurseTime::where('id', $old_transaction->nurse_time_id)->first();
+            $time->free += 1;
+            $time->save();
+
             Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $old_transaction->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
         }
 
         if ($userData !== null) {
             $NurseTime = NurseTime::find($request->time_id);
+            if ($NurseTime->max !== 0 && $NurseTime->free > 0) {
+                $NurseTime->free -= 1;
+                $NurseTime->save();
 
-            $new                   = new NurseTransaction();
-            $new->nurse_project_id = $request->project_id;
-            $new->nurse_time_id    = $request->time_id;
-            $new->date_time        = $NurseTime->time_start;
-            $new->user_id          = $request->user;
-            $new->save();
+                $new                   = new NurseTransaction();
+                $new->nurse_project_id = $request->project_id;
+                $new->nurse_time_id    = $request->time_id;
+                $new->date_time        = $NurseTime->time_start;
+                $new->user_id          = $request->user;
+                $new->save();
 
-            Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' add transaction id: ' . $new->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
+                Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' add transaction id: ' . $new->id . ' for user: ' . $userData->userid . ' ' . $userData->name);
 
-            $response = [
-                'status'  => 'success',
-                'message' => 'ทำการลงทำเบียนสำเร็จ!',
-                'time'    => $new->timeData->title,
-                'name'    => $userData->userid . ' ' . $userData->name,
-            ];
+                $response = [
+                    'status'  => 'success',
+                    'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                    'time'    => $new->timeData->title,
+                    'name'    => $userData->userid . ' ' . $userData->name,
+                ];
+            }
         }
 
         return response()->json($response, 200);
@@ -301,6 +324,10 @@ class NurseController extends Controller
         $transaction         = NurseTransaction::find($request->transaction_id);
         $transaction->active = false;
         $transaction->save();
+
+        $time = NurseTime::find($transaction->nurse_time_id);
+        $time->free += 1;
+        $time->save();
 
         Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete transaction id: ' . $transaction->id);
 

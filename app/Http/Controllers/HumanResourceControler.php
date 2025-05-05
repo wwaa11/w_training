@@ -74,11 +74,12 @@ class HumanResourceControler extends Controller
                 'link_end'   => '17:00:00.000',
             ],
         ];
-        $dateIndex = 5;
+        $project_id = 4;
+        $dateIndex  = 5;
         foreach ($datetoAdd as $detail) {
             $dateIndex += 1;
             $newDate             = new Slot;
-            $newDate->project_id = 1;
+            $newDate->project_id = $project_id;
             $newDate->slot_index = $dateIndex;
             $newDate->slot_date  = $detail['date'];
             $newDate->slot_name  = $detail['title'];

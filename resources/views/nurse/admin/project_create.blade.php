@@ -64,7 +64,7 @@
 
         function addTime() {
             $('#time_section').append('<div class="mt-3 flex flex-row gap-3 rounded p-3" id="time_' + index + '">' +
-                '<div class="flex-none cursor-pointer text-red-600" onclick="$(#time_' + index + ').remove()">' +
+                '<div class="flex-none cursor-pointer text-red-600" onclick="$(\'#time_' + index + '\').remove()">' +
                 '<div>&nbsp;</div>' +
                 '<i class="fa fa-x"></i>' +
                 '</div>' +
@@ -79,6 +79,10 @@
                 '<div>' +
                 '<div class="text-center">สิ้นสุด</div>' +
                 '<input class="mb-3 w-full rounded border border-gray-400 bg-white p-2 text-center" type="time" name="time[' + index + '][end]" placeholder="เวลาเปิดลงทะเบียน" value="17:00" required>' +
+                '</div>' +
+                '<div>' +
+                '<div class="text-center">จำนวนที่นั้ง</div>' +
+                '<input class="mb-3 w-full rounded border border-gray-400 bg-white p-2 text-center" type="number" name="time[' + index + '][max]" placeholder="กรณีไม่จำกัดให้ใส่ 0" required>' +
                 '</div>' +
                 '</div>');
             index++;

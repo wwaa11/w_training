@@ -16,6 +16,8 @@ class NurseTime extends Model
         'location',
         'time_start',
         'time_end',
+        'max',
+        'free',
     ];
 
     public function dateData()

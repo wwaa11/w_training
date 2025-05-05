@@ -92,7 +92,7 @@
                 allowOutsideClick: false,
                 showConfirmButton: true,
                 confirmButtonColor: 'red',
-                confirmButtonText: 'เปลี่ยนรหัสผ่าน',
+                confirmButtonText: 'รีเซ็ตรหัสผ่าน',
                 showCancelButton: true,
                 cancelButtonColor: 'gray',
                 cancelButtonText: 'ยกเลิก',

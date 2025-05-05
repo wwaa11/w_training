@@ -1,6 +1,6 @@
 @extends("layouts.layout")
 @section("content")
-    <div class="flex h-screen flex-col text-gray-600">
+    <div class="mt-6 flex flex-col text-gray-600">
         <div class="m-auto flex w-full flex-col rounded-lg bg-[#c1dccd] p-6 text-lg md:w-1/2 lg:w-1/3">
             @if ($errors->any())
                 <div class="mb-3 text-lg font-bold text-red-600">{{ $errors->first() }}</div>
