@@ -3,7 +3,6 @@
     <div class="flex h-screen flex-col text-gray-600">
         <div class="m-auto flex w-full flex-col rounded-lg bg-[#fff] py-6 text-center text-lg md:w-1/2 lg:w-1/3">
             <img class="m-auto h-36 p-3" src="{{ url("images/Side Logo.png") }}" alt="logo">
-            <div class="text-center text-xl font-bold" style="white-space: nowrap;">Human Resource Developement</div>
             <div class="mb-3 text-lg font-bold">PR9 Training</div>
             <div class="px-12">
                 <div class="mb-1 text-xl">รหัสพนักงาน</div>

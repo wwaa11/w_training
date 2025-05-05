@@ -1,18 +1,18 @@
 <?php
 namespace App\Exports;
 
-use App\Models\Slot;
+use App\Models\NurseDate;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class DateExport implements FromArray, ShouldAutoSize, WithHeadings
+class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings
 {
-    protected $slot_id;
+    protected $date_id;
 
-    public function __construct($slot_id)
+    public function __construct($date_id)
     {
-        $this->slot_id = $slot_id;
+        $this->date_id = $date_id;
     }
 
     public function headings(): array
@@ -24,7 +24,7 @@ class DateExport implements FromArray, ShouldAutoSize, WithHeadings
             'ตำแหน่ง',
             'แผนก',
             'CHECK-IN',
-            'HR-Approve',
+            'Approve',
             'รอบ',
         ];
     }
@@ -32,19 +32,19 @@ class DateExport implements FromArray, ShouldAutoSize, WithHeadings
     public function array(): array
     {
         $transactionArray = [];
-        $slot             = Slot::find($this->slot_id);
-        foreach ($slot->items as $item) {
-            foreach ($item->transactions as $transaction) {
-                if ($transaction->transaction_active) {
+        $date             = NurseDate::find($this->date_id);
+        foreach ($date->timeData as $time) {
+            foreach ($time->transactionData as $index => $transaction) {
+                if ($transaction->active) {
                     $transactionArray[] = [
-                        $transaction->seat,
-                        $transaction->user,
+                        $index += 1,
+                        $transaction->user_id,
                         $transaction->userData->name,
                         $transaction->userData->position,
                         $transaction->userData->department,
-                        ($transaction->checkin) ? date('Y-m-d H:i', strtotime($transaction->checkin_datetime)) : null,
-                        ($transaction->hr_approve) ? date('Y-m-d H:i', strtotime($transaction->hr_approve_datetime)) : null,
-                        $item->item_name,
+                        ($transaction->user_sign) ? date('Y-m-d H:i', strtotime($transaction->user_sign)) : null,
+                        ($transaction->admin_sign) ? date('Y-m-d H:i', strtotime($transaction->admin_sign)) : null,
+                        $time->title,
                     ];
                 }
             }

@@ -22,6 +22,7 @@
                     <thead class="bg-gray-200">
                         <th class="border p-3 text-start">
                             <span>{{ $date->title }}</span>
+                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/{{ $date->id }}"><span class="ms-6 text-green-600"><i class="fa-solid fa-file-excel"></i></span></a>
                         </th>
                         <th class="w-36 border p-3">จำนวนลงทะเบียน</th>
                     </thead>

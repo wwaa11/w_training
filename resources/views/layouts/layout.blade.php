@@ -55,7 +55,7 @@
         <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 text-[#143429] shadow lg:hidden" id="mobileMenu">
             <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>
             <div class="block">{{ session("department") }}</div>
-            <div class="flex flex-row">
+            <div class="mt-3 flex flex-row">
                 <a class="flex-1" href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
                 <button class="cursor-pointer text-clip text-nowrap pb-3 text-end text-red-600" onclick="logout()">ออกจากระบบ</button>
             </div>

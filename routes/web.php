@@ -89,4 +89,6 @@ Route::middleware([NurseAdmin::class])->group(function () {
     Route::post('/nurse/admin/approveUser', [NurseController::class, 'adminProjectApproveUser']);
     Route::post('/nurse/admin/approveUserArray', [NurseController::class, 'adminProjectApproveUserArray']);
 
+    Route::get('/nurse/admin/export/excel/date/{date_id}', [NurseController::class, 'ExcelDateExport']);
+
 });

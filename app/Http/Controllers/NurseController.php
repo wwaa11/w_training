@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\NurseDateExport;
 use App\Models\NurseDate;
 use App\Models\NurseProject;
 use App\Models\NurseTime;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class NurseController extends Controller
 {
@@ -412,5 +414,16 @@ class NurseController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
+
+    public function ExcelDateExport($date_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $date = NurseDate::find($date_id);
+        $name = $date->projectData->title . '_' . $date->title;
+
+        return Excel::download(new NurseDateExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
 }
