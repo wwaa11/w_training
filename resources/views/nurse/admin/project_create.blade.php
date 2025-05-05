@@ -37,14 +37,21 @@
                 <label class="text-2xl">วันที่เปิดการฝึกอบรม</label>
                 <hr class="my-3" />
                 <div class="flex flex-row gap-3">
-                    <div class="w-1/2">
+                    <div class="w-2/5">
                         <label class="">วันที่เปิดลงทะเบียน</label>
                         <input class="mb-3 w-full rounded border border-gray-400 bg-white p-2" type="date" name="training_start" value="{{ old("training_start") }}" placeholder="วันที่เริ่ม" required>
                     </div>
-                    <div class="w-1/2">
+                    <div class="w-2/5">
                         <label class="">&nbsp;</label>
                         <input class="mb-3 w-full rounded border border-gray-400 bg-white p-2" type="date" name="training_end" value="{{ old("training_end") }}" placeholder="วันที่สิ้นสุด" required>
                     </div>
+                    <div class="w-1/5">
+                        <label class="">&nbsp;</label>
+                        <button class="mb-3 w-full cursor-pointer rounded bg-yellow-400 p-2" type="button">เพิ่มวันที่</button>
+                    </div>
+                </div>
+                <div id="date_section">
+
                 </div>
             </div>
             <div class="mb-3 bg-gray-100 p-3">
@@ -86,6 +93,10 @@
                 '</div>' +
                 '</div>');
             index++;
+        }
+
+        function addDate() {
+
         }
     </script>
 @endsection

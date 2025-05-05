@@ -46,7 +46,7 @@
             </button>
         </div>
         <div class="hidden pt-7 lg:flex lg:flex-1 lg:gap-6">
-            <a href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
+            <a href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
             <a href="{{ env("APP_URL") }}/nurse">รายการที่เปิดลงทะเบียน</a>
             <a href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
@@ -64,7 +64,7 @@
         <span class="absolute bottom-0 left-4 text-sm lg:hidden">{{ Auth::user()->userid }} {{ session("name") }}</span>
     </div>
     <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 text-[#143429] shadow lg:hidden" id="mobileMenu">
-        <a class="mt-3 block" href="{{ env("APP_URL") }}/">ประเภทการฝึกอบรม</a>
+        <a class="mt-3 block" href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse">รายการที่เปิดลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
