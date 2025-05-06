@@ -36,6 +36,7 @@ class NurseProject extends Model
     {
         return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('active', true)->whereNull('sign')->orderBy('date_time', 'asc');
     }
+
     public function transactionNotApproveData()
     {
         return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('active', true)->whereNotNull('sign')->orderBy('date_time', 'asc');

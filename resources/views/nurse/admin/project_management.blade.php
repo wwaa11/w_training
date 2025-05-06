@@ -23,6 +23,7 @@
                         <th class="border p-3 text-start">
                             <span>{{ $date->title }}</span>
                             <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/{{ $date->id }}"><span class="ms-6 text-green-600"><i class="fa-solid fa-file-excel"></i></span></a>
+                            <span class="float-end ms-3 cursor-pointer rounded bg-blue-400 p-2" onclick="addlecturer('{{ $date->id }}','{{ $date->title }}')"><i class="fa fa-plus"></i> วิทยากร</span>
                         </th>
                         <th class="w-36 border p-3">จำนวนลงทะเบียน</th>
                     </thead>
@@ -33,7 +34,7 @@
                                     <div class="flex gap-3">
                                         @if ($time->max == 0)
                                             <div class="lg:w-42 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->title }}')"><i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน</div>
-                                        @elseif($time->max !== 0)
+                                        @elseif($time->max != 0)
                                             @if ($time->max == $time->transactionData->count())
                                                 <div class="lg:w-42 flex-1 cursor-pointer text-red-600 lg:flex-none">
                                                     <i class="fa-solid fa-ban"></i>&nbsp;มีผู้ลงทะเบียนเต็มแล้ว
@@ -48,6 +49,19 @@
                                 <td class="border p-3 text-center">{{ count($time->transactionData) }}</td>
                             </tr>
                         @endforeach
+                        @if (count($date->lecturesData) > 0)
+                            <tr>
+                                <td class="border bg-gray-300 p-3" colspan="2">วิทยากร</td>
+                            </tr>
+                            @foreach ($date->lecturesData as $lecture)
+                                <tr class="bg-white hover:bg-green-200">
+                                    <td class="border p-3">{{ $lecture->user_id . " " . $lecture->userData->name }}</td>
+                                    <td class="border p-3 text-center">
+                                        <button class="cursor-pointer text-red-600" type="button" onclick="deleteLecture('{{ $lecture->id }}','{{ $lecture->userData->name }}')"><i class="fa fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
                     </tbody>
                 </table>
             @endforeach
@@ -110,11 +124,102 @@
                         Swal.fire({
                             title: res['data']['message'],
                             icon: 'error',
-                            confirmButtonText: 'red',
-                            confirmButtonColor: 'green'
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: 'red'
                         })
                     }
 
+                });
+            }
+        }
+
+        async function addlecturer(id, title) {
+            alert = await Swal.fire({
+                title: "ยืนยัน วิทยากร",
+                html: 'รอบ ' + title + '<br>',
+                input: "text",
+                inputPlaceholder: "รหัสพนักงาน",
+                icon: 'question',
+                showConfirmButton: true,
+                confirmButtonColor: 'green',
+                confirmButtonText: 'ยืนยัน',
+                showCancelButton: true,
+                cancelButtonColor: 'gray',
+                cancelButtonText: 'ยกเลิก',
+            })
+
+            if (alert.isConfirmed) {
+                if (alert.value == '') {
+                    Swal.fire({
+                        title: "โปรดใส่รหัสพนักงาน",
+                        icon: 'error',
+                        showConfirmButton: true,
+                        confirmButtonColor: 'red',
+                        confirmButtonText: 'ยืนยัน',
+                    })
+
+                    return;
+                }
+                Swal.fire({
+                    title: 'กรุณารอสักครู่',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                })
+                axios.post('{{ env("APP_URL") }}/nurse/admin/addLecture', {
+                    'date_id': id,
+                    'user': alert.value
+                }).then((res) => {
+                    if (res['data']['status'] == 'success') {
+                        Swal.fire({
+                            title: res['data']['message'],
+                            icon: 'success',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: 'green'
+                        }).then(function(isConfirmed) {
+                            if (isConfirmed) {
+                                window.location.reload()
+                            }
+                        })
+                    } else {
+                        Swal.fire({
+                            title: res['data']['message'],
+                            icon: 'error',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: 'red'
+                        })
+                    }
+
+                });
+            }
+        }
+
+        async function deleteLecture(id, name) {
+            alert = await Swal.fire({
+                title: "ยืนยันลบวิทยากร " + name,
+                icon: 'warning',
+                showConfirmButton: true,
+                confirmButtonColor: 'red',
+                confirmButtonText: 'ยืนยัน',
+                showCancelButton: true,
+                cancelButtonColor: 'gray',
+                cancelButtonText: 'ยกเลิก',
+            })
+
+            if (alert.isConfirmed) {
+                axios.post('{{ env("APP_URL") }}/nurse/admin/deleteLecture', {
+                    'lecture_id': id
+                }).then((res) => {
+                    Swal.fire({
+                        title: res['data']['message'],
+                        icon: 'success',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: 'green'
+                    }).then(function(isConfirmed) {
+                        if (isConfirmed) {
+                            window.location.reload()
+                        }
+                    })
                 });
             }
         }

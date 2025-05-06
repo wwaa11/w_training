@@ -46,7 +46,7 @@
                     <th class="border p-3">ตำแหน่ง</th>
                     <th class="border p-3">แผนก</th>
                     <th class="border p-3">Check-In</th>
-                    <th class="border p-3">HR Approve</th>
+                    <th class="border p-3">Nurse Approve</th>
                 </thead>
                 <tbody id="userTable">
                     @foreach ($transactions as $transcation)

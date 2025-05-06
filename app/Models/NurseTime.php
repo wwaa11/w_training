@@ -28,12 +28,4 @@ class NurseTime extends Model
     {
         return $this->hasMany(NurseTransaction::class)->where('active', true)->orderBy('date_time', 'asc');
     }
-    public function lectures()
-    {
-        return $this->hasMany(NurseLecture::class);
-    }
-    public function my_lecture()
-    {
-        return $this->hasMany(NurseLecture::class)->where('user_id', auth()->user()->userid);
-    }
 }

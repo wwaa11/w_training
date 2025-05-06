@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\NurseDateExport;
 use App\Models\NurseDate;
+use App\Models\NurseLecture;
 use App\Models\NurseProject;
 use App\Models\NurseTime;
 use App\Models\NurseTransaction;
@@ -453,6 +454,74 @@ class NurseController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
+
+    public function adminAddLecture(Request $request)
+    {
+        $response = [
+            'status'  => 'failed',
+            'message' => 'Error!',
+        ];
+        $userid = $request->user;
+
+        $lecture = NurseLecture::where('nurse_date_id', $request->date_id)->where('user_id', $userid)->where('active', true)->first();
+        if ($lecture == null) {
+
+            $userData = User::where('userid', $userid)->first();
+            if ($userData == null) {
+                $responseAPI = Http::withHeaders(['token' => env('API_KEY')])
+                    ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                        'userid' => $userid,
+                    ])
+                    ->json();
+                $response['message'] = 'ไม่พบรหัสพนักงานนี้';
+
+                if ($responseAPI['status'] == 1) {
+                    $userData              = new User();
+                    $userData->userid      = $userid;
+                    $userData->password    = Hash::make($userid);
+                    $userData->name        = $responseAPI['user']['name'];
+                    $userData->position    = $responseAPI['user']['position'];
+                    $userData->department  = $responseAPI['user']['department'];
+                    $userData->division    = $responseAPI['user']['division'];
+                    $userData->hn          = $responseAPI['user']['HN'];
+                    $userData->last_update = date('Y-m-d H:i:s');
+                    $userData->save();
+                }
+            }
+
+            if ($userData !== null) {
+                $lecture                = new NurseLecture;
+                $lecture->nurse_date_id = $request->date_id;
+                $lecture->user_id       = $request->user;
+                $lecture->save();
+
+                $response = [
+                    'status'  => 'success',
+                    'message' => 'ทำการเพิ่มวิทยากรสำเร็จ!',
+                ];
+            }
+        } else {
+            $response = [
+                'status'  => 'success',
+                'message' => 'มีวิทยากรท่านนี้อยู่แล้ว!',
+            ];
+        }
+
+        return response()->json($response, 200);
+    }
+    public function adminDeleteLecture(Request $request)
+    {
+        $lecture         = NurseLecture::where('id', $request->lecture_id)->where('active', true)->first();
+        $lecture->active = false;
+        $lecture->save();
+
+        $response = [
+            'status'  => 'success',
+            'message' => 'ลบวิทยากรสำเร็จ!',
+        ];
+
+        return response()->json($response, 200);
     }
 
     public function ExcelDateExport($date_id)

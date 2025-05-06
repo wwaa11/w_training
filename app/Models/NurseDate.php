@@ -87,4 +87,9 @@ class NurseDate extends Model
     {
         return $this->hasMany(NurseTime::class)->where('active', true)->orderBy('time_start', 'asc');
     }
+
+    public function lecturesData()
+    {
+        return $this->hasMany(NurseLecture::class, 'nurse_date_id')->where('active', true)->orderBy('user_id', 'asc');
+    }
 }

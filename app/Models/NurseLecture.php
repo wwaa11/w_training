@@ -6,20 +6,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NurseLecture extends Model
 {
-    protected $table = 'nurse_lectures';
+    protected $table = 'nurse_lecturers';
 
     protected $fillable = [
         'nurse_time_id',
         'user_id',
     ];
 
-    public function timeData()
+    public function dateData()
     {
-        return $this->belongsTo(NurseTime::class, 'nurse_time_id');
+        return $this->belongsTo(NurseDate::class, 'nurse_date_id');
     }
 
-    public function user()
+    public function userData()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'userid');
     }
 }

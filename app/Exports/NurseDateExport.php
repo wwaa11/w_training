@@ -4,9 +4,12 @@ namespace App\Exports;
 use App\Models\NurseDate;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithDrawings;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings
+class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEvents, WithDrawings
 {
     protected $date_id;
 
@@ -27,6 +30,29 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings
             'Approve',
             'รอบ',
         ];
+    }
+
+    public function drawings()
+    {
+        $date = NurseDate::find($this->date_id);
+        foreach ($date->timeData as $time) {
+            foreach ($time->transactionData as $index => $transaction) {
+                if ($transaction->active) {
+                    $base64 = explode(',', $transaction->userData->sign, 2);
+                    $sign   = imagecreatefromstring(base64_decode($base64[1]));
+                    imagesavealpha($sign, true);
+
+                    $drawing = new MemoryDrawing();
+                    $drawing->setImageResource($sign);
+                    $drawing->setHeight(15);
+                    $drawing->setWidth(120);
+                    $drawing->setCoordinates('I' . ($index + 1));
+                    $drawings[] = $drawing;
+                }
+            }
+        }
+
+        return $drawings;
     }
 
     public function array(): array
@@ -55,5 +81,16 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings
         // });
 
         return $transactionArray;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                for ($i = 1; $i <= 2000; $i++) {
+                    $event->sheet->getRowDimension($i)->setRowHeight(50);
+                }
+            },
+        ];
     }
 }
