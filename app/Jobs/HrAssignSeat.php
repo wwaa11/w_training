@@ -35,7 +35,7 @@ class HrAssignSeat implements ShouldQueue
                 $seatArray->seats = $arrayTemp;
                 $seatArray->save();
             }
-            $maxSeat       = count($seatArray->seats);
+            $maxSeat       = $seatArray->item->item_max_available;
             $maxSeat_range = $maxSeat - 1;
             $tempSeatArray = $seatArray->seats;
             $success       = false;
@@ -43,6 +43,9 @@ class HrAssignSeat implements ShouldQueue
                 'dept' => $transaction->userData->department,
                 'user' => $transaction->user,
             ];
+            if (array_key_exists('-1', $tempSeatArray)) {
+                unset($tempSeatArray[-1]);
+            }
             for ($i = 0; $i <= $maxSeat_range; $i++) {
                 $seatNumber = $i + 1;
                 if ($tempSeatArray[$i]['user'] == null) {
