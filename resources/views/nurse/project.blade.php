@@ -23,12 +23,16 @@
                     @if ($date->date >= date("Y-m-d"))
                         <div class="mt-3 flex flex-row rounded border border-[#eaf7ab] bg-[#eeeeee] p-3 font-bold shadow" onclick="openID('#date_{{ $date->id }}')">
                             <div class="flex-1 p-3 text-xl">{{ $date->title }}</div>
+                            @if ($date->detail !== null)
+                                <div class="flex-none p-3">{{ $date->detail }}</div>
+                            @endif
                             <div class="p-3 text-xl font-bold"><i class="fa-solid fa-angle-down"></i></div>
                         </div>
                         <div class="hidden flex-col gap-6 bg-white" id="date_{{ $date->id }}">
                             @foreach ($date->timeData as $time)
                                 <div class="flex rounded p-3">
                                     <div class="flex-1 p-3">{{ $time->title }}</div>
+
                                     @if ($time->max == 0)
                                         @if ($project->mytransaction == null)
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>

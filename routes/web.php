@@ -18,6 +18,8 @@ Route::post('/login', [CoreController::class, 'LoginRequest']);
 Route::post('/logout', [CoreController::class, 'LogoutRequest']);
 
 Route::middleware([pr9Auth::class])->group(function () {
+    // Base Function
+    Route::post('/get/dateBetween', [CoreController::class, 'createProject_DeatBetween']);
 
     Route::get('/', [CoreController::class, 'Index']);
     Route::get('/profile', [CoreController::class, 'Profile']);

@@ -8,9 +8,6 @@ use App\Models\NurseProject;
 use App\Models\NurseTime;
 use App\Models\NurseTransaction;
 use App\Models\User;
-use DateInterval;
-use DatePeriod;
-use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -41,7 +38,20 @@ class NurseController extends Controller
             ->orderBy('date_time', 'desc')
             ->get();
 
-        return view('nurse.history', compact('transactions'));
+        $lectures = NurseLecture::where('user_id', Auth::user()->userid)
+            ->where('active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $myscore = 0;
+        foreach ($transactions as $transaction) {
+            if ($transaction->user_sign !== null && $transaction->admin_sign !== null) {
+                $myscore += 1;
+            }
+        }
+
+        $myscore += (count($lectures) * 5);
+
+        return view('nurse.history', compact('transactions', 'lectures', 'myscore'));
     }
     public function ProjectIndex($project_id)
     {
@@ -208,9 +218,8 @@ class NurseController extends Controller
             'location'       => 'required',
             'register_start' => 'required|date',
             'register_end'   => 'required|date|after_or_equal:register_start',
-            'training_start' => 'required|date',
-            'training_end'   => 'required|date|after_or_equal:register_start',
             'time'           => 'required|array',
+            'date'           => 'required|array',
         ], [
             'time.required' => 'โปรดระบุรอบการลงทะเบียน',
         ]);
@@ -223,23 +232,19 @@ class NurseController extends Controller
             'register_end'   => $request->register_end,
         ]);
 
-        $training_start = new DateTime($request->training_start);
-        $training_end   = new DateTime($request->training_end . ' +1 Days');
-        $interval       = new DateInterval('P1D');
-        $dateRange      = new DatePeriod($training_start, $interval, $training_end);
-        foreach ($dateRange as $date) {
-            $date       = $date->format('Y-m-d');
+        foreach ($request->date as $date) {
             $dateCreate = NurseDate::create([
                 'nurse_project_id' => $project->id,
-                'title'            => $this->FulldateTH($date),
-                'date'             => $date,
+                'title'            => $date['title'],
+                'date'             => $date['date'],
             ]);
+
             foreach ($request->time as $time) {
                 NurseTime::create([
                     'nurse_date_id' => $dateCreate->id,
                     'title'         => $time['title'],
-                    'time_start'    => $date . ' ' . $time['start'],
-                    'time_end'      => $date . ' ' . $time['end'],
+                    'time_start'    => $date['date'] . ' ' . $time['start'],
+                    'time_end'      => $date['date'] . ' ' . $time['end'],
                     'max'           => $time['max'],
                     'free'          => $time['max'],
                 ]);

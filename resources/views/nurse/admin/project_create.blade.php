@@ -39,15 +39,15 @@
                 <div class="flex flex-row gap-3">
                     <div class="w-2/5">
                         <label class="">วันที่เปิดลงทะเบียน</label>
-                        <input class="mb-3 w-full rounded border border-gray-400 bg-white p-2" type="date" name="training_start" value="{{ old("training_start") }}" placeholder="วันที่เริ่ม" required>
+                        <input class="mb-3 w-full rounded border border-gray-400 bg-white p-2" id="date_start" type="date" name="training_start" value="{{ old("training_start") }}" placeholder="วันที่เริ่ม">
                     </div>
                     <div class="w-2/5">
                         <label class="">&nbsp;</label>
-                        <input class="mb-3 w-full rounded border border-gray-400 bg-white p-2" type="date" name="training_end" value="{{ old("training_end") }}" placeholder="วันที่สิ้นสุด" required>
+                        <input class="mb-3 w-full rounded border border-gray-400 bg-white p-2" id="date_end" type="date" name="training_end" value="{{ old("training_end") }}" placeholder="วันที่สิ้นสุด">
                     </div>
                     <div class="w-1/5">
                         <label class="">&nbsp;</label>
-                        <button class="mb-3 w-full cursor-pointer rounded bg-yellow-400 p-2" type="button">เพิ่มวันที่</button>
+                        <button class="mb-3 w-full cursor-pointer rounded bg-yellow-400 p-2" onclick="dateAdd()" type="button">เพิ่มวันที่</button>
                     </div>
                 </div>
                 <div id="date_section">
@@ -95,8 +95,48 @@
             index++;
         }
 
-        function addDate() {
+        async function dateAdd() {
+            dateStart = $('#date_start').val()
+            dateEnd = $('#date_end').val()
+            if (dateStart != '' && dateEnd != '') {
+                await axios.post('{{ env("APP_URL") }}/get/dateBetween', {
+                    'start': dateStart,
+                    'end': dateEnd,
+                }).then((res) => {
+                    if (res.data.status == 'success') {
+                        dateArray = res.data.dates
+                        dateArray.forEach(date => {
+                            html = '<div class="flex gap-3 p-3 flex-row flex-wrap" id="date' + date.date + '">';
+                            html += '<input name="date[' + date.date + '][title]" class="flex-1 rounded border border-gray-500 p-3" type="text" value="' + date.title + '">';
+                            html += '<input name="date[' + date.date + '][date]" type="hidden" value="' + date.date + '">';
+                            html += '<button class="flex-none w-12 cursor-pointer rounded bg-red-400 p-3" type="button" onclick="removeElementID(\'#date' + date.date + '\')"><i class="fa-solid fa-xmark"></i></button>';
+                            html += '</div>';
+                            $('#date_section').append(html);
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            icon: 'error',
+                            allowOutsideClick: true,
+                            showConfirmButton: true,
+                            confirmButtonColor: 'red'
+                        })
+                    }
+                })
+            } else {
+                Swal.fire({
+                    title: 'โปรดเลือกวันที่ต้องการเพิ่ม',
+                    icon: 'error',
+                    allowOutsideClick: true,
+                    showConfirmButton: true,
+                    confirmButtonColor: 'red'
+                })
+            }
 
+        }
+
+        function removeElementID(id) {
+            $(id).remove()
         }
     </script>
 @endsection

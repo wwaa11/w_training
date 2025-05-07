@@ -178,6 +178,82 @@ class CoreController extends Controller
     }
 
     // Admin
+    public function FulldateTH($date)
+    {
+        $dateTime = strtotime($date);
+        $day      = date('d', $dateTime);
+        $month    = date('m', $dateTime);
+        $year     = date('Y', $dateTime);
+
+        switch ($month) {
+            case '01':
+                $fullmonth = 'มกราคม';
+                break;
+            case '02':
+                $fullmonth = 'กุมภาพันธ์';
+                break;
+            case '03':
+                $fullmonth = 'มีนาคม';
+                break;
+            case '04':
+                $fullmonth = 'เมษายน';
+                break;
+            case '05':
+                $fullmonth = 'พฤษภาคม';
+                break;
+            case '06':
+                $fullmonth = 'มิถุนายน';
+                break;
+            case '07':
+                $fullmonth = 'กรกฎาคม';
+                break;
+            case '08':
+                $fullmonth = 'สิงหาคม';
+                break;
+            case '09':
+                $fullmonth = 'กันยายน';
+                break;
+            case '10':
+                $fullmonth = 'ตุลาคม';
+                break;
+            case '11':
+                $fullmonth = 'พฤศจิกายน';
+                break;
+            case '12':
+                $fullmonth = 'ธันวาคม';
+                break;
+        }
+        $year = $year + 543;
+
+        $birthDate = date_create($date);
+        $nowDate   = date_create(date('Y-m-d'));
+        $diff      = $birthDate->diff($nowDate);
+
+        $data = $day . ' ' . $fullmonth . ' ' . $year;
+
+        return $data;
+    }
+    public function createProject_DeatBetween(Request $req)
+    {
+        $dates = [];
+        $start = $req->start;
+        $end   = $req->end;
+
+        $startDate = new \DateTime($start);
+        $endDate   = new \DateTime($end . ' +1 Days');
+
+        $interval  = new \DateInterval('P1D'); // 1 day interval
+        $dateRange = new \DatePeriod($startDate, $interval, $endDate);
+
+        foreach ($dateRange as $date) {
+            $dates[] = [
+                'date'  => $date->format('Y-m-d'),
+                'title' => $this->FulldateTH($date->format('Y-m-d')),
+            ];
+        }
+
+        return response()->json(['status' => 'success', 'dates' => $dates]);
+    }
     public function AllUserHR()
     {
         $users = User::orderBy('created_at', 'desc')->paginate(300);
