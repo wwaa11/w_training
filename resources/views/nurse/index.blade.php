@@ -12,7 +12,9 @@
             <hr class="shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
             @foreach ($myTransaction as $transaction)
-                <x-nurse-transaction-item :transaction="$transaction" />
+                @if (date("Y-m-d") <= date("Y-m-d", strtotime($transaction->date_time)))
+                    <x-nurse-transaction-item :transaction="$transaction" />
+                @endif
             @endforeach
         </div>
         <div class="rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">

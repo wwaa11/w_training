@@ -42,12 +42,12 @@
                         <div class="mt-2"><i class="fa-solid fa-map-pin w-8 text-[#008387]"></i> {{ $transaction->projectData->location }}</div>
                         @if ($transaction->user_sign !== null)
                             <div class="mt-3 text-green-700">
-                                <i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("H:i", strtotime($transaction->sign_user)) }}
+                                <i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("H:i", strtotime($transaction->user_sign)) }}
                             </div>
                         @endif
                         @if ($transaction->admin_sign !== null)
                             <div class="mt-3 text-green-700">
-                                <i class="fa-solid fa-user-nurse w-8"></i> อนุมัติ {{ date("H:i", strtotime($transaction->sign_admin)) }}
+                                <i class="fa-solid fa-user-nurse w-8"></i> อนุมัติ {{ date("H:i", strtotime($transaction->admin_sign)) }}
                             </div>
                             <div class="absolute bottom-0 right-3 top-0 text-4xl text-red-400">
                                 1

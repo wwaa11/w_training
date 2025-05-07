@@ -5,11 +5,10 @@ use App\Models\NurseDate;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithDrawings;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEvents, WithDrawings
+class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithDrawings
 {
     protected $date_id;
 
@@ -35,6 +34,7 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEv
     public function drawings()
     {
         $date = NurseDate::find($this->date_id);
+        $row  = 0;
         foreach ($date->timeData as $time) {
             foreach ($time->transactionData as $index => $transaction) {
                 if ($transaction->active) {
@@ -46,8 +46,10 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEv
                     $drawing->setImageResource($sign);
                     $drawing->setHeight(15);
                     $drawing->setWidth(120);
-                    $drawing->setCoordinates('I' . ($index + 1));
+                    $drawing->setCoordinates('I' . ($row + 2));
                     $drawings[] = $drawing;
+
+                    $row += 1;
                 }
             }
         }
@@ -59,6 +61,7 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEv
     {
         $transactionArray = [];
         $date             = NurseDate::find($this->date_id);
+        $row              = 0;
         foreach ($date->timeData as $time) {
             foreach ($time->transactionData as $index => $transaction) {
                 if ($transaction->active) {
@@ -72,6 +75,7 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEv
                         ($transaction->admin_sign) ? date('Y-m-d H:i', strtotime($transaction->admin_sign)) : null,
                         $time->title,
                     ];
+                    $row += 1;
                 }
             }
         }
@@ -81,16 +85,5 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithEv
         // });
 
         return $transactionArray;
-    }
-
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet $event) {
-                for ($i = 1; $i <= 2000; $i++) {
-                    $event->sheet->getRowDimension($i)->setRowHeight(50);
-                }
-            },
-        ];
     }
 }

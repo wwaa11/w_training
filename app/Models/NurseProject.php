@@ -3,7 +3,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class NurseProject extends Model
 {
@@ -22,9 +21,9 @@ class NurseProject extends Model
         return $this->hasMany(NurseDate::class)->where('active', true)->orderBy('date', 'asc');
     }
 
-    public function mytransaction()
+    public function mytransactions()
     {
-        return $this->HasOne(NurseTransaction::class, 'nurse_project_id')->where('user_id', auth()->user()->userid)->where('active', true);
+        return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('user_id', auth()->user()->userid)->where('active', true);
     }
 
     public function transactionData()

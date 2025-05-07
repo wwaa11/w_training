@@ -18,10 +18,10 @@
                 </div>
             @endif
         @else
-            <div class="mt-3 text-green-700"><i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("H:i", strtotime($transaction->sign_user)) }}</div>
+            <div class="mt-3 text-green-700"><i class="fa-solid fa-location-dot w-8"></i> CHECK IN {{ date("H:i", strtotime($transaction->user_sign)) }}</div>
             @if ($transaction->admin_sign !== null)
                 <div class="mt-3 text-green-700">
-                    <i class="fa-solid fa-user-nurse w-8"></i> อนุมัติ {{ date("H:i", strtotime($transaction->sign_admin)) }}
+                    <i class="fa-solid fa-user-nurse w-8"></i> อนุมัติ {{ date("H:i", strtotime($transaction->admin_sign)) }}
                 </div>
             @endif
         @endif

@@ -11,8 +11,10 @@
             </div>
             <hr class="shadow">
             <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
-            @if ($project->mytransaction !== null)
-                <x-nurse-transaction-item :transaction="$project->mytransaction" />
+            @if (count($project->mytransactions) != 0)
+                @foreach ($project->mytransactions as $transaction)
+                    <x-nurse-transaction-item :transaction="$transaction" />
+                @endforeach
             @endif
         </div>
         <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
@@ -32,9 +34,14 @@
                             @foreach ($date->timeData as $time)
                                 <div class="flex rounded p-3">
                                     <div class="flex-1 p-3">{{ $time->title }}</div>
-
-                                    @if ($time->max == 0)
-                                        @if ($project->mytransaction == null)
+                                    @if ($project->multiple)
+                                        @if ($time->transactionData->count() !== 0 && $time->transactionData->count() == $time->max)
+                                            <div class="flex cursor-pointer rounded bg-red-400 p-3 text-white">รอบการลงทะเบียนเต็มแล้ว</div>
+                                        @else
+                                            <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
+                                        @endif
+                                    @elseif ($time->max == 0)
+                                        @if ($project->mytransactions == null)
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
                                         @else
                                             <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
@@ -42,7 +49,7 @@
                                     @else
                                         @if ($time->transactionData->count() !== 0 && $time->transactionData->count() == $time->max)
                                             <div class="flex cursor-pointer rounded bg-red-400 p-3 text-white">รอบการลงทะเบียนเต็มแล้ว</div>
-                                        @elseif ($time->transactionData->count() < $time->max && $project->mytransaction == null)
+                                        @elseif ($time->transactionData->count() < $time->max && $project->mytransactions == null)
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
                                         @else
                                             <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>

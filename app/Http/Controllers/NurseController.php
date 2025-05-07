@@ -306,7 +306,9 @@ class NurseController extends Controller
             ->where('active', true)
             ->first();
 
-        if ($old_transaction !== null) {
+        $project = NurseProject::find($request->project_id);
+        if (! $project->multiple && $old_transaction !== null) {
+
             $old_transaction->active = false;
             $old_transaction->save();
 
