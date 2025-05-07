@@ -519,9 +519,10 @@ class HumanResourceControler extends Controller
     // Import Score
     public function adminScores($project_id)
     {
-        $project = Project::find($project_id);
+        $project      = Project::find($project_id);
+        $transactions = Transaction::join('scores', 'transactions.id', 'scores.transaction_id')->where('project_id', $project_id)->where('transaction_active', true)->get();
 
-        return view('hr.admin.project_scores', compact('project'));
+        return view('hr.admin.project_scores', compact('project', 'transactions'));
     }
     public function ImportScore(Request $request)
     {

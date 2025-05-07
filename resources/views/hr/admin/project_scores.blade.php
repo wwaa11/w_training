@@ -80,76 +80,72 @@
                             </thead>
                         @endif
                         <tbody>
-                            @if (count($project->tranasctionsData) > 0)
-                                @foreach ($project->tranasctionsData as $transaction)
-                                    @if ($transaction->scoreData !== null)
-                                        <tr>
-                                            <td class="border p-3">{{ $transaction->userData->userid }}</td>
-                                            <td class="border p-3">{{ $transaction->userData->name }}</td>
-                                            @if ($transaction->scoreData->result_1 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_1 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_2 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_2 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_3 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_3 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_4 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_4 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_5 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_5 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_6 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_6 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_7 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_7 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_8 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_8 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_9 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_9 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_10 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_10 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_11 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_11 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_12 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_12 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_13 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_13 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_14 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_14 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_15 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_15 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_16 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_16 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_17 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_17 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_18 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_18 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_19 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_19 }}</th>
-                                            @endif
-                                            @if ($transaction->scoreData->result_20 !== null)
-                                                <th class="border p-3">{{ $transaction->scoreData->result_20 }}</th>
-                                            @endif
-                                        </tr>
+                            @foreach ($transactions as $transaction)
+                                <tr>
+                                    <td class="border p-3">{{ $transaction->userData->userid }}</td>
+                                    <td class="border p-3">{{ $transaction->userData->name }}</td>
+                                    @if ($transaction->result_1 !== null)
+                                        <th class="border p-3">{{ $transaction->result_1 }}</th>
                                     @endif
-                                @endforeach
-                            @endif
+                                    @if ($transaction->result_2 !== null)
+                                        <th class="border p-3">{{ $transaction->result_2 }}</th>
+                                    @endif
+                                    @if ($transaction->result_3 !== null)
+                                        <th class="border p-3">{{ $transaction->result_3 }}</th>
+                                    @endif
+                                    @if ($transaction->result_4 !== null)
+                                        <th class="border p-3">{{ $transaction->result_4 }}</th>
+                                    @endif
+                                    @if ($transaction->result_5 !== null)
+                                        <th class="border p-3">{{ $transaction->result_5 }}</th>
+                                    @endif
+                                    @if ($transaction->result_6 !== null)
+                                        <th class="border p-3">{{ $transaction->result_6 }}</th>
+                                    @endif
+                                    @if ($transaction->result_7 !== null)
+                                        <th class="border p-3">{{ $transaction->result_7 }}</th>
+                                    @endif
+                                    @if ($transaction->result_8 !== null)
+                                        <th class="border p-3">{{ $transaction->result_8 }}</th>
+                                    @endif
+                                    @if ($transaction->result_9 !== null)
+                                        <th class="border p-3">{{ $transaction->result_9 }}</th>
+                                    @endif
+                                    @if ($transaction->result_10 !== null)
+                                        <th class="border p-3">{{ $transaction->result_10 }}</th>
+                                    @endif
+                                    @if ($transaction->result_11 !== null)
+                                        <th class="border p-3">{{ $transaction->result_11 }}</th>
+                                    @endif
+                                    @if ($transaction->result_12 !== null)
+                                        <th class="border p-3">{{ $transaction->result_12 }}</th>
+                                    @endif
+                                    @if ($transaction->result_13 !== null)
+                                        <th class="border p-3">{{ $transaction->result_13 }}</th>
+                                    @endif
+                                    @if ($transaction->result_14 !== null)
+                                        <th class="border p-3">{{ $transaction->result_14 }}</th>
+                                    @endif
+                                    @if ($transaction->result_15 !== null)
+                                        <th class="border p-3">{{ $transaction->result_15 }}</th>
+                                    @endif
+                                    @if ($transaction->result_16 !== null)
+                                        <th class="border p-3">{{ $transaction->result_16 }}</th>
+                                    @endif
+                                    @if ($transaction->result_17 !== null)
+                                        <th class="border p-3">{{ $transaction->result_17 }}</th>
+                                    @endif
+                                    @if ($transaction->result_18 !== null)
+                                        <th class="border p-3">{{ $transaction->result_18 }}</th>
+                                    @endif
+                                    @if ($transaction->result_19 !== null)
+                                        <th class="border p-3">{{ $transaction->result_19 }}</th>
+                                    @endif
+                                    @if ($transaction->result_20 !== null)
+                                        <th class="border p-3">{{ $transaction->result_20 }}</th>
+                                    @endif
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
