@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
@@ -20,5 +21,15 @@ class Transaction extends Model
     public function userData(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user', 'userid');
+    }
+
+    public function scoreHeader(): HasOne
+    {
+        return $this->HasOne(ScoreHeader::class, 'project_id', 'project_id');
+    }
+
+    public function scoreData(): HasOne
+    {
+        return $this->HasOne(Score::class);
     }
 }

@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
 Route::get('/services', [CoreController::class, 'DispatchServices']);
 
-Route::get('/hr/addDate', [HumanResourceControler::class, 'addDatetoProject']);
-
 Route::get('/login', [CoreController::class, 'Login']);
 Route::post('/login', [CoreController::class, 'LoginRequest']);
 Route::post('/logout', [CoreController::class, 'LogoutRequest']);
@@ -69,6 +67,9 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::get('/hr/admin/export/excel/all_date/{project_id}', [HumanResourceControler::class, 'ExcelAllDateExport']);
     Route::get('/hr/admin/export/excel/onebook/{project_id}', [HumanResourceControler::class, 'ExcelOneBookExport']);
     Route::get('/hr/admin/export/excel/dbd/{project_id}', [HumanResourceControler::class, 'ExcelDBDExport']);
+
+    Route::get('/hr/admin/scores/{project_id}', [HumanResourceControler::class, 'adminScores']);
+    Route::post('/hr/admin/importscores', [HumanResourceControler::class, 'ImportScore']);
 
 });
 

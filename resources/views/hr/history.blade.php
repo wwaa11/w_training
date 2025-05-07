@@ -35,9 +35,143 @@
                                 <i class="fa-solid fa-h w-4"></i><i class="fa-solid fa-r w-4"></i> อนุมัติ {{ date("d/m/Y H:i", strtotime($transaction->hr_approve_datetime)) }}
                             </div>
                         @endif
+                        @if ($transaction->scoreData !== null)
+                            <div class="mt-3 cursor-pointer rounded-t bg-green-500 p-3 text-white" onclick="openID('#transaction{{ $transaction->id }} ')">
+                                <i class="fa-regular fa-file-lines"></i> คะแนนสอบ
+                            </div>
+                            <div class="hidden rounded-b border border-green-500" id="transaction{{ $transaction->id }}">
+                                @if ($transaction->scoreHeader->title_1 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_1 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_1 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_2 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_2 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_2 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_3 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_3 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_3 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_4 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_4 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_4 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_5 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_5 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_5 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_6 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_6 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_6 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_7 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_7 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_7 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_8 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_8 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_8 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_9 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_9 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_9 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_10 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_10 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_10 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_11 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_11 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_11 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_12 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_12 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_12 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_13 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_13 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_13 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_14 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_14 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_14 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_15 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_15 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_15 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_16 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_16 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_16 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_17 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_17 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_17 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_18 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_18 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_18 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_19 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_19 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_19 }}</div>
+                                    </div>
+                                @endif
+                                @if ($transaction->scoreHeader->title_20 !== null)
+                                    <div class="m-3">
+                                        <div class="">{{ $transaction->scoreHeader->title_20 }}</div>
+                                        <div class="text-red-600">{{ $transaction->scoreData->result_20 }}</div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach
         </div>
     </div>
+@endsection
+@section("scripts")
+    <script>
+        function openID(id) {
+            $(id).toggle();
+        }
+    </script>
 @endsection

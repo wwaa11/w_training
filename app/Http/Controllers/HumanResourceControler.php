@@ -5,6 +5,7 @@ use App\Exports\AllDateExport;
 use App\Exports\DateExport;
 use App\Exports\DBDExport;
 use App\Exports\OnebookExport;
+use App\Imports\ScoresImport;
 use App\Models\Item;
 use App\Models\Link;
 use App\Models\Project;
@@ -513,5 +514,31 @@ class HumanResourceControler extends Controller
         $name    = 'DBD_' . $project->project_name;
 
         return Excel::download(new DBDExport($project_id), $name . date('d-m-Y') . '.xlsx');
+    }
+
+    // Import Score
+    public function adminScores($project_id)
+    {
+        $project = Project::find($project_id);
+
+        return view('hr.admin.project_scores', compact('project'));
+    }
+    public function ImportScore(Request $request)
+    {
+        $project = Project::find($request->project_id);
+        Excel::import(new ScoresImport($project->id), $request->file);
+
+        $data = [
+            'status'  => 'success',
+            'message' => 'นำเข้าข้อมูลสำเร็จ',
+        ];
+
+        return response()->json($data, 200);
+    }
+    public function ImportScoreTEST()
+    {
+        $project = Project::find(1);
+        $file    = public_path("TEST.xlsx");
+        Excel::import(new ScoresImport($project->id), $file);
     }
 }

@@ -1,0 +1,204 @@
+@extends("layouts.hr")
+@section("content")
+    <div class="m-auto flex">
+        <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
+            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
+                / <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+                / คะแนนสอบ
+            </div>
+            <hr>
+            <div class="mt-6 rounded border border-gray-200 bg-gray-50 p-3 shadow">
+                <button class="cursor-pointer rounded bg-blue-600 p-3 text-white" onclick="importScore()"><i class="fa-solid fa-file-import"></i> นำเข้าข้อมูล</button>
+                <div>
+                    <table class="mt-3 w-full">
+                        @if ($project->scoreHeader !== null)
+                            <thead>
+                                <tr>
+                                    <th class="border p-3">รหัสพนักงาน</th>
+                                    <th class="border p-3">ชื่อ - นามสกุล</th>
+                                    @if ($project->scoreHeader->title_1 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_1 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_2 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_2 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_3 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_3 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_4 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_4 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_5 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_5 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_6 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_6 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_7 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_7 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_8 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_8 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_9 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_9 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_10 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_10 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_11 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_11 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_12 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_12 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_13 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_13 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_14 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_14 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_15 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_15 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_16 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_16 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_17 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_17 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_18 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_18 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_19 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_19 }}</th>
+                                    @endif
+                                    @if ($project->scoreHeader->title_20 !== null)
+                                        <th class="border p-3">{{ $project->scoreHeader->title_20 }}</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                        @endif
+                        <tbody>
+                            @if (count($project->tranasctionsData) > 0)
+                                @foreach ($project->tranasctionsData as $transaction)
+                                    @if ($transaction->scoreData !== null)
+                                        <tr>
+                                            <td class="border p-3">{{ $transaction->userData->userid }}</td>
+                                            <td class="border p-3">{{ $transaction->userData->name }}</td>
+                                            @if ($transaction->scoreData->result_1 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_1 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_2 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_2 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_3 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_3 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_4 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_4 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_5 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_5 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_6 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_6 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_7 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_7 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_8 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_8 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_9 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_9 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_10 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_10 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_11 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_11 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_12 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_12 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_13 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_13 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_14 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_14 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_15 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_15 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_16 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_16 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_17 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_17 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_18 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_18 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_19 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_19 }}</th>
+                                            @endif
+                                            @if ($transaction->scoreData->result_20 !== null)
+                                                <th class="border p-3">{{ $transaction->scoreData->result_20 }}</th>
+                                            @endif
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+@section("scripts")
+    <script>
+        async function importScore() {
+            alert = await Swal.fire({
+                title: "นำเข้าข้อมูลคะแนนสอบ",
+                input: "file",
+                confirmButtonColor: 'green',
+                inputAttributes: {
+                    "accept": ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "aria-label": "Upload score excel."
+                }
+            });
+            if (alert.isConfirmed && alert.value !== null) {
+                Swal.fire({
+                    title: 'กำลังเนำเข้าข้อมูล',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                })
+                const formData = new FormData();
+                formData.append("project_id", {{ $project->id }});
+                formData.append("file", alert.value);
+
+                axios.post('{{ env("APP_URL") }}/hr/admin/importscores', formData, {
+                    "Content-Type": "multipart/form-data"
+                }).then((res) => {
+                    Swal.fire({
+                        title: res['data']['message'],
+                        icon: 'success',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: 'green'
+                    }).then(function(isConfirmed) {
+                        window.location.reload()
+                    })
+                }).catch(function(error) {
+                    Swal.fire({
+                        title: 'Error',
+                        icon: 'error',
+                        showConfirmButton: false,
+                    })
+                });;
+            }
+        }
+    </script>
+@endsection

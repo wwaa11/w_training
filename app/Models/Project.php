@@ -22,4 +22,15 @@ class Project extends Model
     {
         return $this->hasMany(Slot::class)->where('slot_active', true)->orderBy('slot_date', 'asc');
     }
+
+    public function tranasctionsData(): HasMany
+    {
+        return $this->hasMany(Transaction::class)->where('transaction_active', true)->orderBy('date', 'asc')->orderBy('user', 'asc');
+    }
+
+    public function scoreHeader(): HasOne
+    {
+        return $this->HasOne(ScoreHeader::class);
+    }
+
 }

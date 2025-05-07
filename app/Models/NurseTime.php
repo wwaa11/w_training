@@ -24,6 +24,7 @@ class NurseTime extends Model
     {
         return $this->belongsTo(NurseDate::class, 'nurse_date_id');
     }
+
     public function transactionData()
     {
         return $this->hasMany(NurseTransaction::class)->where('active', true)->orderBy('date_time', 'asc');
