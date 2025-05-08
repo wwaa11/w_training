@@ -31,14 +31,17 @@
     <div class="fixed left-0 right-0 top-0 z-10 flex h-28 w-full flex-row bg-[#c1dccd] p-3 shadow lg:justify-end lg:gap-6">
         <div class="flex-1 lg:flex-none">
             <a href="{{ env("APP_URL") }}/">
-                <img class="aspect-auto h-16" src="{{ url("images/Side Logo.png") }}" alt="">
+                <img class="my-auto aspect-auto max-h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
             <div class="hidden text-2xl font-bold text-blue-700 lg:block">
                 HRD Division
             </div>
         </div>
         <div class="flex text-end text-[#143429] lg:hidden">
-            <a class="pe-6 pt-6" href="{{ env("APP_URL") }}/hr"><i class="fa-solid fa-house"></i>Home <span class="block text-blue-700 lg:hidden">Training HRD Division</span></a>
+            <a class="mt-4" href="{{ env("APP_URL") }}/hr">
+                <i class="fa-solid fa-house"></i>Home
+                <span class="block text-blue-700 lg:hidden">Training HRD Division</span>
+            </a>
             <button class="cursor-pointer p-4 text-end text-2xl text-[#1a3f34]" type="button" onclick="mobileMenu()">
                 <i class="fa-solid fa-bars"></i>
             </button>
@@ -62,7 +65,7 @@
         </div>
         <span class="absolute bottom-0 left-4 text-sm text-[#143429] lg:hidden">{{ Auth::user()->userid }} {{ session("name") }}</span>
     </div>
-    <div class="fixed left-0 right-0 top-24 z-10 hidden bg-white px-3 text-[#143429] shadow lg:hidden" id="mobileMenu">
+    <div class="fixed left-0 right-0 top-28 z-10 hidden bg-white px-3 text-[#143429] shadow lg:hidden" id="mobileMenu">
         <a class="mt-3 block" href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
         <a class="mt-3 block" href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>

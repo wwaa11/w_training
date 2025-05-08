@@ -32,7 +32,7 @@
         <div class="fixed left-0 right-0 top-0 z-10 flex h-28 w-full flex-row bg-[#c1dccd] p-3 text-[#143429] shadow lg:justify-end lg:gap-6">
             <div class="flex-1 lg:flex-none">
                 <a href="{{ env("APP_URL") }}/">
-                    <img class="aspect-auto h-16" src="{{ url("images/Side Logo.png") }}" alt="">
+                    <img class="my-auto aspect-auto max-h-16" src="{{ url("images/Side Logo.png") }}" alt="">
                 </a>
             </div>
             <div class="flex text-end lg:hidden">

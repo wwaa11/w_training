@@ -41,7 +41,7 @@
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
                                         @endif
                                     @elseif ($time->max == 0)
-                                        @if ($project->mytransactions == null)
+                                        @if (count($project->mytransactions) == 0)
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
                                         @else
                                             <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
@@ -49,7 +49,7 @@
                                     @else
                                         @if ($time->transactionData->count() !== 0 && $time->transactionData->count() == $time->max)
                                             <div class="flex cursor-pointer rounded bg-red-400 p-3 text-white">รอบการลงทะเบียนเต็มแล้ว</div>
-                                        @elseif ($time->transactionData->count() < $time->max && $project->mytransactions == null)
+                                        @elseif ($time->transactionData->count() < $time->max && count($project->mytransactions) == 0)
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->title }}','{{ $date->title }}','{{ $time->id }}','{{ $time->title }}')">ลงทะเบียน</div>
                                         @else
                                             <div class="flex cursor-pointer rounded bg-gray-400 p-3 text-white">มีการลงทะเบียนแล้ว</div>
