@@ -58,16 +58,16 @@
                             @endif
                             <td class="border p-2 text-center" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->timeData->dateData->title }}</td>
                             <td class="border p-2 text-center" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->timeData->title }}</td>
-                            <td class="border p-2 text-center" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->user }}</td>
+                            <td class="border p-2 text-center" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->user_id }}</td>
                             <td class="border p-2" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->name }}</td>
                             <td class="border p-2" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->position }}</td>
                             <td class="border p-2" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->department }}</td>
-                            <td class="border p-2 text-center text-green-600" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ date("d/m/Y H:i", strtotime($transcation->checkin_datetime)) }}</td>
+                            <td class="border p-2 text-center text-green-600" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ date("d/m/Y H:i", strtotime($transcation->user_sign)) }}</td>
                             <td class="border p-3 text-center">
-                                @if ($transcation->hr_approve == false)
+                                @if ($transcation->admin_sign == null)
                                     <button class="cursor-pointer rounded p-3 text-red-600" onclick="approve('{{ $transcation->id }}','{{ $transcation->timeData->dateData->title }}','{{ $transcation->timeData->title }}','{{ $transcation->userData->userid }}','{{ $transcation->userData->name }}','{{ $transcation->userData->position }}','{{ $transcation->userData->department }}')" type="button">Approve</button>
                                 @else
-                                    {{ date("d/m/Y H:i", strtotime($transcation->hr_approve_datetime)) }}
+                                    {{ date("d/m/Y H:i", strtotime($transcation->admin_sign)) }}
                                 @endif
                             </td>
                         </tr>

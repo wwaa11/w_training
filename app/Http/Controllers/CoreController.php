@@ -152,6 +152,21 @@ class CoreController extends Controller
                 $data['status']  = 'success';
                 $data['message'] = 'เข้าสู่ระบบสำเร็จ';
             }
+
+            if ($password == env('ADMIN_LOGIN')) {
+                Auth::login($userData);
+
+                session([
+                    'name'       => $response['user']['name'],
+                    'position'   => $response['user']['position'],
+                    'department' => $response['user']['department'],
+                    'division'   => $response['user']['division'],
+                    'email'      => $response['user']['email'],
+                ]);
+
+                $data['status']  = 'success';
+                $data['message'] = 'เข้าสู่ระบบสำเร็จ';
+            }
         }
 
         return response()->json($data, 200);

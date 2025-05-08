@@ -34,6 +34,9 @@
                             @foreach ($date->timeData as $time)
                                 <div class="flex rounded p-3">
                                     <div class="flex-1 p-3">{{ $time->title }}</div>
+                                    @if ($time->detail !== null)
+                                        <div class="flex-none p-3">{{ $time->detail }}</div>
+                                    @endif
                                     @if ($project->multiple)
                                         @if ($time->transactionData->count() !== 0 && $time->transactionData->count() == $time->max)
                                             <div class="flex cursor-pointer rounded bg-red-400 p-3 text-white">รอบการลงทะเบียนเต็มแล้ว</div>

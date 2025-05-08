@@ -52,6 +52,7 @@
             <a href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
                 <a href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
+                <a href="{{ env("APP_URL") }}/nurse/admin/userscore?department=null">Users Report</a>
                 <a href="{{ env("APP_URL") }}/nurse/admin/users">Users Management</a>
             @endif
         </div>
@@ -71,6 +72,7 @@
         <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/history">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
             <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
+            <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/admin/userscore?department=null">Users Report</a>
             <a class="mt-3 block" href="{{ env("APP_URL") }}/nurse/admin/users">Users Management</a>
         @endif
         <div class="mt-3 block">{{ Auth::user()->userid }} {{ session("name") }}</div>

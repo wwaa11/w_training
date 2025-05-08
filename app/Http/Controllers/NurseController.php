@@ -22,6 +22,7 @@ class NurseController extends Controller
         $projects = NurseProject::where('active', true)
             ->whereDate('register_start', '<=', date('Y-m-d'))
             ->whereDate('register_end', '>=', date('Y-m-d'))
+            ->orderBy('register_start', 'asc')
             ->get();
 
         $myTransaction = NurseTransaction::where('user_id', Auth::user()->userid)
@@ -147,7 +148,9 @@ class NurseController extends Controller
     // Admin
     public function adminProjectIndex()
     {
-        $projects = NurseProject::where('active', true)->get();
+        $projects = NurseProject::where('active', true)
+            ->orderBy('register_start', 'asc')
+            ->get();
 
         return view('nurse.admin.project_index', compact('projects'));
     }
@@ -540,5 +543,77 @@ class NurseController extends Controller
         $name = $date->projectData->title . '_' . $date->title;
 
         return Excel::download(new NurseDateExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+
+    public function UserScore(Request $request)
+    {
+        foreach ($request->query as $parameter => $value) {
+            if ($parameter == 'department') {
+                $department = $value;
+            }
+        }
+
+        $departmentArray = [
+            'แผนกฉุกเฉิน',
+            'แผนกหอผู้ป่วยวิกฤต ICU - CCU',
+            'แผนกไตเทียม',
+            'แผนกหอผู้ป่วยในชั้น 6',
+            'แผนกหอผู้ป่วยในชั้น 7',
+            'แผนกหอผู้ป่วยในชั้น 10',
+            'แผนกหอผู้ป่วยในชั้น 14',
+            'แผนกหอผู้ป่วยในชั้น 15',
+            'แผนกหอผู้ป่วยในชั้น 15(ตึกB)',
+            'แผนกหอผู้ป่วยในชั้น 16',
+            'แผนกหอผู้ป่วยในชั้น 17(ตึกB)',
+            'แผนกห้องส่องกล้องระบบทางเดินอาหาร',
+            'แผนกศูนย์ทางเดินอาหารและตับ(ตึกB)',
+            'แผนกห้องพักฟื้น',
+            'แผนกห้องผ่าตัด',
+            'แผนกห้องคลอด',
+            'หน่วยบริการเปล',
+            'แผนกจ่ายกลาง',
+            'แผนกอายุรกรรม',
+            'แผนกศัลยกรรม',
+            'แผนกสถาบันหัวใจและหลอดเลือด',
+            'แผนกสูตินรีเวช',
+        ];
+
+        $projects = NurseProject::where('active', true)
+            ->orderBy('register_start', 'asc')
+            ->get();
+
+        $nurses = User::where('department', $department)
+            ->orderBy('department', 'asc')
+            ->orderBy('userid', 'asc')
+            ->get();
+
+        $transactions = NurseTransaction::where('active', true)->get();
+
+        $data = [];
+        foreach ($nurses as $index => $nurse) {
+            $data[$nurse->department][$nurse->userid] = [
+                'user'     => $nurse->userid,
+                'name'     => $nurse->name,
+                'position' => $nurse->position,
+                'lecture'  => null,
+            ];
+            $lectureCount = NurseLecture::where('user_id', $nurse->userid)->where('active', true)->count();
+            $score        = null;
+            if ($lectureCount > 0) {
+                $data[$nurse->department][$nurse->userid]['lecture'] = $lectureCount * 5;
+                $score                                               = $lectureCount * 5;
+            }
+            foreach ($projects as $project) {
+                $data[$nurse->department][$nurse->userid][$project->title] = null;
+                $countTransaction                                          = collect($transactions)->where('user_id', $nurse->userid)->where('nurse_project_id', $project->id)->count();
+                if ($countTransaction > 0) {
+                    $data[$nurse->department][$nurse->userid][$project->title] = $countTransaction;
+                    $score += $countTransaction;
+                }
+            }
+            $data[$nurse->department][$nurse->userid]['total'] = $score;
+        }
+
+        return view('nurse.admin.user_reports', compact('projects', 'data', 'departmentArray', 'department'));
     }
 }
