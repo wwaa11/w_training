@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\NurseDateExport;
+use App\Exports\NurseScoreExport;
 use App\Models\NurseDate;
 use App\Models\NurseLecture;
 use App\Models\NurseProject;
@@ -587,7 +588,12 @@ class NurseController extends Controller
             ->orderBy('userid', 'asc')
             ->get();
 
-        $transactions = NurseTransaction::where('active', true)->get();
+        $transactions = NurseTransaction::where('active', true)
+            ->whereNotNull('user_sign')
+            ->whereNotNull('admin_sign')
+            ->get();
+
+        $lecture = NurseLecture::where('active', true)->get();
 
         $data = [];
         foreach ($nurses as $index => $nurse) {
@@ -597,7 +603,7 @@ class NurseController extends Controller
                 'position' => $nurse->position,
                 'lecture'  => null,
             ];
-            $lectureCount = NurseLecture::where('user_id', $nurse->userid)->where('active', true)->count();
+            $lectureCount = collect($lecture)->where('user_id', $nurse->userid)->count();
             $score        = null;
             if ($lectureCount > 0) {
                 $data[$nurse->department][$nurse->userid]['lecture'] = $lectureCount * 5;
@@ -615,5 +621,14 @@ class NurseController extends Controller
         }
 
         return view('nurse.admin.user_reports', compact('projects', 'data', 'departmentArray', 'department'));
+    }
+    public function UserScoreExport($department)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $name = 'nurseScore_' . $department;
+
+        return Excel::download(new NurseScoreExport($department), $name . date('d-m-Y') . '.xlsx');
     }
 }

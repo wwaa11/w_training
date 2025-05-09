@@ -98,5 +98,6 @@ Route::middleware([NurseAdmin::class])->group(function () {
     Route::get('/nurse/admin/export/excel/date/{date_id}', [NurseController::class, 'ExcelDateExport']);
 
     Route::get('/nurse/admin/userscore', [NurseController::class, 'UserScore']);
+    Route::get('/nurse/admin/userscoreexport/{department}', [NurseController::class, 'UserScoreExport']);
 
 });

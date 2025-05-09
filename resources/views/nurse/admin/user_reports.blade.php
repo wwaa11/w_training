@@ -15,8 +15,11 @@
                 </div>
                 @foreach ($data as $key => $department)
                     <div>
+                        <div class="m-3 flex text-2xl">
+                            <div class="flex-1 text-red-600">{{ $key }}</div>
+                            <a class="text-blue-600 underline" href="{{ env("APP_URL") }}/nurse/admin/userscoreexport/{{ $key }}">Export</a>
+                        </div>
                         <table class="my-3 w-full rounded bg-white p-3">
-                            <caption class="text-2xl font-bold text-red-600">{{ $key }}</caption>
                             <thead class="h-24 overflow-clip bg-gray-200">
                                 <th class="border border-gray-600 p-2">รหัสพนักงาน</th>
                                 <th class="border border-gray-600 p-2">ชื่อ - สกุล</th>
