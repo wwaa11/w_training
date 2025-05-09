@@ -15,6 +15,14 @@
                     <div class="cursor-pointer rounded bg-green-600 p-3 text-center text-white"><i class="fa-solid fa-users"></i> ผู้ลงทะเบียนทั้งหมด</div>
                 </a>
             </div>
+            <div class="text-2xl font-bold">Export</div>
+            <hr>
+            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/users/{{ $project->id }}">
+                <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel รายชื่อผู้ฝึกอบรมทั้งหมด</div>
+            </a>
+            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/lectures/{{ $project->id }}">
+                <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel รายชื่อวิทยากรทั้งหมด</div>
+            </a>
             <div class="text-2xl font-bold">วันที่เปิดลงทะเบียน</div>
             <hr class="mb-3">
             @foreach ($project->dateData as $date)
@@ -22,7 +30,9 @@
                     <thead class="bg-gray-200">
                         <th class="border p-3 text-start">
                             <span>{{ $date->title }}</span>
-                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/{{ $date->id }}"><span class="ms-6 text-green-600"><i class="fa-solid fa-file-excel"></i></span></a>
+                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/dateusers/{{ $date->id }}">
+                                <span class="ms-6 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> รายชื่อผู้ฝึกอบรม</span>
+                            </a>
                             <span class="float-end ms-3 cursor-pointer rounded bg-blue-400 p-2" onclick="addlecturer('{{ $date->id }}','{{ $date->title }}')"><i class="fa fa-plus"></i> วิทยากร</span>
                         </th>
                         <th class="w-36 border p-3">จำนวนลงทะเบียน</th>
@@ -51,7 +61,12 @@
                         @endforeach
                         @if (count($date->lecturesData) > 0)
                             <tr>
-                                <td class="border bg-gray-300 p-3" colspan="2">วิทยากร</td>
+                                <td class="border bg-gray-300 p-3" colspan="2">
+                                    วิทยากร
+                                    <a class="ms-6 cursor-pointer rounded py-3 text-green-600 hover:text-green-800" href="{{ env("APP_URL") }}/nurse/admin/export/excel/datelecture/{{ $date->id }}">
+                                        <i class="fa-solid fa-file-excel"></i> รายชื่อวิทยากร
+                                    </a>
+                                </td>
                             </tr>
                             @foreach ($date->lecturesData as $lecture)
                                 <tr class="bg-white hover:bg-green-200">

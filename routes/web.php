@@ -95,7 +95,10 @@ Route::middleware([NurseAdmin::class])->group(function () {
     Route::post('/nurse/admin/addLecture', [NurseController::class, 'adminAddLecture']);
     Route::post('/nurse/admin/deleteLecture', [NurseController::class, 'adminDeleteLecture']);
 
-    Route::get('/nurse/admin/export/excel/date/{date_id}', [NurseController::class, 'ExcelDateExport']);
+    Route::get('/nurse/admin/export/excel/users/{project_id}', [NurseController::class, 'ExcelUserExport']);
+    Route::get('/nurse/admin/export/excel/lectures/{project_id}', [NurseController::class, 'ExcelLectureExport']);
+    Route::get('/nurse/admin/export/excel/dateusers/{date_id}', [NurseController::class, 'ExcelDateUserExport']);
+    Route::get('/nurse/admin/export/excel/datelecture/{date_id}', [NurseController::class, 'ExcelDateLectureExport']);
 
     Route::get('/nurse/admin/userscore', [NurseController::class, 'UserScore']);
     Route::get('/nurse/admin/userscoreexport/{department}', [NurseController::class, 'UserScoreExport']);

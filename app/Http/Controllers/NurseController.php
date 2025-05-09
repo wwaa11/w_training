@@ -2,7 +2,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\NurseDateExport;
+use App\Exports\NurseDateLectureExport;
+use App\Exports\NurseLectureExport;
 use App\Exports\NurseScoreExport;
+use App\Exports\NurseUserExport;
 use App\Models\NurseDate;
 use App\Models\NurseLecture;
 use App\Models\NurseProject;
@@ -535,7 +538,27 @@ class NurseController extends Controller
         return response()->json($response, 200);
     }
 
-    public function ExcelDateExport($date_id)
+    public function ExcelUserExport($project_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $project = NurseProject::find($project_id);
+        $name    = $project->title . '_ผู้ฝึกอบรม';
+
+        return Excel::download(new NurseUserExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+    public function ExcelLectureExport($project_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $project = NurseProject::find($project_id);
+        $name    = $project->title . '_วิทยากร';
+
+        return Excel::download(new NurseLectureExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+    public function ExcelDateUserExport($date_id)
     {
         ini_set('memory_limit', '1024M');
         ini_set('max_execution_time', 600);
@@ -544,6 +567,16 @@ class NurseController extends Controller
         $name = $date->projectData->title . '_' . $date->title;
 
         return Excel::download(new NurseDateExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+    public function ExcelDateLectureExport($date_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $date = NurseDate::find($date_id);
+        $name = $date->projectData->title . '_' . $date->title;
+
+        return Excel::download(new NurseDateLectureExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
 
     public function UserScore(Request $request)

@@ -15,6 +15,7 @@ class NurseScoreExport implements FromArray
     {
         $this->department = $department;
     }
+
     public function array(): array
     {
         $data = [];
