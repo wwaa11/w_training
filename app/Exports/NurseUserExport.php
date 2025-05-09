@@ -4,14 +4,43 @@ namespace App\Exports;
 use App\Models\NurseProject;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithDrawings;
+use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class NurseUserExport implements FromArray, ShouldAutoSize
+class NurseUserExport implements FromArray, ShouldAutoSize, WithDrawings
 {
     protected $project_id;
 
     public function __construct($project_id)
     {
         $this->project_id = $project_id;
+    }
+
+    public function drawings()
+    {
+        $project_id = $this->project_id;
+        $project    = NurseProject::find($project_id);
+        $row        = 0;
+        foreach ($project->dateData as $date) {
+            foreach ($date->timeData as $time) {
+                foreach ($time->transactionData as $index => $transaction) {
+                    $base64 = explode(',', $transaction->userData->sign, 2);
+                    $sign   = imagecreatefromstring(base64_decode($base64[1]));
+                    imagesavealpha($sign, true);
+
+                    $drawing = new MemoryDrawing();
+                    $drawing->setImageResource($sign);
+                    $drawing->setHeight(15);
+                    $drawing->setWidth(120);
+                    $drawing->setCoordinates('J' . ($row + 2));
+                    $drawings[] = $drawing;
+
+                    $row += 1;
+                }
+            }
+        }
+
+        return $drawings;
     }
 
     public function array(): array
