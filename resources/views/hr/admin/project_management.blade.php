@@ -14,7 +14,7 @@
                 <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/approve?project={{ $project->id }}&approve=false&time=all">
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/scores/{{ $project->id }}">
+                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/scores?project={{ $project->id }}&userid=null">
                     <div class="cursor-pointer rounded bg-green-200 p-3 text-center"><i class="fa-solid fa-list-ol"></i> คะแนนสอบ</div>
                 </a>
                 <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/link/{{ $project->id }}">
@@ -52,13 +52,13 @@
                             <tr class="bg-white">
                                 <td class="border p-3">
                                     <div class="flex gap-3">
-                                        @if (date("Y-m-d") == $slot->slot_date || date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")) == date("Y-m-d", strtotime($slot->slot_date)))
+                                        @if (date("Y-m-d") == $slot->slot_date || date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")) == date("Y-m-d", strtotime($slot->slot_date)) || auth()->user()->role == "sa")
                                             @if (count($item->transactions) == $item->item_max_available)
                                                 <div class="lg:w-42 flex-1 cursor-pointer text-red-600 lg:flex-none">
                                                     <i class="fa-solid fa-ban"></i>&nbsp;มีผู้ลงทะเบียนเต็มแล้ว
                                                 </div>
                                             @else
-                                                @if (date("Y-m-d") == date("Y-m-d", strtotime($slot->slot_date)) || date("H:i") >= "17:00")
+                                                @if (date("Y-m-d") == date("Y-m-d", strtotime($slot->slot_date)) || date("H:i") >= "17:00" || auth()->user()->role == "sa")
                                                     <div class="lg:w-42 flex-1 cursor-pointer text-green-600 lg:flex-none" onclick="addTransaction('{{ $item->id }}','{{ $item->item_name }}')">
                                                         <i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน
                                                     </div>

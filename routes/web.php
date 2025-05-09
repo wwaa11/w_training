@@ -49,6 +49,7 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::post('/hr/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
 
     Route::get('/hr/admin', [HumanResourceControler::class, 'adminIndex']);
+    Route::get('/hr/admin/createDEV', [HumanResourceControler::class, 'adminProjectCreate']);
     Route::get('/hr/admin/project/{id}', [HumanResourceControler::class, 'adminProjectManagement']);
 
     Route::get('/hr/admin/link/{id}', [HumanResourceControler::class, 'adminProjectLink']);
@@ -68,7 +69,7 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::get('/hr/admin/export/excel/onebook/{project_id}', [HumanResourceControler::class, 'ExcelOneBookExport']);
     Route::get('/hr/admin/export/excel/dbd/{project_id}', [HumanResourceControler::class, 'ExcelDBDExport']);
 
-    Route::get('/hr/admin/scores/{project_id}', [HumanResourceControler::class, 'adminScores']);
+    Route::get('/hr/admin/scores', [HumanResourceControler::class, 'adminScores']);
     Route::post('/hr/admin/importscores', [HumanResourceControler::class, 'ImportScore']);
 
 });

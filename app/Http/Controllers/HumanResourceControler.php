@@ -24,6 +24,51 @@ use Maatwebsite\Excel\Facades\Excel;
 class HumanResourceControler extends Controller
 {
     // Dev Add Date to Project
+    public function adminProjectCreate()
+    {
+        die();
+        $arrayTransaction = [
+            "640067", "670208", "670205", "680026", "680025", "680034", "680037", "680036", "680009", "650140", "560112", "630087", "570091", "660128", "650190", "670062", "680058", "680035", "670120", "680082", "680068", "680059", "590193", "600077", "640034", "680046", "590112", "670212", "640065", "680083", "640066", "600076",
+        ];
+
+        $project                          = new Project;
+        $project->project_name            = 'ทดสอบวัดภาษาอังกฤษ';
+        $project->project_detail          = '';
+        $project->project_active          = false;
+        $project->project_delete          = true;
+        $project->start_register_datetime = '2025-05-01';
+        $project->last_register_datetime  = '2025-05-01';
+        $project->save();
+        dump($project);
+
+        $date             = new Slot;
+        $date->project_id = $project->id;
+        $date->slot_index = 1;
+        $date->slot_date  = '2025-05-01';
+        $date->slot_name  = '01 พฤษภาคม 2568';
+        $date->save();
+        dump($date);
+
+        $time                     = new Item;
+        $time->slot_id            = $date->id;
+        $time->item_name          = 'ผลคะแนนสอบภาษาอังกฤษ';
+        $time->item_index         = 1;
+        $time->item_available     = 999;
+        $time->item_max_available = 999;
+        $time->save();
+        dump($time);
+
+        foreach ($arrayTransaction as $user) {
+            $tran                     = new Transaction;
+            $tran->project_id         = $project->id;
+            $tran->item_id            = $time->id;
+            $tran->user               = $user;
+            $tran->transaction_active = true;
+            $tran->save();
+            dump($tran);
+        }
+
+    }
     public function addDatetoProject()
     {
         die();
@@ -517,10 +562,19 @@ class HumanResourceControler extends Controller
     }
 
     // Import Score
-    public function adminScores($project_id)
+    public function adminScores(Request $request)
     {
+        $req = $request->query;
+        foreach ($req as $in => $value) {
+            if ($in == 'project') {
+                $project_id = $value;
+            }
+            if ($in == 'userid') {
+                $userid = $value;
+            }
+        }
         $project      = Project::find($project_id);
-        $transactions = Transaction::join('scores', 'transactions.id', 'scores.transaction_id')->where('project_id', $project_id)->where('transaction_active', true)->get();
+        $transactions = Transaction::join('scores', 'transactions.id', 'scores.transaction_id')->where('project_id', $project_id)->where('user_id', $userid)->where('transaction_active', true)->get();
 
         return view('hr.admin.project_scores', compact('project', 'transactions'));
     }

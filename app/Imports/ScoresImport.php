@@ -5,6 +5,7 @@ use App\Models\Score;
 use App\Models\ScoreHeader;
 use App\Models\Transaction;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
@@ -53,6 +54,8 @@ class ScoresImport implements ToCollection, WithCalculatedFormulas
                         }
                     }
                     $score->save();
+                } else {
+                    Log::channel('hr_delete')->info('Import : ' . $row[1] . ' not found active transaction.');
                 }
             }
         }

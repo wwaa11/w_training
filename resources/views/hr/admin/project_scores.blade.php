@@ -10,6 +10,10 @@
             <div class="mt-6 rounded border border-gray-200 bg-gray-50 p-3 shadow">
                 <button class="cursor-pointer rounded bg-blue-600 p-3 text-white" onclick="importScore()"><i class="fa-solid fa-file-import"></i> นำเข้าข้อมูล</button>
                 <div>
+                    <div class="mt-3 flex gap-3">
+                        <input class="w-full rounded border border-gray-400 p-3" id="userid" type="text" placeholder="รหัสพนักงงาน">
+                        <button class="cursor-pointer rounded bg-blue-600 p-3 text-white" onclick="searchUserID()">ค้นหา</button>
+                    </div>
                     <table class="mt-3 w-full">
                         @if ($project->scoreHeader !== null)
                             <thead>
@@ -167,7 +171,7 @@
             });
             if (alert.isConfirmed && alert.value !== null) {
                 Swal.fire({
-                    title: 'กำลังเนำเข้าข้อมูล',
+                    title: 'กำลังนำเข้าข้อมูล',
                     icon: 'info',
                     allowOutsideClick: false,
                     showConfirmButton: false,
@@ -195,6 +199,11 @@
                     })
                 });;
             }
+        }
+
+        function searchUserID() {
+            user = $('#userid').val();
+            window.location.replace('{{ env("APP_URL") }}/hr/admin/scores?project={{ $project->id }}&project=' + {{ $project->id }} + '&userid=' + user);
         }
     </script>
 @endsection
