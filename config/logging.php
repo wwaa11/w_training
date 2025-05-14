@@ -56,7 +56,7 @@ return [
             'driver'               => 'daily',
             'path'                 => storage_path('logs/hr_delete_transaction.log'),
             'level'                => env('LOG_LEVEL', 'debug'),
-            'days'                 => env('LOG_DAILY_DAYS', 7),
+            'days'                 => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
         ],
 
@@ -64,7 +64,7 @@ return [
             'driver'               => 'daily',
             'path'                 => storage_path('logs/nurse_delete_transaction.log'),
             'level'                => env('LOG_LEVEL', 'debug'),
-            'days'                 => env('LOG_DAILY_DAYS', 7),
+            'days'                 => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
         ],
 
