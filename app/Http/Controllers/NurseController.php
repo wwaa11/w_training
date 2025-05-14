@@ -83,7 +83,7 @@ class NurseController extends Controller
             $new                   = new NurseTransaction();
             $new->nurse_project_id = $request->project_id;
             $new->nurse_time_id    = $request->time_id;
-            $new->date_time        = $time->time_start;
+            $new->date_time        = $time->dateData->date;
             $new->user_id          = Auth::user()->userid;
             $new->save();
 
@@ -99,7 +99,7 @@ class NurseController extends Controller
             $new                   = new NurseTransaction();
             $new->nurse_project_id = $request->project_id;
             $new->nurse_time_id    = $request->time_id;
-            $new->date_time        = $time->time_start;
+            $new->date_time        = $time->dateData->date;
             $new->user_id          = Auth::user()->userid;
             $new->save();
 
@@ -335,7 +335,7 @@ class NurseController extends Controller
                 $new                   = new NurseTransaction();
                 $new->nurse_project_id = $request->project_id;
                 $new->nurse_time_id    = $request->time_id;
-                $new->date_time        = $NurseTime->time_start;
+                $new->date_time        = $NurseTime->dateData->date;
                 $new->user_id          = $request->user;
                 $new->save();
 
@@ -356,7 +356,7 @@ class NurseController extends Controller
                 $new                   = new NurseTransaction();
                 $new->nurse_project_id = $request->project_id;
                 $new->nurse_time_id    = $request->time_id;
-                $new->date_time        = $NurseTime->time_start;
+                $new->date_time        = $NurseTime->dateData->date;
                 $new->user_id          = $request->user;
                 $new->save();
 
