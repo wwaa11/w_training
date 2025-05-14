@@ -89,7 +89,7 @@ class NurseController extends Controller
 
             $response = [
                 'status'  => 'success',
-                'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                'message' => 'ทำการลงทะเบียนสำเร็จ!',
             ];
 
         } else if ($time->max != 0 && $time->free > 0) {
@@ -105,7 +105,7 @@ class NurseController extends Controller
 
             $response = [
                 'status'  => 'success',
-                'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                'message' => 'ทำการลงทะเบียนสำเร็จ!',
             ];
         }
 
@@ -343,7 +343,7 @@ class NurseController extends Controller
 
                 $response = [
                     'status'  => 'success',
-                    'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                    'message' => 'ทำการลงทะเบียนสำเร็จ!',
                     'time'    => $new->timeData->title,
                     'name'    => $userData->userid . ' ' . $userData->name,
                 ];
@@ -364,7 +364,7 @@ class NurseController extends Controller
 
                 $response = [
                     'status'  => 'success',
-                    'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                    'message' => 'ทำการลงทะเบียนสำเร็จ!',
                     'time'    => $new->timeData->title,
                     'name'    => $userData->userid . ' ' . $userData->name,
                 ];

@@ -209,7 +209,7 @@ class HumanResourceControler extends Controller
 
             $response = [
                 'status'  => 'success',
-                'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                'message' => 'ทำการลงทะเบียนสำเร็จ!',
             ];
         }
 
@@ -350,7 +350,7 @@ class HumanResourceControler extends Controller
 
                 $response = [
                     'status'  => 'success',
-                    'message' => 'ทำการลงทำเบียนสำเร็จ!',
+                    'message' => 'ทำการลงทะเบียนสำเร็จ!',
                     'slot'    => $item->item_name,
                     'name'    => $userData->userid . ' ' . $userData->name,
                 ];
