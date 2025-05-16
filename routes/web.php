@@ -44,6 +44,8 @@ Route::middleware([pr9Auth::class])->group(function () {
 });
 
 Route::middleware([HrAdmin::class])->group(function () {
+    Route::get('/hr/function', [HumanResourceControler::class, 'addDatetoProject']);
+
     Route::get('/hr/admin/users', [CoreController::class, 'AllUserHR']);
     Route::post('/hr/admin/users/search', [CoreController::class, 'UserSearch']);
     Route::post('/hr/admin/resetpassword', [CoreController::class, 'UserResetPassword']);

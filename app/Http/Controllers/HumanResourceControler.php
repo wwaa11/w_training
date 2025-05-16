@@ -23,7 +23,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class HumanResourceControler extends Controller
 {
-    // Dev Add Date to Project
+    // Dev Function
     public function adminProjectCreate()
     {
         die();
@@ -74,25 +74,25 @@ class HumanResourceControler extends Controller
         die();
         $datetoAdd = [
             [
-                'date'  => '2025-05-05',
-                'title' => '05 พฤษภาคม 2568',
+                'date'  => '2025-05-27',
+                'title' => '27 พฤษภาคม 2568',
             ],
             [
-                'date'  => '2025-05-06',
-                'title' => '06 พฤษภาคม 2568',
+                'date'  => '2025-05-28',
+                'title' => '28 พฤษภาคม 2568',
             ],
             [
-                'date'  => '2025-05-07',
-                'title' => '07 พฤษภาคม 2568',
+                'date'  => '2025-05-30',
+                'title' => '30 พฤษภาคม 2568',
             ],
-            [
-                'date'  => '2025-05-08',
-                'title' => '08 พฤษภาคม 2568',
-            ],
-            [
-                'date'  => '2025-05-09',
-                'title' => '09 พฤษภาคม 2568',
-            ],
+            // [
+            //     'date'  => '2025-05-08',
+            //     'title' => '08 พฤษภาคม 2568',
+            // ],
+            // [
+            //     'date'  => '2025-05-09',
+            //     'title' => '09 พฤษภาคม 2568',
+            // ],
         ];
         $timetoAdd = [
             [
@@ -120,8 +120,9 @@ class HumanResourceControler extends Controller
                 'link_end'   => '17:00:00.000',
             ],
         ];
-        $project_id = 4;
+        $project_id = 5;
         $dateIndex  = 5;
+        $seats      = 12;
         foreach ($datetoAdd as $detail) {
             $dateIndex += 1;
             $newDate             = new Slot;
@@ -135,11 +136,11 @@ class HumanResourceControler extends Controller
                 $newTime->slot_id            = $newDate->id;
                 $newTime->item_name          = $time['title'];
                 $newTime->item_index         = $time['index'];
-                $newTime->item_available     = 12;
+                $newTime->item_available     = $seats;
                 $newTime->item_note_1_active = 1;
                 $newTime->item_note_1_title  = 'สถานที่';
                 $newTime->item_note_1_value  = 'ห้อง E-learning ชั้น 8 อาคาร A';
-                $newTime->item_max_available = 12;
+                $newTime->item_max_available = $seats;
                 $newTime->link_time          = 1;
                 $newTime->link_start         = $detail['date'] . ' ' . $time['link_start'];
                 $newTime->link_end           = $detail['date'] . ' ' . $time['link_end'];
