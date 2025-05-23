@@ -36,7 +36,9 @@
                                             <div class="flex cursor-pointer rounded bg-red-600 p-3 text-white">เต็มแล้ว</div>
                                         @endif
                                     @elseif($item->item_available > 0)
-                                        @if (date("Y-m-d H:i") <= date("Y-m-d 17:00") && $slot->slot_date <= date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")))
+                                        @if ($slot->aollow_today)
+                                            <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->project_name }}','{{ $item->id }}','{{ $slot->slot_name }}','{{ $item->item_name }}')">ลงทะเบียน</div>
+                                        @elseif (date("Y-m-d H:i") <= date("Y-m-d 17:00") && $slot->slot_date <= date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")))
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->project_name }}','{{ $item->id }}','{{ $slot->slot_name }}','{{ $item->item_name }}')">ลงทะเบียน</div>
                                         @elseif($slot->slot_date > date("Y-m-d", strtotime(date("Y-m-d") . " +1 day")))
                                             <div class="flex cursor-pointer rounded bg-[#c1dccd] p-3" onclick="register('{{ $project->id }}','{{ $project->project_name }}','{{ $item->id }}','{{ $slot->slot_name }}','{{ $item->item_name }}')">ลงทะเบียน</div>

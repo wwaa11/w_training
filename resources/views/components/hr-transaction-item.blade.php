@@ -7,7 +7,7 @@
     <div class="relative flex-1 border-l-2 border-[#6d6d6d] px-3">
         <div class="prompt-medium text-2xl text-[#008387]">{{ $transaction->item->slot->project->project_name }}</div>
         <div class="mt-2"><i class="fa-regular fa-clock w-8 text-[#008387]"></i> {{ $transaction->item->item_name }}</div>
-        @if ($transaction->seat !== null)
+        @if ($transaction->seat !== null && $transaction->item->slot->project->show_seat)
             <div class="mt-2 flex rounded bg-red-500 p-3 text-white lg:hidden">
                 <div class="pt-2">เลขที่นั่งสอบ</div>
                 <div class="flex-1 text-end text-3xl">{{ $transaction->seat }}</div>

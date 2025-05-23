@@ -26,35 +26,36 @@ class HumanResourceControler extends Controller
     // Dev Function
     public function adminProjectCreate()
     {
-        die();
-        $arrayTransaction = [
-            "640067", "670208", "670205", "680026", "680025", "680034", "680037", "680036", "680009", "650140", "560112", "630087", "570091", "660128", "650190", "670062", "680058", "680035", "670120", "680082", "680068", "680059", "590193", "600077", "640034", "680046", "590112", "670212", "640065", "680083", "640066", "600076",
-        ];
+        // die();
+        $arrayTransaction = [];
 
         $project                          = new Project;
-        $project->project_name            = 'ทดสอบวัดภาษาอังกฤษ';
-        $project->project_detail          = '';
-        $project->project_active          = false;
-        $project->project_delete          = true;
-        $project->start_register_datetime = '2025-05-01';
-        $project->last_register_datetime  = '2025-05-01';
+        $project->project_name            = 'การเรียกร้องค่าสินไหม การลด Reject Claim';
+        $project->project_detail          = 'โดย บริษัท กรุงไทย-แอกซ่า ประกันชีวิต จำกัด(มหาชน) Krungthai-AXA Life Insurance PCL';
+        $project->project_active          = true;
+        $project->project_delete          = false;
+        $project->start_register_datetime = '2025-05-22';
+        $project->last_register_datetime  = '2025-05-23';
         $project->save();
         dump($project);
 
         $date             = new Slot;
         $date->project_id = $project->id;
         $date->slot_index = 1;
-        $date->slot_date  = '2025-05-01';
-        $date->slot_name  = '01 พฤษภาคม 2568';
+        $date->slot_date  = '2025-05-23';
+        $date->slot_name  = '23 พฤษภาคม 2568';
         $date->save();
         dump($date);
 
         $time                     = new Item;
         $time->slot_id            = $date->id;
-        $time->item_name          = 'ผลคะแนนสอบภาษาอังกฤษ';
+        $time->item_name          = '14.00 - 16.00 น';
         $time->item_index         = 1;
-        $time->item_available     = 999;
-        $time->item_max_available = 999;
+        $time->item_available     = 1500;
+        $time->item_max_available = 1500;
+        $item->item_note_1_active = true;
+        $item->item_note_1_title  = 'ห้องประชุม';
+        $item->item_note_1_value  = 'Grand Hall ชั้น 5 อาคาร A';
         $time->save();
         dump($time);
 

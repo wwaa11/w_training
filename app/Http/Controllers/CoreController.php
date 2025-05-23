@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\HrAssignSeat;
-use App\Jobs\HrDeleteTransaction;
 use App\Models\Item;
 use App\Models\Seat;
 use App\Models\Transaction;
@@ -93,7 +92,7 @@ class CoreController extends Controller
     public function DispatchServices()
     {
         HrAssignSeat::dispatch();
-        HrDeleteTransaction::dispatch();
+        // HrDeleteTransaction::dispatch();
     }
 
     // Auth
