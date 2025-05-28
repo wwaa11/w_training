@@ -457,7 +457,7 @@ class HumanResourceControler extends Controller
         $transaction->hr_approve_datetime = date('Y-m-d H:i:s');
         $transaction->save();
 
-        Log::channel('hr_delete')->info('User : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' Approve transaction id: ' . $transaction->id);
+        Log::channel('hr_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' Approve transaction id: ' . $transaction->id);
         $data = [
             'status'  => 'success',
             'message' => 'Approve สำเร็จ',
@@ -473,7 +473,7 @@ class HumanResourceControler extends Controller
             $transaction->hr_approve          = true;
             $transaction->hr_approve_datetime = date('Y-m-d H:i:s');
             $transaction->save();
-            Log::channel('hr_delete')->info('User : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' Approve transaction id: ' . $transaction->id);
+            Log::channel('hr_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' Approve transaction id: ' . $transaction->id);
         }
         $data = [
             'status'  => 'success',
