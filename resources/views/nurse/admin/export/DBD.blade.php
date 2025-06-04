@@ -5,7 +5,7 @@
             <th align="center" style="font-size: 24pt; font-weight: bold;" colspan="5">ใบบันทึกฝึกอบรม</th>
         </tr>
         <tr>
-            <th style="font-size: 14pt;" colspan="10">หลักสูตร {{ $project->project_name }}</th>
+            <th style="font-size: 14pt;" colspan="10">หลักสูตร {{ $project->title }}</th>
         </tr>
         <tr>
             <th style="font-size: 14pt;" colspan="10">วันเดือนปี ( 1วัน/1หลักสูตร )</th>
@@ -32,7 +32,7 @@
             <tr>
                 <td align="center">{{ $index + 1 }}</td>
                 <td data-type="text" style="width: 200px;">{{ (string) $transaction->userData->refNo }}</td>
-                <td>{{ $transaction->user }}</td>
+                <td>{{ $transaction->user_id }}</td>
                 <td style="width: 200px;">{{ $transaction->userData->name }}</td>
                 <td style="width: 200px;">{{ $transaction->userData->position }}</td>
                 <td style="width: 200px;">{{ $transaction->userData->department }}</td>

@@ -19,6 +19,13 @@
             <hr class="my-3" />
             <label class="">ชื่อโครงการฝึกอบรม</label>
             <input class="mb-3 w-full rounded border border-gray-400 p-2" type="text" name="title" placeholder="ชื่อโครงการฝึกอบรม" value="{{ old("title") }}" required>
+            <label class="">Type of Excel</label>
+            <select class="mb-3 w-full rounded border border-gray-400 p-2" name="export_type" required>
+                <option value="" disabled selected>โปรดระบุ</option>
+                <option value="1">ใบบันทึกฝึกอบรม ภาคปฐมนิเทศ</option>
+                <option value="2">ใบบันทึกฝึกอบรม ส่วนกลางโรงพยาบาล</option>
+                <option value="3">ใบบันทึกการฝึกอบรมภาคอิสระ</option>
+            </select>
             <label class="">สถานที่จัดโครงการ</label>
             <input class="mb-3 w-full rounded border border-gray-400 p-2" type="text" name="location" placeholder="สถานที่จัดโครงการ" value="{{ old("location") }}" required>
             <div class="flex flex-row gap-3">

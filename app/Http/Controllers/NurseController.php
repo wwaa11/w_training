@@ -3,8 +3,12 @@ namespace App\Http\Controllers;
 
 use App\Exports\NurseDateExport;
 use App\Exports\NurseDateLectureExport;
+use App\Exports\NurseDBDExport;
 use App\Exports\NurseLectureExport;
 use App\Exports\NurseScoreExport;
+use App\Exports\NurseType1Export;
+use App\Exports\NurseType2Export;
+use App\Exports\NurseType3Export;
 use App\Exports\NurseUserExport;
 use App\Models\NurseDate;
 use App\Models\NurseLecture;
@@ -227,6 +231,7 @@ class NurseController extends Controller
             'register_end'   => 'required|date|after_or_equal:register_start',
             'time'           => 'required|array',
             'date'           => 'required|array',
+            'export_type'    => 'required|in:1,2,3',
         ], [
             'time.required' => 'โปรดระบุรอบการลงทะเบียน',
         ]);
@@ -237,6 +242,7 @@ class NurseController extends Controller
             'location'       => $request->location,
             'register_start' => $request->register_start,
             'register_end'   => $request->register_end,
+            'export_type'    => $request->export_type,
         ]);
 
         foreach ($request->date as $date) {
@@ -265,11 +271,34 @@ class NurseController extends Controller
     {
         $project = NurseProject::find($project_id);
         if ($project !== null) {
+            if ($project->export_type == 1) {
+                $project->export_type_name = 'ใบบันทึกฝึกอบรม ภาคปฐมนิเทศ'; // Default export type
+            } else if ($project->export_type == 2) {
+                $project->export_type_name = 'ใบบันทึกฝึกอบรม ส่วนกลางโรงพยาบาล';
+            } else if ($project->export_type == 3) {
+                $project->export_type_name = 'ใบบันทึกการฝึกอบรมภาคอิสระ';
+            } else {
+                $project->export_type_name = 'ไม่ระบุประเภทการส่งออก';
+            }
 
             return view('nurse.admin.project_management', compact('project'));
         }
 
         return redirect()->back()->with('error', 'Project not found.');
+    }
+    public function adminProjectDelete(Request $request)
+    {
+        $project = NurseProject::find($request->project_id);
+        if ($project !== null) {
+            $project->active = false;
+            $project->save();
+
+            Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete project id: ' . $project->id);
+
+            return redirect()->route('NurseAdminIndex')->with('success', 'ลบโครงการสำเร็จ');
+        }
+
+        return redirect()->back()->with('error', 'ไม่พบโครงการนี้');
     }
     public function adminProjectTransaction($project_id)
     {
@@ -577,6 +606,35 @@ class NurseController extends Controller
         $name = $date->projectData->title . '_' . $date->title;
 
         return Excel::download(new NurseDateLectureExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+    public function ExcelDBDExport($project_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $project = NurseProject::find($project_id);
+        $name    = $project->title . '_DBD';
+
+        return Excel::download(new NurseDBDExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+    public function ExcelTypeExport($project_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $project = NurseProject::find($project_id);
+        switch ($project->export_type) {
+            case 1:
+                $name = $project->title . '_ใบบันทึกฝึกอบรม ภาคปฐมนิเทศ';
+                return Excel::download(new NurseType1Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+            case 2:
+                $name = $project->title . '_ใบบันทึกฝึกอบรม  ส่วนกลางโรงพยาบาล';
+                return Excel::download(new NurseType2Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+            case 3:
+                $name = $project->title . '_ใบบันทึกการฝึกอบรมภาคอิสระ';
+                return Excel::download(new NurseType3Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+        }
+
     }
 
     public function UserScore(Request $request)
