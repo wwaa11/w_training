@@ -11,6 +11,8 @@
         @if ($transaction->user_sign == null)
             @if (date("Y-m-d") !== date("Y-m-d", strtotime($transaction->date_time)))
                 <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->projectData->id }}','{{ $transaction->projectData->title }}')"><i class="fa-solid fa-trash"></i></span>
+            @elseif ($transaction->projectData->multiple)
+                <span class="absolute right-0 top-0 cursor-pointer text-red-600" onclick="deleteTransaction('{{ $transaction->projectData->id }}','{{ $transaction->projectData->title }}')"><i class="fa-solid fa-trash"></i></span>
             @endif
             @if (date("Y-m-d") == date("Y-m-d", strtotime($transaction->date_time)))
                 <div class="mt-2 cursor-pointer rounded border bg-red-500 py-2 text-center text-white" onclick="sign('{{ $transaction->id }}','{{ $transaction->projectData->title }}')">
