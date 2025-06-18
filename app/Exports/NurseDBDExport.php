@@ -68,7 +68,18 @@ class NurseDBDExport implements FromView, WithDrawings, WithColumnFormatting
             ->orderby('date_time', 'ASC')
             ->get();
 
-        return view('nurse.admin.export.DBD')->with(compact('project', 'transactions'));
+        $project_date = "";
+        $project_time = [];
+        foreach ($project->dateData as $date) {
+            $project_date .= $date->title . " - ";
+            foreach ($date->timeData as $time) {
+                if (! in_array($time->title, $project_time)) {
+                    $project_time[] = $time->title;
+                }
+            }
+        }
+
+        return view('nurse.admin.export.DBD')->with(compact('project', 'transactions', 'project_date', 'project_time'));
     }
 
     public function columnFormats(): array

@@ -2,13 +2,15 @@
     <thead style="word-wrap: break-word;">
         <tr>
             <th style="height: 50px;" colspan="5">&nbsp;</th>
-            <th align="center" style="font-size: 24pt; font-weight: bold;" colspan="5">ใบบันทึกฝึกอบรม</th>
+            <th align="center" style="font-size: 24pt; font-weight: bold;" colspan="5">ใบบันทึกฝึกอบรม ส่วนกลางโรงพยาบาล</th>
         </tr>
         <tr>
             <th style="font-size: 14pt;" colspan="10">หลักสูตร {{ $project->title }}</th>
         </tr>
         <tr>
-            <th style="font-size: 14pt;" colspan="10">วันเดือนปี ( 1วัน/1หลักสูตร )</th>
+            <th style="font-size: 14pt;" colspan="4">ฝึกอบรมระหว่างวันที่ : {{ $project_date }}</th>
+            <th style="font-size: 14pt;" colspan="2">เวลา : {{ implode(" , ", $project_time) }}</th>
+            <th style="font-size: 14pt;" colspan="4">สถานที่ฝึกอบรม : {{ $project->location }}</th>
         </tr>
         <tr>
             <th align="center" rowspan="2">ลำดับ</th>

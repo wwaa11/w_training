@@ -2,12 +2,14 @@
 namespace App\Exports;
 
 use App\Models\NurseDate;
-use Maatwebsite\Excel\Concerns\FromArray;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithDrawings;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class NurseDateLectureExport implements FromArray, ShouldAutoSize, WithDrawings
+class NurseDateLectureExport implements FromView, ShouldAutoSize, WithDrawings
 {
     protected $date_id;
 
@@ -18,6 +20,13 @@ class NurseDateLectureExport implements FromArray, ShouldAutoSize, WithDrawings
 
     public function drawings()
     {
+        $drawing = new Drawing();
+        $drawing->setDescription('This is my logo');
+        $drawing->setPath(public_path('/images/Side Logo.png'));
+        $drawing->setHeight(50);
+        $drawing->setCoordinates('A1');
+        $drawings[] = $drawing;
+
         $date = NurseDate::find($this->date_id);
         $row  = 0;
         foreach ($date->lecturesData as $index => $lecture) {
@@ -29,7 +38,7 @@ class NurseDateLectureExport implements FromArray, ShouldAutoSize, WithDrawings
             $drawing->setImageResource($sign);
             $drawing->setHeight(15);
             $drawing->setWidth(120);
-            $drawing->setCoordinates('F' . ($row + 3));
+            $drawing->setCoordinates('G' . ($row + 5));
             $drawings[] = $drawing;
 
             $row += 1;
@@ -38,37 +47,26 @@ class NurseDateLectureExport implements FromArray, ShouldAutoSize, WithDrawings
         return $drawings;
     }
 
-    public function array(): array
+    public function view(): view
     {
-        $date             = NurseDate::find($this->date_id);
-        $transactionArray = [
-            [
-                'วิทยากร ' . $date->projectData->title,
-                $date->title,
-                'รอบเวลา',
-            ],
-            [
-                'ลำดับ',
-                'รหัสพนักงงาน',
-                'ชื่อ - นามสกุล',
-                'ตำแหน่ง',
-                'แผนก',
-            ],
-        ];
+        $date    = NurseDate::find($this->date_id);
+        $project = $date->projectData;
+
+        $transactions = [];
         foreach ($date->timeData as $time) {
-            $transactionArray[0][] = $time->title;
-        }
-        foreach ($date->lecturesData as $index => $lecture) {
-            $transactionArray[] = [
-                $index += 1,
-                $lecture->user_id,
-                $lecture->userData->name,
-                $lecture->userData->position,
-                $lecture->userData->department,
-            ];
+            foreach ($time->transactionData as $index => $transaction) {
+                if ($transaction->active) {
+                    $transactions[] = $transaction;
+                }
+            }
         }
 
-        return $transactionArray;
+        $project_date = $date->title;
+        $project_time = [];
+        foreach ($date->timeData as $time) {
+            $project_time[] = $time->title;
+        }
+
+        return view('nurse.admin.export.Lecturer')->with(compact('project', 'project_date', 'project_time'));
     }
-
 }

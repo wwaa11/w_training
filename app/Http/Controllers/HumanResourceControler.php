@@ -30,34 +30,39 @@ class HumanResourceControler extends Controller
         $arrayTransaction = [];
 
         $project                          = new Project;
-        $project->project_name            = 'การเรียกร้องค่าสินไหม การลด Reject Claim';
-        $project->project_detail          = 'โดย บริษัท กรุงไทย-แอกซ่า ประกันชีวิต จำกัด(มหาชน) Krungthai-AXA Life Insurance PCL';
+        $project->project_name            = 'หลักสูตร เจ้าหน้าที่ความปลอดภัยในการทำงาน ระดับบริหาร';
+        $project->project_detail          = '';
         $project->project_active          = true;
         $project->project_delete          = false;
-        $project->start_register_datetime = '2025-05-22';
-        $project->last_register_datetime  = '2025-05-23';
-        $project->save();
-        dump($project);
+        $project->start_register_datetime = '2025-06-01';
+        $project->last_register_datetime  = '2025-07-10';
+        // $project->save();
+        // dump($project);
+        // die();
 
         $date             = new Slot;
         $date->project_id = $project->id;
-        $date->slot_index = 1;
-        $date->slot_date  = '2025-05-23';
-        $date->slot_name  = '23 พฤษภาคม 2568';
-        $date->save();
-        dump($date);
+        $date->project_id = 10;
+        $date->slot_index = 2;
+        $date->slot_date  = '2025-07-09';
+        $date->slot_name  = '10 กรกฎาคม 2568';
+        // $date->save();
+        // dump($date);
+        // die();
 
         $time                     = new Item;
         $time->slot_id            = $date->id;
-        $time->item_name          = '14.00 - 16.00 น';
+        $time->slot_id            = 70;
+        $time->item_name          = '08.00 - 16.45 น';
         $time->item_index         = 1;
-        $time->item_available     = 1500;
-        $time->item_max_available = 1500;
-        $item->item_note_1_active = true;
-        $item->item_note_1_title  = 'ห้องประชุม';
-        $item->item_note_1_value  = 'Grand Hall ชั้น 5 อาคาร A';
+        $time->item_available     = 35;
+        $time->item_max_available = 35;
+        $time->item_note_1_active = true;
+        $time->item_note_1_title  = 'ห้องประชุม';
+        $time->item_note_1_value  = 'Grand Hall ชั้น 5 อาคาร A';
         $time->save();
         dump($time);
+        die();
 
         foreach ($arrayTransaction as $user) {
             $tran                     = new Transaction;

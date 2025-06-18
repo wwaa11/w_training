@@ -101,10 +101,11 @@ Route::middleware([NurseAdmin::class])->group(function () {
 
     Route::get('/nurse/admin/export/excel/users/{project_id}', [NurseController::class, 'ExcelUserExport']);
     Route::get('/nurse/admin/export/excel/lectures/{project_id}', [NurseController::class, 'ExcelLectureExport']);
-    Route::get('/nurse/admin/export/excel/dateusers/{date_id}', [NurseController::class, 'ExcelDateUserExport']);
     Route::get('/nurse/admin/export/excel/datelecture/{date_id}', [NurseController::class, 'ExcelDateLectureExport']);
     Route::get('/nurse/admin/export/excel/dbd/{project_id}', [NurseController::class, 'ExcelDBDExport']);
     Route::get('/nurse/admin/export/excel/type/{project_id}', [NurseController::class, 'ExcelTypeExport']);
+    Route::get('/nurse/admin/export/excel/date/users/{date_id}', [NurseController::class, 'ExcelDateUserExport']);
+    Route::get('/nurse/admin/export/excel/date/dbd/{date_id}', [NurseController::class, 'ExcelDateDBDExport']);
 
     Route::get('/nurse/admin/userscore', [NurseController::class, 'UserScore']);
     Route::get('/nurse/admin/userscoreexport/{department}', [NurseController::class, 'UserScoreExport']);

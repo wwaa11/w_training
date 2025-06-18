@@ -37,8 +37,11 @@
                     <thead class="bg-gray-200">
                         <th class="border p-3 text-start">
                             <span>{{ $date->title }}</span>
-                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/dateusers/{{ $date->id }}">
+                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/users/{{ $date->id }}">
                                 <span class="ms-6 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> รายชื่อผู้ฝึกอบรม</span>
+                            </a>
+                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/dbd/{{ $date->id }}">
+                                <span class="ms-6 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> แบบฟอร์มกรมพัฒน์</span>
                             </a>
                             <span class="float-end ms-3 cursor-pointer rounded bg-blue-400 p-2" onclick="addlecturer('{{ $date->id }}','{{ $date->title }}')"><i class="fa fa-plus"></i> วิทยากร</span>
                         </th>

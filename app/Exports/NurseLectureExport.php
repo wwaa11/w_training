@@ -2,12 +2,14 @@
 namespace App\Exports;
 
 use App\Models\NurseProject;
-use Maatwebsite\Excel\Concerns\FromArray;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithDrawings;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class NurseLectureExport implements FromArray, ShouldAutoSize, WithDrawings
+class NurseLectureExport implements FromView, ShouldAutoSize, WithDrawings
 {
     protected $project_id;
 
@@ -18,21 +20,32 @@ class NurseLectureExport implements FromArray, ShouldAutoSize, WithDrawings
 
     public function drawings()
     {
+        $drawing = new Drawing();
+        $drawing->setDescription('This is my logo');
+        $drawing->setPath(public_path('/images/Side Logo.png'));
+        $drawing->setHeight(50);
+        $drawing->setCoordinates('A1');
+        $drawings[] = $drawing;
+
         $project_id = $this->project_id;
         $project    = NurseProject::find($project_id);
         $row        = 0;
         foreach ($project->dateData as $date) {
             foreach ($date->lecturesData as $index => $lecture) {
                 $base64 = explode(',', $lecture->userData->sign, 2);
-                $sign   = imagecreatefromstring(base64_decode($base64[1]));
-                imagesavealpha($sign, true);
+                if (isset($base64[1])) {
+                    $sign = imagecreatefromstring(base64_decode($base64[1]));
+                    if ($sign !== false) {
+                        imagesavealpha($sign, true);
 
-                $drawing = new MemoryDrawing();
-                $drawing->setImageResource($sign);
-                $drawing->setHeight(15);
-                $drawing->setWidth(120);
-                $drawing->setCoordinates('H' . ($row + 2));
-                $drawings[] = $drawing;
+                        $drawing = new MemoryDrawing();
+                        $drawing->setImageResource($sign);
+                        $drawing->setHeight(15);
+                        $drawing->setWidth(120);
+                        $drawing->setCoordinates('G' . ($row + 5));
+                        $drawings[] = $drawing;
+                    }
+                }
 
                 $row += 1;
             }
@@ -41,45 +54,20 @@ class NurseLectureExport implements FromArray, ShouldAutoSize, WithDrawings
         return $drawings;
     }
 
-    public function array(): array
+    public function view(): view
     {
         $project_id = $this->project_id;
         $project    = NurseProject::find($project_id);
 
-        $data   = [];
-        $data[] = [
-            '#',
-            'วันที่',
-            'รอบเวลา',
-            'รหัสพนักงงาน',
-            'ชื่อ - สกุล',
-            'ตำแหน่ง',
-            'แผนก',
-            'ลายเซ็นต์',
-        ];
-
+        $project_date = "";
+        $project_time = [];
         foreach ($project->dateData as $date) {
-            foreach ($date->timeData as $i => $time) {
-                if ($i == 0) {
-                    $timeLabel = $time->title;
-                } else {
-                    $timeLabel .= ', ' . $time->title;
-
-                }
-            }
-            foreach ($date->lecturesData as $index => $lecture) {
-                $data[] = [
-                    $index + 1,
-                    $date->title,
-                    $timeLabel,
-                    $lecture->user_id,
-                    $lecture->userData->name,
-                    $lecture->userData->position,
-                    $lecture->userData->department,
-                ];
+            $project_date .= $date->title . " - ";
+            foreach ($date->timeData as $time) {
+                $project_time[] = $time->title;
             }
         }
 
-        return $data;
+        return view('nurse.admin.export.Lecturer')->with(compact('project', 'project_date', 'project_time'));
     }
 }

@@ -29,8 +29,8 @@
                 <td data-type="text" style="width: 200px;">{{ (string) $transaction->userData->refNo }}</td>
                 <td>{{ $transaction->user_id }}</td>
                 <td style="width: 200px;">{{ $transaction->userData->name }}</td>
-                <td style="width: 200px;">{{ $transaction->userData->department }}</td>
                 <td style="width: 200px;">{{ $transaction->userData->position }}</td>
+                <td style="width: 200px;">{{ $transaction->userData->department }}</td>
                 <td align="center" style="width: 50px; font-size: 14pt">&nbsp;
                     @if ($transaction->userData->gender == "ชาย")
                         &#10004;

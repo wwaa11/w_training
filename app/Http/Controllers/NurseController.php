@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\NurseDateDBDExport;
 use App\Exports\NurseDateExport;
 use App\Exports\NurseDateLectureExport;
 use App\Exports\NurseDBDExport;
@@ -577,16 +578,6 @@ class NurseController extends Controller
 
         return Excel::download(new NurseUserExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
-    public function ExcelLectureExport($project_id)
-    {
-        ini_set('memory_limit', '1024M');
-        ini_set('max_execution_time', 600);
-
-        $project = NurseProject::find($project_id);
-        $name    = $project->title . '_วิทยากร';
-
-        return Excel::download(new NurseLectureExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
-    }
     public function ExcelDateUserExport($date_id)
     {
         ini_set('memory_limit', '1024M');
@@ -597,6 +588,16 @@ class NurseController extends Controller
 
         return Excel::download(new NurseDateExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
+    public function ExcelLectureExport($project_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $project = NurseProject::find($project_id);
+        $name    = $project->title . '_วิทยากร';
+
+        return Excel::download(new NurseLectureExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
     public function ExcelDateLectureExport($date_id)
     {
         ini_set('memory_limit', '1024M');
@@ -606,6 +607,17 @@ class NurseController extends Controller
         $name = $date->projectData->title . '_' . $date->title;
 
         return Excel::download(new NurseDateLectureExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
+    }
+    public function ExcelDateDBDExport($date_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $date = NurseDate::find($date_id);
+        $date = NurseDate::find($date_id);
+        $name = $date->projectData->title . '_' . $date->title . '_DBD';
+
+        return Excel::download(new NurseDateDBDExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
     public function ExcelDBDExport($project_id)
     {

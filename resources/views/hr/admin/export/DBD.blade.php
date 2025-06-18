@@ -2,7 +2,7 @@
     <thead style="word-wrap: break-word;">
         <tr>
             <th style="height: 50px;" colspan="5">&nbsp;</th>
-            <th align="center" style="font-size: 24pt; font-weight: bold;" colspan="5">ใบบันทึกฝึกอบรม</th>
+            <th align="center" style="font-size: 24pt; font-weight: bold;" colspan="5">ใบบันทึกฝึกอบรม ส่วนกลางโรงพยาบาล</th>
         </tr>
         <tr>
             <th style="font-size: 14pt;" colspan="10">หลักสูตร {{ $project->project_name }}</th>
