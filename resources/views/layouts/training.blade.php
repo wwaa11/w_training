@@ -241,18 +241,17 @@
             <a href="{{ env("APP_URL") }}/">
                 <img class="my-auto aspect-auto max-h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
-            <span class="navbar-title hidden lg:block">HRD Division</span>
+            <span class="navbar-title hidden lg:block">Trainings </span>
         </div>
         <button class="mobile-menu-btn lg:hidden" type="button" onclick="toggleMobileMenu()">
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="navbar-links hidden lg:flex">
             <a href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
-            <a href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
-            <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
+            <a href="{{ env("APP_URL") }}/training">Schedule</a>
+            <a href="{{ env("APP_URL") }}/training/history">History</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
-                <a href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
-                <a href="{{ env("APP_URL") }}/hr/admin/users">Users Management</a>
+                <a href="{{ env("APP_URL") }}/training/admin">Management</a>
             @endif
         </div>
         <div class="navbar-user hidden lg:flex">
@@ -268,11 +267,10 @@
     </nav>
     <div class="mobile-menu fade-in" id="mobileMenu">
         <a href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
-        <a href="{{ env("APP_URL") }}/hr">รายการที่เปิดลงทะเบียน</a>
-        <a href="{{ env("APP_URL") }}/hr/history">ประวัติการลงทะเบียน</a>
+        <a href="{{ env("APP_URL") }}/training">Schedule</a>
+        <a href="{{ env("APP_URL") }}/training/history">History</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
-            <a href="{{ env("APP_URL") }}/hr/admin">Projects Management</a>
-            <a href="{{ env("APP_URL") }}/hr/admin/users">Users Management</a>
+            <a href="{{ env("APP_URL") }}/training/admin">Management</a>
         @endif
         <div class="user-block">
             {{ Auth::user()->userid }} {{ session("name") }}

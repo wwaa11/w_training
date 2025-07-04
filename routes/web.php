@@ -3,12 +3,12 @@
 use App\Http\Controllers\CoreController;
 use App\Http\Controllers\HumanResourceControler;
 use App\Http\Controllers\NurseController;
+use App\Http\Controllers\TrainingController;
 use App\Http\Middleware\HrAdmin;
 use App\Http\Middleware\NurseAdmin;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
 Route::get('/services', [CoreController::class, 'DispatchServices']);
 
 Route::get('/login', [CoreController::class, 'Login']);
@@ -41,6 +41,14 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/nurse/project/create', [NurseController::class, 'TransactionCreate']);
     Route::post('/nurse/project/delete', [NurseController::class, 'TransactionDelete']);
     Route::post('/nurse/project/sign', [NurseController::class, 'TransactionSign']);
+
+    // Training
+    Route::get('/training', [TrainingController::class, 'Index']);
+    Route::get('/training/history', [TrainingController::class, 'history']);
+    Route::post('/training/getsession', [TrainingController::class, 'indexGetSessions'])->name('training.get.sessions');
+    Route::post('/training/gettime', [TrainingController::class, 'indexgetTimes'])->name('training.get.times');
+    Route::post('/training/register', [TrainingController::class, 'indexRegister'])->name('training.register');
+    Route::post('/training/checkin', [TrainingController::class, 'indexCheckIn'])->name('training.checkin');
 });
 
 Route::middleware([HrAdmin::class])->group(function () {
@@ -74,6 +82,68 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::get('/hr/admin/scores', [HumanResourceControler::class, 'adminScores']);
     Route::post('/hr/admin/importscores', [HumanResourceControler::class, 'ImportScore']);
 
+    // Training
+
+    // Dev routes
+    Route::get('/training/admin/dev/delete', [TrainingController::class, 'deleteTestData']);
+    Route::get('/training/admin/dev/seed', [TrainingController::class, 'seedData']);
+
+    // Management routes
+    Route::get('/training/admin', [TrainingController::class, 'adminIndex'])->name('training.admin.index');
+
+    // Approve management routes
+    Route::get('/training/admin/approve', [TrainingController::class, 'adminApprove'])->name('training.admin.approve.index');
+    Route::post('/training/admin/approveUser', [TrainingController::class, 'adminApproveUser'])->name('training.admin.approve.user');
+    Route::post('/training/admin/approveUsers', [TrainingController::class, 'adminApproveUsers'])->name('training.admin.approve.users');
+
+    // Team management routes
+    Route::get('/training/admin/teams', [TrainingController::class, 'adminTeamIndex'])->name('training.admin.teams.index');
+    Route::get('/training/admin/teams/create', [TrainingController::class, 'adminTeamCreate'])->name('training.admin.teams.create');
+    Route::post('/training/admin/teams', [TrainingController::class, 'adminTeamStore'])->name('training.admin.teams.store');
+    Route::get('/training/admin/teams/{id}/edit', [TrainingController::class, 'adminTeamEdit'])->name('training.admin.teams.edit');
+    Route::post('/training/admin/teams/{id}/update', [TrainingController::class, 'adminTeamUpdate'])->name('training.admin.teams.update');
+    Route::post('/training/admin/teams/{id}/delete', [TrainingController::class, 'adminTeamDelete'])->name('training.admin.teams.delete');
+    Route::get('/training/admin/teams/{id}/teachers', [TrainingController::class, 'adminTeamTeachers'])->name('training.admin.teams.teachers');
+
+    // Teacher management routes
+    Route::get('/training/admin/teachers/create', [TrainingController::class, 'adminTeacherCreate'])->name('training.admin.teachers.create');
+    Route::post('/training/admin/teachers/store', [TrainingController::class, 'adminTeacherStore'])->name('training.admin.teachers.store');
+    Route::get('/training/admin/teachers/{id}/edit', [TrainingController::class, 'adminTeacherEdit'])->name('training.admin.teachers.edit');
+    Route::post('/training/admin/teachers/{id}/update', [TrainingController::class, 'adminTeacherUpdate'])->name('training.admin.teachers.update');
+    Route::post('/training/admin/teachers/{id}/delete', [TrainingController::class, 'adminTeacherDelete'])->name('training.admin.teachers.delete');
+    Route::get('/training/admin/teachers/{id}/sessions', [TrainingController::class, 'adminTeacherSessions'])->name('training.admin.teachers.sessions');
+
+    // Session management routes
+    Route::get('/training/admin/sessions/create', [TrainingController::class, 'adminSessionCreate'])->name('training.admin.sessions.create');
+    Route::post('/training/admin/sessions/store', [TrainingController::class, 'adminSessionStore'])->name('training.admin.sessions.store');
+    Route::get('/training/admin/sessions/{id}/edit', [TrainingController::class, 'adminSessionEdit'])->name('training.admin.sessions.edit');
+    Route::post('/training/admin/sessions/{id}/update', [TrainingController::class, 'adminSessionUpdate'])->name('training.admin.sessions.update');
+    Route::post('/training/admin/sessions/{id}/delete', [TrainingController::class, 'adminSessionDelete'])->name('training.admin.sessions.delete');
+
+    // Time management routes
+    Route::get('/training/admin/times/create', [TrainingController::class, 'adminTimeCreate'])->name('training.admin.times.create');
+    Route::post('/training/admin/times/store', [TrainingController::class, 'adminTimeStore'])->name('training.admin.times.store');
+    Route::get('/training/admin/times/{id}/edit', [TrainingController::class, 'adminTimeEdit'])->name('training.admin.times.edit');
+    Route::post('/training/admin/times/{id}/update', [TrainingController::class, 'adminTimeUpdate'])->name('training.admin.times.update');
+    Route::post('/training/admin/times/{id}/delete', [TrainingController::class, 'adminTimeDelete'])->name('training.admin.times.delete');
+
+    // Date management routes
+    Route::get('/training/admin/dates/{time_id}', [TrainingController::class, 'adminDatesIndex'])->name('training.admin.dates.index');
+    Route::get('/training/admin/dates/{time_id}/create', [TrainingController::class, 'adminDateCreate'])->name('training.admin.dates.create');
+    Route::post('/training/admin/dates/{time_id}/store', [TrainingController::class, 'adminDateStore'])->name('training.admin.dates.store');
+    Route::get('/training/admin/dates/{id}/edit', [TrainingController::class, 'adminDateEdit'])->name('training.admin.dates.edit');
+    Route::post('/training/admin/dates/{id}/update', [TrainingController::class, 'adminDateUpdate'])->name('training.admin.dates.update');
+    Route::post('/training/admin/dates/{id}/delete', [TrainingController::class, 'adminDateDelete'])->name('training.admin.dates.delete');
+
+    // User management routes
+    Route::get('/training/admin/users', [TrainingController::class, 'adminUserIndex'])->name('training.admin.users.index');
+    Route::post('/training/admin/users/import', [TrainingController::class, 'adminUserImport'])->name('training.admin.users.import');
+    Route::get('/training/admin/users/create', [TrainingController::class, 'adminUserCreate'])->name('training.admin.users.create');
+    Route::post('/training/admin/users/store', [TrainingController::class, 'adminUserStore'])->name('training.admin.users.store');
+
+    // Register management routes
+    Route::get('/training/admin/register', [TrainingController::class, 'adminRegisterIndex'])->name('training.admin.register.index');
+    Route::post('/training/admin/unregister', [TrainingController::class, 'adminUnregisterUser'])->name('training.admin.unregister.user');
 });
 
 Route::middleware([NurseAdmin::class])->group(function () {
@@ -111,3 +181,11 @@ Route::middleware([NurseAdmin::class])->group(function () {
     Route::get('/nurse/admin/userscoreexport/{department}', [NurseController::class, 'UserScoreExport']);
 
 });
+
+// API routes for training selection UI
+Route::get('/training/api/teams', [TrainingController::class, 'apiTeams'])->name('training.api.teams');
+Route::get('/training/api/teams/{id}/teachers', [TrainingController::class, 'apiTeamTeachers'])->name('training.api.team.teachers');
+Route::get('/training/api/teachers/{id}/sessions', [TrainingController::class, 'apiTeacherSessions'])->name('training.api.teacher.sessions');
+Route::get('/training/api/sessions/{id}/times', [TrainingController::class, 'apiSessionTimes'])->name('training.api.session.times');
+Route::get('/training/api/times/{id}/dates', [TrainingController::class, 'apiTimeDates'])->name('training.api.time.dates');
+Route::get('/training/api/sessions/{id}', [TrainingController::class, 'apiSessionDetails'])->name('training.api.session.details');

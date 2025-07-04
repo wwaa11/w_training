@@ -14,6 +14,11 @@
                         Nursing Division
                     </div>
                 </a>
+                <a href="{{ env("APP_URL") }}/training">
+                    <div class="mx-3 mt-3 rounded-2xl border-2 border-[#eaf7ab] bg-[#c1dccd] py-12 text-3xl font-bold text-[#143429]">
+                        English Training Program
+                    </div>
+                </a>
             </div>
         </div>
     </div>

@@ -1,0 +1,195 @@
+@extends("layouts.training")
+@section("content")
+    <div class="container mx-auto max-w-4xl py-10">
+        <div class="mb-6">
+            <a class="inline-flex items-center text-gray-600 transition-colors hover:text-gray-800" href="{{ route("training.admin.teachers.sessions", $session->teacher->id) }}">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Back to Sessions
+            </a>
+        </div>
+
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-purple-800">
+                <i class="fa-solid fa-clock mr-2"></i>Create New Time
+            </h1>
+            <div class="mt-2 text-sm text-purple-700">
+                <span class="font-semibold">Session:</span> {{ $session->name }} &nbsp;|&nbsp;
+                <span class="font-semibold">Teacher:</span> {{ $session->teacher->name }} &nbsp;|&nbsp;
+                <span class="font-semibold">Group:</span> {{ $session->teacher->team->name }}
+            </div>
+        </div>
+
+        <div class="rounded-lg border bg-white p-6 shadow-sm">
+            <form method="POST" action="{{ route("training.admin.times.store") }}">
+                @csrf
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <input type="hidden" name="session_id" value={{ $session->id }}>
+                    <!-- Name -->
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-gray-700" for="name">
+                            Time Title <span class="text-red-500">*</span>
+                        </label>
+                        <input class="@error("name") border-red-500 @enderror w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-500" id="name" type="text" name="name" value="{{ old("name") }}" placeholder="e.g., Morning Session, Afternoon Session" required>
+                        @error("name")
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Max Seat -->
+                    <div class="md:col-span-1">
+                        <label class="mb-2 block text-sm font-medium text-gray-700" for="max_seat">
+                            Max Seats <span class="text-red-500">*</span>
+                        </label>
+                        <input class="@error("max_seat") border-red-500 @enderror w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-500" id="max_seat" type="number" name="max_seat" value="{{ old("max_seat") }}" min="1" placeholder="Enter max seats" required>
+                        @error("max_seat")
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Status -->
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-gray-700" for="status">
+                            Status <span class="text-red-500">*</span>
+                        </label>
+                        <select class="@error("status") border-red-500 @enderror w-full rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-500" id="status" name="status" required>
+                            <option value="active" {{ old("status") == "active" ? "selected" : "" }}>Active</option>
+                            <option value="inactive" {{ old("status") == "inactive" ? "selected" : "" }}>Inactive</option>
+                        </select>
+                        @error("status")
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mt-8 flex items-center justify-end space-x-4">
+                    <a class="rounded-md bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200" href="{{ route("training.admin.teachers.sessions", $session->teacher->id) }}">Cancel</a>
+                    <button class="rounded-md bg-purple-600 px-6 py-2 text-white transition-colors hover:bg-purple-700" type="submit">
+                        <i class="fa-solid fa-save mr-2"></i>Create Time
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function loadTeachers() {
+            const teamId = document.getElementById('team_id').value;
+            if (!teamId) {
+                document.getElementById('teacherSection').style.display = 'none';
+                document.getElementById('sessionSection').style.display = 'none';
+                return;
+            }
+
+            fetch(`/training/api/teams/${teamId}/teachers`)
+                .then(response => response.json())
+                .then(data => {
+                    const teacherSelect = document.getElementById('teacher_id');
+                    teacherSelect.innerHTML = '<option value="">Select a teacher</option>';
+
+                    data.forEach(teacher => {
+                        if (teacher.status === 'active') {
+                            const option = document.createElement('option');
+                            option.value = teacher.id;
+                            option.textContent = teacher.name;
+                            teacherSelect.appendChild(option);
+                        }
+                    });
+
+                    document.getElementById('teacherSection').style.display = 'block';
+                    document.getElementById('sessionSection').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error loading teachers:', error);
+                });
+        }
+
+        function loadSessions() {
+            const teacherId = document.getElementById('teacher_id').value;
+            if (!teacherId) {
+                document.getElementById('sessionSection').style.display = 'none';
+                return;
+            }
+
+            fetch(`/training/api/teachers/${teacherId}/sessions`)
+                .then(response => response.json())
+                .then(data => {
+                    const sessionSelect = document.getElementById('session_id');
+                    sessionSelect.innerHTML = '<option value="">Select a session</option>';
+
+                    data.forEach(session => {
+                        if (session.status === 'active') {
+                            const option = document.createElement('option');
+                            option.value = session.id;
+                            option.textContent = session.name;
+                            sessionSelect.appendChild(option);
+                        }
+                    });
+
+                    document.getElementById('sessionSection').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading sessions:', error);
+                });
+        }
+
+        // If session_id is pre-selected, load the teacher and session data
+        @if (isset($session_id) && $session_id)
+            document.addEventListener('DOMContentLoaded', function() {
+                // Load the session data to populate teacher and session fields
+                fetch(`/training/api/sessions/{{ $session_id }}`)
+                    .then(response => response.json())
+                    .then(session => {
+                        // Set the team
+                        document.getElementById('team_id').value = session.teacher.team_id;
+
+                        // Load teachers for the session's teacher's team
+                        fetch(`/training/api/teams/${session.teacher.team_id}/teachers`)
+                            .then(response => response.json())
+                            .then(teachers => {
+                                const teacherSelect = document.getElementById('teacher_id');
+                                teacherSelect.innerHTML = '<option value="">Select a teacher</option>';
+
+                                teachers.forEach(teacher => {
+                                    if (teacher.status === 'active') {
+                                        const option = document.createElement('option');
+                                        option.value = teacher.id;
+                                        option.textContent = teacher.name;
+                                        if (teacher.id == session.teacher_id) {
+                                            option.selected = true;
+                                        }
+                                        teacherSelect.appendChild(option);
+                                    }
+                                });
+
+                                document.getElementById('teacherSection').style.display = 'block';
+
+                                // Load sessions for the selected teacher
+                                loadSessionsForTeacher(session.teacher_id);
+                            });
+                    });
+            });
+
+            function loadSessionsForTeacher(teacherId) {
+                fetch(`/training/api/teachers/${teacherId}/sessions`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const sessionSelect = document.getElementById('session_id');
+                        sessionSelect.innerHTML = '<option value="">Select a session</option>';
+
+                        data.forEach(session => {
+                            if (session.status === 'active') {
+                                const option = document.createElement('option');
+                                option.value = session.id;
+                                option.textContent = session.name;
+                                if (session.id == {{ $session_id }}) {
+                                    option.selected = true;
+                                }
+                                sessionSelect.appendChild(option);
+                            }
+                        });
+
+                        document.getElementById('sessionSection').style.display = 'block';
+                    });
+            }
+        @endif
+    </script>
+@endsection

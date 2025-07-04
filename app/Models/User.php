@@ -37,4 +37,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(NurseTransaction::class, 'user_id')->where('user_id', auth()->user()->userid);
     }
+
+    public function training_team(): HasOnce
+    {
+        return $this->hasMany(TrainingUser::class, 'user_id')->where('user_id', auth()->user()->userid);
+    }
 }
