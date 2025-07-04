@@ -5,49 +5,57 @@
             <i class="fa-solid fa-user-check"></i> Register User View
         </h1>
         <div class="mb-8 rounded-xl bg-white p-6 shadow-lg">
-            <form class="grid grid-cols-1 gap-4 md:grid-cols-4" method="GET">
-                <div>
+            <div class="mb-4 flex items-center gap-2 border-b pb-2">
+                <i class="fa-solid fa-filter text-blue-600"></i>
+                <span class="text-lg font-semibold text-blue-800">Filter Registered Users</span>
+            </div>
+            <form class="grid grid-cols-1 gap-4 md:grid-cols-5" method="GET">
+                <div class="md:col-span-2">
                     <label class="mb-1 block text-sm font-semibold text-gray-700" for="team_id">Group</label>
-                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="team_id" name="team_id">
+                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="team_id" name="team_id" title="Filter by group">
                         <option value="">All Groups</option>
                         @foreach ($teams as $team)
                             <option value="{{ $team->id }}" {{ request("team_id") == $team->id ? "selected" : "" }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="mb-1 block text-sm font-semibold text-gray-700" for="teacher_id">Teacher</label>
-                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="teacher_id" name="teacher_id">
+                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="teacher_id" name="teacher_id" title="Filter by teacher">
                         <option value="">All Teachers</option>
                         @foreach ($teachers as $teacher)
                             <option value="{{ $teacher->id }}" {{ request("teacher_id") == $teacher->id ? "selected" : "" }}>Group : {{ $teacher->team->name }} {{ $teacher->name }} </option>
                         @endforeach
                     </select>
                 </div>
-                <div>
+                <div class="md:col-span-1">
                     <label class="mb-1 block text-sm font-semibold text-gray-700" for="session_id">Session</label>
-                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="session_id" name="session_id">
+                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="session_id" name="session_id" title="Filter by session">
                         <option value="">All Sessions</option>
                         @foreach ($sessions as $session)
                             <option value="{{ $session->id }}" {{ request("session_id") == $session->id ? "selected" : "" }}>Group : {{ $session->teacher->team->name }} Teacher : {{ $session->teacher->name }} {{ $session->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="mb-1 block text-sm font-semibold text-gray-700" for="time_id">Time</label>
-                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="time_id" name="time_id">
+                    <select class="form-select w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="time_id" name="time_id" title="Filter by time">
                         <option value="">All Times</option>
                         @foreach ($times as $time)
                             <option value="{{ $time->id }}" {{ request("time_id") == $time->id ? "selected" : "" }}>Group : {{ $time->session->teacher->team->name }} Teacher : {{ $time->session->teacher->name }} Session : {{ $time->session->name }} {{ $time->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-span-1 mt-2 flex justify-end gap-2 md:col-span-4">
-                    <button class="btn btn-primary rounded-md px-6 py-2 shadow transition hover:bg-blue-700" type="submit">
-                        <i class="fa-solid fa-filter mr-2"></i>Filter
+                <div class="md:col-span-1">
+                    <label class="mb-1 block text-sm font-semibold text-gray-700" for="user_id">User ID</label>
+                    <input class="form-input w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500" id="user_id" type="text" name="user_id" value="{{ request("user_id") }}" placeholder="Enter User ID" title="Filter by User ID">
+                </div>
+                <div class="col-span-1 mt-2 flex flex-wrap justify-end gap-2 md:col-span-5">
+                    <button class="btn btn-primary flex items-center gap-2 rounded-md px-6 py-2 shadow transition hover:bg-blue-700" type="submit">
+                        <i class="fa-solid fa-filter"></i> <span>Filter</span>
                     </button>
-                    <a class="btn btn-secondary rounded-md px-6 py-2 shadow transition hover:bg-gray-300" href="{{ route("training.admin.register.index") }}">
-                        <i class="fa-solid fa-rotate-left mr-2"></i>Clear
+                    <a class="btn btn-secondary flex items-center gap-2 rounded-md px-6 py-2 shadow transition hover:bg-gray-300" href="{{ route("training.admin.register.index") }}">
+                        <i class="fa-solid fa-rotate-left"></i> <span>Clear</span>
                     </a>
                 </div>
             </form>
