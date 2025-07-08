@@ -627,7 +627,28 @@ class TrainingController extends Controller
             'user' => auth()->user()->userid ?? null,
             'id'   => $id,
         ]);
-        $team = TrainingTeam::findOrFail($id);
+        $team     = TrainingTeam::findOrFail($id);
+        $teachers = TrainingTeacher::where('team_id', $team->id)->get();
+        foreach ($teachers as $teacher) {
+            $sessions = TrainingSession::where('teacher_id', $teacher->id)->get();
+            foreach ($sessions as $session) {
+                $times = TrainingTime::where('session_id', $session->id)->get();
+                foreach ($times as $time) {
+                    $users = TrainingUser::where('time_id', $time->id)->get();
+                    foreach ($users as $user) {
+                        $user->time_id = null;
+                        $user->save();
+                    }
+                    $dates = TrainingDate::where('time_id', $time->id)->get();
+                    foreach ($dates as $date) {
+                        $date->delete();
+                    }
+                    $time->delete();
+                }
+                $session->delete();
+            }
+            $teacher->delete();
+        }
         $team->delete();
 
         return redirect()->route('training.admin.teams.index')->with('success', 'Group deleted successfully');
@@ -732,9 +753,25 @@ class TrainingController extends Controller
             'user' => auth()->user()->userid ?? null,
             'id'   => $id,
         ]);
-        $teacher = TrainingTeacher::findOrFail($id);
-        $team_id = $teacher->team_id;
-
+        $teacher  = TrainingTeacher::findOrFail($id);
+        $team_id  = $teacher->team_id;
+        $sessions = TrainingSession::where('teacher_id', $teacher->id)->get();
+        foreach ($sessions as $session) {
+            $times = TrainingTime::where('session_id', $session->id)->get();
+            foreach ($times as $time) {
+                $users = TrainingUser::where('time_id', $time->id)->get();
+                foreach ($users as $user) {
+                    $user->time_id = null;
+                    $user->save();
+                }
+                $dates = TrainingDate::where('time_id', $time->id)->get();
+                foreach ($dates as $date) {
+                    $date->delete();
+                }
+                $time->delete();
+            }
+            $session->delete();
+        }
         $teacher->delete();
 
         return redirect()->route('training.admin.teams.teachers', $team_id)
@@ -839,6 +876,19 @@ class TrainingController extends Controller
             'id'   => $id,
         ]);
         $session = TrainingSession::findOrFail($id);
+        $times   = TrainingTime::where('session_id', $session->id)->get();
+        foreach ($times as $time) {
+            $users = TrainingUser::where('time_id', $time->id)->get();
+            foreach ($users as $user) {
+                $user->time_id = null;
+                $user->save();
+            }
+            $dates = TrainingDate::where('time_id', $time->id)->get();
+            foreach ($dates as $date) {
+                $date->delete();
+            }
+            $time->delete();
+        }
         $session->delete();
 
         return redirect()->route('training.admin.teachers.sessions', $session->teacher_id)
@@ -939,6 +989,15 @@ class TrainingController extends Controller
         ]);
         $time       = TrainingTime::findOrFail($id);
         $teacher_id = $time->session->teacher_id;
+        $users      = TrainingUser::where('time_id', $time->id)->get();
+        foreach ($users as $user) {
+            $user->time_id = null;
+            $user->save();
+        }
+        $dates = TrainingDate::where('time_id', $time->id)->get();
+        foreach ($dates as $date) {
+            $date->delete();
+        }
         $time->delete();
 
         return redirect()->route('training.admin.teachers.sessions', $teacher_id)
@@ -1164,10 +1223,10 @@ class TrainingController extends Controller
             'user'    => auth()->user()->userid ?? null,
             'filters' => $request->all(),
         ]);
-        $teams    = TrainingTeam::all();
-        $teachers = TrainingTeacher::all();
-        $sessions = TrainingSession::all();
-        $times    = TrainingTime::all();
+        $teams    = TrainingTeam::where('status', 'active')->get();
+        $teachers = TrainingTeacher::where('status', 'active')->get();
+        $sessions = TrainingSession::where('status', 'active')->get();
+        $times    = TrainingTime::where('status', 'active')->get();
 
         $users = TrainingUser::with(['time.session.teacher']);
 
