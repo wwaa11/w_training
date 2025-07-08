@@ -68,6 +68,7 @@
                 <thead class="sticky top-0 z-10 bg-blue-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">User ID</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Name</th>
                         <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Team</th>
                         <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Teacher</th>
                         <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Session</th>
@@ -79,6 +80,7 @@
                     @forelse($users as $user)
                         <tr class="transition hover:bg-blue-50">
                             <td class="px-4 py-3 font-mono text-blue-900">{{ $user->user_id }}</td>
+                            <td class="px-4 py-3">{{ $user->userData->name ?? "-" }}</td>
                             <td class="px-4 py-3">{{ optional(optional(optional($user->time)->session)->teacher)->team->name ?? "-" }}</td>
                             <td class="px-4 py-3">{{ optional(optional($user->time)->session)->teacher->name ?? "-" }}</td>
                             <td class="px-4 py-3">{{ optional($user->time)->session->name ?? "-" }}</td>

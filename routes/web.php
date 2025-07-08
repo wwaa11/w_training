@@ -49,6 +49,7 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/training/gettime', [TrainingController::class, 'indexgetTimes'])->name('training.get.times');
     Route::post('/training/register', [TrainingController::class, 'indexRegister'])->name('training.register');
     Route::post('/training/checkin', [TrainingController::class, 'indexCheckIn'])->name('training.checkin');
+    Route::post('/training/change-registration', [TrainingController::class, 'changeRegistration'])->name('training.change.registration');
 });
 
 Route::middleware([HrAdmin::class])->group(function () {

@@ -11,6 +11,15 @@
                 <h4 class="mb-6 flex items-center gap-3 text-2xl font-bold text-[#256353]">
                     <i class="fa fa-calendar-alt text-[#c1dccd]"></i> My Schedule
                 </h4>
+
+                @if (now() < \Carbon\Carbon::parse($user->time->dates[0]->name))
+                    <div class="mb-6">
+                        <button class="change-registration-btn flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 font-semibold text-white shadow transition hover:scale-105 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400" onclick="changeRegistration()" type="button">
+                            <i class="fa fa-exchange-alt"></i> เปลี่ยนรอบลงทะเบียน
+                        </button>
+                    </div>
+                @endif
+
                 <div class="grid gap-6">
                     @foreach ($dates as $date)
                         <div class="animate-fade-in flex flex-col gap-4 rounded-xl border border-[#c1dccd] bg-[#f6fbf8] p-6 shadow-sm transition-transform hover:scale-[1.015] hover:shadow-md sm:flex-row sm:items-center">
@@ -260,6 +269,67 @@
                 btn.disabled = false;
                 btn.querySelector('.btn-text').classList.remove('hidden');
                 btn.querySelector('.btn-spinner').classList.add('hidden');
+            });
+        }
+
+        function changeRegistration() {
+            Swal.fire({
+                title: 'ยืนยันการเปลี่ยนรอบลงทะเบียน',
+                text: 'คุณต้องการเปลี่ยนรอบลงทะเบียนหรือไม่? การดำเนินการนี้จะยกเลิกการลงทะเบียนปัจจุบันของคุณ',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f97316',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const btn = document.querySelector('.change-registration-btn');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fa fa-sync-alt fa-spin"></i> กำลังดำเนินการ...';
+                    }
+
+                    document.getElementById('register-message')?.remove();
+
+                    axios.post('{{ route("training.change.registration") }}', {})
+                        .then((res) => {
+                            if (res.data.status === 'success') {
+                                Swal.fire({
+                                    title: 'สำเร็จ!',
+                                    text: 'ยกเลิกการลงทะเบียนสำเร็จ! กำลังโหลดหน้าใหม่...',
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: res.data.message || 'เกิดข้อผิดพลาด',
+                                    icon: 'error',
+                                    confirmButtonColor: '#dc2626'
+                                });
+                                if (btn) {
+                                    btn.disabled = false;
+                                    btn.innerHTML = '<i class="fa fa-exchange-alt"></i> เปลี่ยนรอบลงทะเบียน';
+                                }
+                            }
+                        }).catch((err) => {
+                            Swal.fire({
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้',
+                                icon: 'error',
+                                confirmButtonColor: '#dc2626'
+                            });
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="fa fa-exchange-alt"></i> เปลี่ยนรอบลงทะเบียน';
+                            }
+                        });
+                }
             });
         }
     </script>

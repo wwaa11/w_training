@@ -110,30 +110,56 @@ class CoreController extends Controller
             'message' => null,
         ];
 
-        $response = Http::withHeaders(['token' => env('API_KEY')])
-            ->post('http://172.20.1.12/dbstaff/api/getuser', [
+        try {
+            $response = Http::withHeaders(['token' => env('API_KEY')])
+                ->timeout(30) // Add timeout to prevent hanging requests
+                ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                    'userid' => $req->userid,
+                ]);
+
+            // Check if the HTTP request was successful
+            if (! $response->successful()) {
+                $data['message'] = 'ไม่สามารถเชื่อมต่อกับระบบได้ กรุณาลองใหม่อีกครั้ง';
+                return response()->json($data, 200);
+            }
+
+            $responseData = $response->json();
+
+            // Check if response has required structure
+            if (! isset($responseData['status'])) {
+                $data['message'] = 'ข้อมูลที่ได้รับจากระบบไม่ถูกต้อง';
+                return response()->json($data, 200);
+            }
+
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Login API Error: ' . $e->getMessage(), [
                 'userid' => $req->userid,
-            ])
-            ->json();
+                'error'  => $e->getMessage(),
+            ]);
+
+            $data['message'] = 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
+            return response()->json($data, 200);
+        }
 
         $data['message'] = 'ไม่พบรหัสพนักงานนี้';
 
-        if ($response['status'] == 1) {
+        if ($responseData['status'] == 1) {
             $userData = User::where('userid', $req->userid)->first();
             if (! $userData) {
                 $userData           = new User();
                 $userData->userid   = $userid;
                 $userData->password = Hash::make($userid);
 
-                $userData->hn       = $response['user']['HN'];
-                $userData->gender   = $response['user']['gender'];
-                $userData->refNo    = $response['user']['refID'];
-                $userData->passport = $response['user']['passport'];
+                $userData->hn       = $responseData['user']['HN'];
+                $userData->gender   = $responseData['user']['gender'];
+                $userData->refNo    = $responseData['user']['refID'];
+                $userData->passport = $responseData['user']['passport'];
             }
-            $userData->name        = $response['user']['name'];
-            $userData->position    = $response['user']['position'];
-            $userData->department  = $response['user']['department'];
-            $userData->division    = $response['user']['division'];
+            $userData->name        = $responseData['user']['name'];
+            $userData->position    = $responseData['user']['position'];
+            $userData->department  = $responseData['user']['department'];
+            $userData->division    = $responseData['user']['division'];
             $userData->last_update = date('Y-m-d H:i:s');
             $userData->save();
 
@@ -141,11 +167,11 @@ class CoreController extends Controller
 
             if (Auth::attempt(['userid' => $userid, 'password' => $password])) {
                 session([
-                    'name'       => $response['user']['name'],
-                    'position'   => $response['user']['position'],
-                    'department' => $response['user']['department'],
-                    'division'   => $response['user']['division'],
-                    'email'      => $response['user']['email'],
+                    'name'       => $responseData['user']['name'],
+                    'position'   => $responseData['user']['position'],
+                    'department' => $responseData['user']['department'],
+                    'division'   => $responseData['user']['division'],
+                    'email'      => $responseData['user']['email'],
                 ]);
 
                 $data['status']  = 'success';
@@ -156,11 +182,11 @@ class CoreController extends Controller
                 Auth::login($userData);
 
                 session([
-                    'name'       => $response['user']['name'],
-                    'position'   => $response['user']['position'],
-                    'department' => $response['user']['department'],
-                    'division'   => $response['user']['division'],
-                    'email'      => $response['user']['email'],
+                    'name'       => $responseData['user']['name'],
+                    'position'   => $responseData['user']['position'],
+                    'department' => $responseData['user']['department'],
+                    'division'   => $responseData['user']['division'],
+                    'email'      => $responseData['user']['email'],
                 ]);
 
                 $data['status']  = 'success';
