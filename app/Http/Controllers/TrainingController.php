@@ -515,11 +515,6 @@ class TrainingController extends Controller
     // Admin: List all users
     public function adminUserIndex(Request $request)
     {
-        Log::channel('training_admin')->info('Viewed user list', [
-            'user'    => auth()->user()->userid ?? null,
-            'search'  => $request->search ?? null,
-            'request' => $request->all(),
-        ]);
         $query = TrainingUser::query();
 
         // Search by User ID
@@ -551,19 +546,15 @@ class TrainingController extends Controller
     // Admin: List all teams
     public function adminTeamIndex()
     {
-        Log::channel('training_admin')->info('Viewed team list', [
-            'user' => auth()->user()->userid ?? null,
-        ]);
         $teams = TrainingTeam::all();
+
         return view('training.admin.teams.index', compact('teams'));
     }
 
     // Admin: Show create form
     public function adminTeamCreate()
     {
-        Log::channel('training_admin')->info('Opened create team form', [
-            'user' => auth()->user()->userid ?? null,
-        ]);
+
         return view('training.admin.teams.create');
     }
 
@@ -591,11 +582,8 @@ class TrainingController extends Controller
     // Admin: Show edit form
     public function adminTeamEdit($id)
     {
-        Log::channel('training_admin')->info("Opened edit form for team ID: $id", [
-            'user' => auth()->user()->userid ?? null,
-            'id'   => $id,
-        ]);
         $team = TrainingTeam::findOrFail($id);
+
         return view('training.admin.teams.edit', compact('team'));
     }
 
@@ -657,10 +645,6 @@ class TrainingController extends Controller
     // Admin: View teachers in a team
     public function adminTeamTeachers($id)
     {
-        Log::channel('training_admin')->info("Viewed teachers for team ID: $id", [
-            'user' => auth()->user()->userid ?? null,
-            'id'   => $id,
-        ]);
         $team     = TrainingTeam::findOrFail($id);
         $teachers = TrainingTeacher::where('team_id', $id)->get();
 
@@ -670,11 +654,6 @@ class TrainingController extends Controller
     // Admin: Create teacher form
     public function adminTeacherCreate(Request $request)
     {
-        Log::channel('training_admin')->info("Opened create teacher form for team ID: {$request->get('team_id')}", [
-            'user'    => auth()->user()->userid ?? null,
-            'team_id' => $request->get('team_id'),
-            'request' => $request->all(),
-        ]);
         $team_id = $request->get('team_id');
         $teams   = TrainingTeam::all();
         $team    = TrainingTeam::findOrFail($team_id);
@@ -709,10 +688,6 @@ class TrainingController extends Controller
     // Admin: Edit teacher form
     public function adminTeacherEdit($id)
     {
-        Log::channel('training_admin')->info("Opened edit form for teacher ID: $id", [
-            'user' => auth()->user()->userid ?? null,
-            'id'   => $id,
-        ]);
         $teacher = TrainingTeacher::findOrFail($id);
         $teams   = TrainingTeam::all();
 
@@ -781,10 +756,6 @@ class TrainingController extends Controller
     // Admin: View teacher sessions
     public function adminTeacherSessions($id)
     {
-        Log::channel('training_admin')->info("Viewed sessions for teacher ID: $id", [
-            'user' => auth()->user()->userid ?? null,
-            'id'   => $id,
-        ]);
         $teacher  = TrainingTeacher::with('sessions')->findOrFail($id);
         $sessions = $teacher->sessions;
 
@@ -794,11 +765,6 @@ class TrainingController extends Controller
     // Admin: Create session form
     public function adminSessionCreate(Request $request)
     {
-        Log::channel('training_admin')->info("Opened create session form for teacher ID: {$request->get('teacher_id')}", [
-            'user'       => auth()->user()->userid ?? null,
-            'teacher_id' => $request->get('teacher_id'),
-            'request'    => $request->all(),
-        ]);
         $teacher_id = $request->get('teacher_id');
         $teacher    = TrainingTeacher::findOrFail($teacher_id);
 
@@ -832,10 +798,6 @@ class TrainingController extends Controller
     // Admin: Edit session form
     public function adminSessionEdit($id)
     {
-        Log::channel('training_admin')->info("Opened edit form for session ID: $id", [
-            'user' => auth()->user()->userid ?? null,
-            'id'   => $id,
-        ]);
         $session = TrainingSession::findOrFail($id);
 
         return view('training.admin.sessions.edit', compact('session'));
@@ -898,11 +860,6 @@ class TrainingController extends Controller
     // Admin: Create time form
     public function adminTimeCreate(Request $request)
     {
-        Log::channel('training_admin')->info("Opened create time form for session ID: {$request->get('session_id')}", [
-            'user'       => auth()->user()->userid ?? null,
-            'session_id' => $request->get('session_id'),
-            'request'    => $request->all(),
-        ]);
         $session_id = $request->get('session_id');
         $session    = TrainingSession::findOrFail($session_id);
 
@@ -1007,22 +964,18 @@ class TrainingController extends Controller
     // Admin: Dates index for a time
     public function adminDatesIndex($time_id)
     {
-        Log::channel('training_admin')->info("Viewed dates for time ID: $time_id", [
-            'user'    => auth()->user()->userid ?? null,
-            'time_id' => $time_id,
-        ]);
         $time  = TrainingTime::with('dates')->findOrFail($time_id);
         $dates = $time->dates;
+        foreach ($dates as $date) {
+            $date->fulldate = $this->dateFull($date->name);
+        }
+
         return view('training.admin.dates.index', compact('time', 'dates'));
     }
 
     // Admin: Create date form
     public function adminDateCreate($time_id)
     {
-        Log::channel('training_admin')->info("Opened create date form for time ID: $time_id", [
-            'user'    => auth()->user()->userid ?? null,
-            'time_id' => $time_id,
-        ]);
         $time = TrainingTime::findOrFail($time_id);
 
         return view('training.admin.dates.create', compact('time'));
@@ -1071,10 +1024,6 @@ class TrainingController extends Controller
     // Admin: Edit date form
     public function adminDateEdit($id)
     {
-        Log::channel('training_admin')->info("Opened edit form for date ID: $id", [
-            'user' => auth()->user()->userid ?? null,
-            'id'   => $id,
-        ]);
         $date = TrainingDate::findOrFail($id);
         $time = TrainingTime::findOrFail($date->time_id);
 
@@ -1124,9 +1073,6 @@ class TrainingController extends Controller
     // Admin: Create user form
     public function adminUserCreate()
     {
-        Log::channel('training_admin')->info('Opened create user form', [
-            'user' => auth()->user()->userid ?? null,
-        ]);
         $teams = TrainingTeam::where('status', 'active')->get();
 
         return view('training.admin.users.create', compact('teams'));
@@ -1158,14 +1104,33 @@ class TrainingController extends Controller
             ->with('success', 'User created successfully');
     }
 
+    public function adminUserDelete($id)
+    {
+        $user = TrainingUser::find($id);
+        if (! $user) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'User not found.',
+            ], 404);
+        }
+
+        try {
+            $user->delete();
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'User deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to delete user.',
+            ], 500);
+        }
+    }
+
     // Admin: Approve user
     public function adminApprove(Request $request)
     {
-        Log::channel('training_admin')->info("Viewed approval list for date: {$request->input('name', date('Y-m-d'))}", [
-            'user'         => auth()->user()->userid ?? null,
-            'admin_filter' => $request->input('admin', 'all'),
-            'request'      => $request->all(),
-        ]);
         $filterDate  = $request->input('name', date('Y-m-d'));
         $filterAdmin = $request->input('admin', 'all');
         $query       = TrainingAttend::with(['date.time.session.teacher.team'])->where('name', $filterDate);
@@ -1219,10 +1184,6 @@ class TrainingController extends Controller
 
     public function adminRegisterIndex(Request $request)
     {
-        Log::channel('training_admin')->info('Viewed register list', [
-            'user'    => auth()->user()->userid ?? null,
-            'filters' => $request->all(),
-        ]);
         $teams    = TrainingTeam::where('status', 'active')->get();
         $teachers = TrainingTeacher::where('status', 'active')->get();
         $sessions = TrainingSession::where('status', 'active')->get();
@@ -1310,6 +1271,12 @@ class TrainingController extends Controller
         $user->save();
 
         return response()->json(['status' => 'success', 'message' => 'ยกเลิกการลงทะเบียนสำเร็จ']);
+    }
+
+    public function adminExportIndex()
+    {
+
+        return view('training.admin.exports.index');
     }
 
 }

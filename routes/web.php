@@ -84,7 +84,6 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::post('/hr/admin/importscores', [HumanResourceControler::class, 'ImportScore']);
 
     // Training
-
     // Dev routes
     Route::get('/training/admin/dev/delete', [TrainingController::class, 'deleteTestData']);
     Route::get('/training/admin/dev/seed', [TrainingController::class, 'seedData']);
@@ -141,10 +140,14 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::post('/training/admin/users/import', [TrainingController::class, 'adminUserImport'])->name('training.admin.users.import');
     Route::get('/training/admin/users/create', [TrainingController::class, 'adminUserCreate'])->name('training.admin.users.create');
     Route::post('/training/admin/users/store', [TrainingController::class, 'adminUserStore'])->name('training.admin.users.store');
+    Route::delete('/training/admin/users/{id}', [TrainingController::class, 'adminUserDelete'])->name('training.admin.users.destroy');
 
     // Register management routes
     Route::get('/training/admin/register', [TrainingController::class, 'adminRegisterIndex'])->name('training.admin.register.index');
     Route::post('/training/admin/unregister', [TrainingController::class, 'adminUnregisterUser'])->name('training.admin.unregister.user');
+
+    // Export management routes
+    Route::get('/training/admin/exports', [TrainingController::class, 'adminExportIndex'])->name('training.admin.exports.index');
 });
 
 Route::middleware([NurseAdmin::class])->group(function () {

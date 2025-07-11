@@ -89,7 +89,6 @@
                     card.remove();
                 });
                 datesContainer.appendChild(card);
-                datePicker.value = '';
             });
         });
     </script>

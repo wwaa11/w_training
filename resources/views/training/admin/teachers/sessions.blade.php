@@ -111,7 +111,7 @@
                                                         <td class="px-4 py-2 text-sm">
                                                             <div class="flex items-center space-x-2">
                                                                 <a class="inline-flex items-center px-2 py-1 text-xs text-blue-600 transition-colors hover:text-blue-900" href="{{ route("training.admin.dates.index", $time->id) }}" title="View Dates">
-                                                                    <i class="fa-solid fa-calendar mr-1"></i>View Dates
+                                                                    <i class="fa-solid fa-calendar mr-1"></i>View Dates ( {{ count($time->dates) }} )
                                                                 </a>
                                                                 <a class="inline-flex items-center px-2 py-1 text-xs text-indigo-600 transition-colors hover:text-indigo-900" href="{{ route("training.admin.times.edit", $time->id) }}" title="Edit Time">
                                                                     <i class="fa-solid fa-edit mr-1"></i>Edit

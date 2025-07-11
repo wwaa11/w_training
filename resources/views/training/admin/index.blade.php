@@ -23,7 +23,11 @@
                 <span class="text-lg font-semibold text-purple-900">Training Management</span>
                 <span class="ml-auto text-purple-400"><i class="fa-solid fa-arrow-right"></i></span>
             </a>
-
+            <a class="block items-center gap-4 rounded-lg bg-white p-6 shadow-lg transition hover:bg-blue-50" href="{{ route("training.admin.exports.index") }}">
+                <span class="text-2xl text-yellow-600"><i class="fa-solid fa-layer-group"></i></span>
+                <span class="text-lg font-semibold text-yellow-900">Exports</span>
+                <span class="ml-auto text-yellow-400"><i class="fa-solid fa-arrow-right"></i></span>
+            </a>
         </div>
     </div>
 @endsection

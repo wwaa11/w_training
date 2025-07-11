@@ -20,7 +20,7 @@ class TrainingTime extends Model
 
     public function dates()
     {
-        return $this->hasMany(TrainingDate::class, 'time_id');
+        return $this->hasMany(TrainingDate::class, 'time_id')->orderby('name', 'asc');
     }
 
     public function users()

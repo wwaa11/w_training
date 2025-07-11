@@ -144,10 +144,9 @@ return [
         ],
 
         'training_admin' => [
-            'driver' => 'daily',
+            'driver' => 'single',
             'path'   => storage_path('logs/training_admin.log'),
             'level'  => 'info',
-            'days'   => 30,
         ],
 
     ],

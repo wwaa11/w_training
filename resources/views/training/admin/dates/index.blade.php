@@ -28,6 +28,7 @@
         @endif
         <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
             <div class="overflow-x-auto">
+                <div class="p-3">Total {{ count($dates) }}</div>
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -40,7 +41,7 @@
                     <tbody class="divide-y divide-gray-200 bg-white">
                         @forelse($dates as $date)
                             <tr class="hover:bg-gray-50">
-                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ $date->name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ $date->fulldate }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $date->location }}</td>
                                 <td class="whitespace-nowrap px-6 py-4">
                                     @if ($date->status === "active")
