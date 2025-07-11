@@ -26,4 +26,9 @@ class TrainingUser extends Model
     {
         return $this->hasMany(TrainingAttend::class, 'user_id', 'user_id');
     }
+
+    public function attend($date)
+    {
+        return $this->hasMany(TrainingAttend::class, 'user_id', 'user_id')->where('name', $date);
+    }
 }

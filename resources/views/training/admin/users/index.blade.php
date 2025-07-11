@@ -141,7 +141,9 @@
                         confirmButtonText: 'Yes, delete it!'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            axios.delete(`{{ url("training/admin/users") }}/${userId}`)
+                            axios.post('{{ route("training.admin.users.destroy") }}', {
+                                    id: userId
+                                })
                                 .then(res => {
                                     if (res.data.status === 'success') {
                                         Swal.fire({

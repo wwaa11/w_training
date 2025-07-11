@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\TrainingAttendExport;
 use App\Imports\TrainingTeamImport;
 use App\Models\TrainingAttend;
 use App\Models\TrainingDate;
@@ -9,6 +10,7 @@ use App\Models\TrainingTeacher;
 use App\Models\TrainingTeam;
 use App\Models\TrainingTime;
 use App\Models\TrainingUser;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -1104,9 +1106,9 @@ class TrainingController extends Controller
             ->with('success', 'User created successfully');
     }
 
-    public function adminUserDelete($id)
+    public function adminUserDelete(Request $request)
     {
-        $user = TrainingUser::find($id);
+        $user = TrainingUser::find($request->id);
         if (! $user) {
             return response()->json([
                 'status'  => 'error',
@@ -1275,8 +1277,69 @@ class TrainingController extends Controller
 
     public function adminExportIndex()
     {
+        $dates      = TrainingDate::groupBy('name')->select('name')->get();
+        $arrayDates = [];
+        foreach ($dates as $date) {
+            $arrayDates[] = $date->name;
+        }
 
-        return view('training.admin.exports.index');
+        return view('training.admin.exports.index', compact('arrayDates'));
+    }
+
+    public function adminExportAttends(Request $request)
+    {
+        $date  = $request->date;
+        $dates = TrainingDate::where('name', $date)->get();
+        if ($dates->isEmpty() && $dates->time[0]->isEmpty()) {
+
+            return response()->json(['message' => 'ไม่พบวันที่ที่ต้องการ'], 404);
+        }
+
+        $exportRows = [];
+        foreach ($dates as $trainingDate) {
+            $totalHours = $this->calculateTrainingHours($trainingDate->time->name);
+            foreach ($trainingDate->time->users as $user) {
+                $exportRows[] = $this->buildExportRow($user, $trainingDate, $date, $totalHours);
+            }
+        }
+        foreach ($exportRows as $index => $row) {
+            $exportRows[$index] = ['ลำดับ' => $index + 1] + $row;
+        }
+
+        return Excel::download(new TrainingAttendExport($exportRows), 'บันทึกการเข้าเรียน_' . $date . '.xlsx');
+    }
+
+    private function calculateTrainingHours($timeRange)
+    {
+        $parts = explode('-', $timeRange);
+        if (count($parts) === 2) {
+            list($start, $end) = array_map('trim', $parts);
+            $startTime         = DateTime::createFromFormat('H:i', $start);
+            $endTime           = DateTime::createFromFormat('H:i', $end);
+            if ($startTime && $endTime) {
+                $interval = $startTime->diff($endTime);
+                $hours    = $interval->h;
+                $minutes  = $interval->i;
+                return $hours . ":" . str_pad($minutes, 2, '0', STR_PAD_LEFT);
+            }
+        }
+        return '-';
+    }
+
+    private function buildExportRow($user, $trainingDate, $date, $totalHours)
+    {
+        $attend = $user->attend($date)->first();
+        return [
+            'รหัสพนักงงาน'   => $user->userData->userid,
+            'ชื่อ - นามสกุล' => $user->userData->name,
+            'ตำแหน่ง'        => $user->userData->position,
+            'แผนก'           => $user->userData->department,
+            'วันที่เรียน'    => $date,
+            'Teacher'        => $trainingDate->time->session->teacher->name,
+            'ชั่วโมงอบรม'    => $totalHours,
+            'CHECK-IN'       => $attend && $attend->user ? $attend->user_date : '',
+            'HR-Approve'     => $attend && $attend->admin ? $attend->admin_date : '',
+        ];
     }
 
 }
