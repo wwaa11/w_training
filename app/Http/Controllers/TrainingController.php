@@ -2,6 +2,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\TrainingAttendExport;
+use App\Exports\TrainingHospitalExport;
+use App\Exports\TrainingOnebookExport;
 use App\Imports\TrainingTeamImport;
 use App\Models\TrainingAttend;
 use App\Models\TrainingDate;
@@ -10,7 +12,6 @@ use App\Models\TrainingTeacher;
 use App\Models\TrainingTeam;
 use App\Models\TrainingTime;
 use App\Models\TrainingUser;
-use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -1191,33 +1192,39 @@ class TrainingController extends Controller
         $sessions = TrainingSession::where('status', 'active')->get();
         $times    = TrainingTime::where('status', 'active')->get();
 
-        $users = TrainingUser::with(['time.session.teacher']);
+        $hasFilter = $request->filled('team_id') || $request->filled('teacher_id') || $request->filled('session_id') || $request->filled('time_id') || $request->filled('user_id');
 
-        if ($request->filled('team_id')) {
-            $users->whereHas('time.session.teacher.team', function ($q) use ($request) {
-                $q->where('id', $request->team_id);
-            });
-        }
-        if ($request->filled('teacher_id')) {
-            $users->whereHas('time.session.teacher', function ($q) use ($request) {
-                $q->where('id', $request->teacher_id);
-            });
-        }
-        if ($request->filled('session_id')) {
-            $users->whereHas('time.session', function ($q) use ($request) {
-                $q->where('id', $request->session_id);
-            });
-        }
-        if ($request->filled('time_id')) {
-            $users->whereHas('time', function ($q) use ($request) {
-                $q->where('id', $request->time_id);
-            });
-        }
-        if ($request->filled('user_id')) {
-            $users->where('user_id', $request->user_id);
-        }
+        if ($hasFilter) {
+            $users = TrainingUser::with(['time.session.teacher']);
 
-        $users = $users->whereNotNull('time_id')->get();
+            if ($request->filled('team_id')) {
+                $users->whereHas('time.session.teacher.team', function ($q) use ($request) {
+                    $q->where('id', $request->team_id);
+                });
+            }
+            if ($request->filled('teacher_id')) {
+                $users->whereHas('time.session.teacher', function ($q) use ($request) {
+                    $q->where('id', $request->teacher_id);
+                });
+            }
+            if ($request->filled('session_id')) {
+                $users->whereHas('time.session', function ($q) use ($request) {
+                    $q->where('id', $request->session_id);
+                });
+            }
+            if ($request->filled('time_id')) {
+                $users->whereHas('time', function ($q) use ($request) {
+                    $q->where('id', $request->time_id);
+                });
+            }
+            if ($request->filled('user_id')) {
+                $users->where('user_id', $request->user_id);
+            }
+
+            $users = $users->whereNotNull('time_id')->get();
+        } else {
+            $users = collect();
+        }
 
         return view('training.admin.register.index', compact('teams', 'teachers', 'sessions', 'times', 'users'));
     }
@@ -1295,51 +1302,31 @@ class TrainingController extends Controller
             return response()->json(['message' => 'ไม่พบวันที่ที่ต้องการ'], 404);
         }
 
-        $exportRows = [];
-        foreach ($dates as $trainingDate) {
-            $totalHours = $this->calculateTrainingHours($trainingDate->time->name);
-            foreach ($trainingDate->time->users as $user) {
-                $exportRows[] = $this->buildExportRow($user, $trainingDate, $date, $totalHours);
-            }
-        }
-        foreach ($exportRows as $index => $row) {
-            $exportRows[$index] = ['ลำดับ' => $index + 1] + $row;
-        }
-
-        return Excel::download(new TrainingAttendExport($exportRows), 'บันทึกการเข้าเรียน_' . $date . '.xlsx');
+        return Excel::download(new TrainingAttendExport($date), 'บันทึกการเข้าเรียน_' . $date . '.xlsx');
     }
 
-    private function calculateTrainingHours($timeRange)
+    public function adminExportHospitals(Request $request)
     {
-        $parts = explode('-', $timeRange);
-        if (count($parts) === 2) {
-            list($start, $end) = array_map('trim', $parts);
-            $startTime         = DateTime::createFromFormat('H:i', $start);
-            $endTime           = DateTime::createFromFormat('H:i', $end);
-            if ($startTime && $endTime) {
-                $interval = $startTime->diff($endTime);
-                $hours    = $interval->h;
-                $minutes  = $interval->i;
-                return $hours . ":" . str_pad($minutes, 2, '0', STR_PAD_LEFT);
-            }
+        $date  = $request->date;
+        $dates = TrainingDate::where('name', $date)->get();
+        if ($dates->isEmpty() && $dates->time[0]->isEmpty()) {
+
+            return response()->json(['message' => 'ไม่พบวันที่ที่ต้องการ'], 404);
         }
-        return '-';
+
+        return Excel::download(new TrainingHospitalExport($date), 'ใบบันทึกฝึกอบรมส่วนกลางโรงพยาบาล_' . $date . '.xlsx');
     }
 
-    private function buildExportRow($user, $trainingDate, $date, $totalHours)
+    public function adminExportOnebooks(Request $request)
     {
-        $attend = $user->attend($date)->first();
-        return [
-            'รหัสพนักงงาน'   => $user->userData->userid,
-            'ชื่อ - นามสกุล' => $user->userData->name,
-            'ตำแหน่ง'        => $user->userData->position,
-            'แผนก'           => $user->userData->department,
-            'วันที่เรียน'    => $date,
-            'Teacher'        => $trainingDate->time->session->teacher->name,
-            'ชั่วโมงอบรม'    => $totalHours,
-            'CHECK-IN'       => $attend && $attend->user ? $attend->user_date : '',
-            'HR-Approve'     => $attend && $attend->admin ? $attend->admin_date : '',
-        ];
+        $date    = date('Y') . '-' . $request->month;
+        $attends = TrainingAttend::where('user', true)->where('admin', true)->where('name', 'like', $date . '%')->get();
+        if ($attends->isEmpty()) {
+
+            return response()->json(['message' => 'ไม่พบวันที่ที่ต้องการ'], 404);
+        }
+
+        return Excel::download(new TrainingOnebookExport($date), 'Onebook' . $date . '.xlsx');
     }
 
 }

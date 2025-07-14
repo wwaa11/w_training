@@ -26,44 +26,42 @@ class HumanResourceControler extends Controller
     // Dev Function
     public function adminProjectCreate()
     {
-        // die();
-        $arrayTransaction = [];
+        die();
 
         $project                          = new Project;
-        $project->project_name            = 'หลักสูตร เจ้าหน้าที่ความปลอดภัยในการทำงาน ระดับบริหาร';
+        $project->project_name            = 'หลักสูตร มาตรฐานระบบข้อมูลสาธารณสุขไทย (SNOMED-CT)';
         $project->project_detail          = '';
         $project->project_active          = true;
         $project->project_delete          = false;
-        $project->start_register_datetime = '2025-06-01';
-        $project->last_register_datetime  = '2025-07-10';
+        $project->start_register_datetime = '2025-07-01';
+        $project->last_register_datetime  = '2025-07-22';
         // $project->save();
         // dump($project);
         // die();
 
         $date             = new Slot;
         $date->project_id = $project->id;
-        $date->project_id = 10;
+        $date->project_id = 11;
         $date->slot_index = 2;
-        $date->slot_date  = '2025-07-09';
-        $date->slot_name  = '10 กรกฎาคม 2568';
+        $date->slot_date  = '2025-07-22';
+        $date->slot_name  = '22 กรกฎาคม 2568';
         // $date->save();
         // dump($date);
         // die();
 
         $time                     = new Item;
         $time->slot_id            = $date->id;
-        $time->slot_id            = 70;
-        $time->item_name          = '08.00 - 16.45 น';
+        $time->item_name          = '08.30 - 12.00 น';
         $time->item_index         = 1;
-        $time->item_available     = 35;
-        $time->item_max_available = 35;
+        $time->item_available     = 100;
+        $time->item_max_available = 100;
         $time->item_note_1_active = true;
         $time->item_note_1_title  = 'ห้องประชุม';
-        $time->item_note_1_value  = 'Grand Hall ชั้น 5 อาคาร A';
-        $time->save();
-        dump($time);
+        $time->item_note_1_value  = 'ห้องประชุม Granf Hall ชั้น 5 อาคาร A';
+        // $time->save();
         die();
 
+        $arrayTransaction = [];
         foreach ($arrayTransaction as $user) {
             $tran                     = new Transaction;
             $tran->project_id         = $project->id;

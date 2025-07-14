@@ -149,6 +149,8 @@ Route::middleware([HrAdmin::class])->group(function () {
     // Export management routes
     Route::get('/training/admin/exports/index', [TrainingController::class, 'adminExportIndex'])->name('training.admin.exports.index');
     Route::get('/training/admin/exports/attends', [TrainingController::class, 'adminExportAttends'])->name('training.admin.exports.attends');
+    Route::get('/training/admin/exports/hospitals', [TrainingController::class, 'adminExportHospitals'])->name('training.admin.exports.hospitals');
+    Route::get('/training/admin/exports/onebooks', [TrainingController::class, 'adminExportOnebooks'])->name('training.admin.exports.onebooks');
 });
 
 Route::middleware([NurseAdmin::class])->group(function () {
