@@ -3,11 +3,11 @@
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="flex">
             <div class="flex-1 text-2xl font-bold">Projects Management</div>
-            <div>
+            {{-- <div>
                 <a href="{{ env("APP_URL") }}/hr/admin/create">
                     <div class="mb-2 rounded bg-blue-500 p-2 text-white">เพิ่มโปรเจกต์ใหม่</div>
                 </a>
-            </div>
+            </div> --}}
         </div>
         <hr>
         <table class="w-full">

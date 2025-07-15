@@ -35,7 +35,7 @@
             @foreach ($project->dateData as $date)
                 <table class="mb-3 table w-full border-collapse">
                     <thead class="bg-gray-200">
-                        <th class="border p-3 text-start">
+                        <th class="border p-3 text-start" colspan="2">
                             <span>{{ $date->title }}</span>
                             <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/users/{{ $date->id }}">
                                 <span class="ms-6 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> รายชื่อผู้ฝึกอบรม</span>
@@ -50,7 +50,7 @@
                     <tbody>
                         @foreach ($date->timeData as $time)
                             <tr class="bg-white">
-                                <td class="border p-3">
+                                <td class="border p-3" colspan="2">
                                     <div class="flex gap-3">
                                         @if ($time->max == 0)
                                             <div class="lg:w-42 cursor-pointer text-green-600 lg:flex-none" onclick="createTransaction('{{ $time->id }}','{{ $time->title }}')"><i class="fa-solid fa-plus"></i>&nbsp;เพิ่มผู้ลงทะเบียน</div>
@@ -71,16 +71,24 @@
                         @endforeach
                         @if (count($date->lecturesData) > 0)
                             <tr>
-                                <td class="border bg-gray-300 p-3" colspan="2">
+                                <td class="border bg-gray-300 p-3">
                                     วิทยากร
                                     <a class="ms-6 cursor-pointer rounded py-3 text-green-600 hover:text-green-800" href="{{ env("APP_URL") }}/nurse/admin/export/excel/datelecture/{{ $date->id }}">
                                         <i class="fa-solid fa-file-excel"></i> รายชื่อวิทยากร
                                     </a>
                                 </td>
+                                <td class="border bg-gray-300 p-3" colspan="2">คะแนนที่ได้</td>
                             </tr>
                             @foreach ($date->lecturesData as $lecture)
                                 <tr class="bg-white hover:bg-green-200">
                                     <td class="border p-3">{{ $lecture->user_id . " " . $lecture->userData->name }}</td>
+                                    <td class="w-36 border p-3">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <input class="form-input rounded border px-2 py-1" id="lecturer_{{ $lecture->id }}" type="number" min="0" value="{{ $lecture->score }}" placeholder="คะแนนวิทยากร">
+                                            <button class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600" type="button" onclick="updateLecturerScore('{{ $lecture->id }}')">Update</button>
+                                            <span class="ml-2 text-sm" id="lecturer_feedback_{{ $lecture->id }}"></span>
+                                        </div>
+                                    </td>
                                     <td class="border p-3 text-center">
                                         <button class="cursor-pointer text-red-600" type="button" onclick="deleteLecture('{{ $lecture->id }}','{{ $lecture->userData->name }}')"><i class="fa fa-trash"></i></button>
                                     </td>
@@ -278,6 +286,34 @@
                     })
                 });
             }
+        }
+
+        function updateLecturerScore(lectureId) {
+            const input = document.getElementById('lecturer_' + lectureId);
+            const feedback = document.getElementById('lecturer_feedback_' + lectureId);
+            const score = input.value;
+            feedback.textContent = 'Updating...';
+            feedback.className = 'ml-2 text-sm text-gray-500';
+
+            axios.post(
+                    '{{ route("nurse.lecturer.update-score") }}', {
+                        lecture_id: lectureId,
+                        score: score
+                    }
+                )
+                .then(response => {
+                    if (response.data.success) {
+                        feedback.textContent = 'Updated!';
+                        feedback.className = 'ml-2 text-sm text-green-600';
+                    } else {
+                        feedback.textContent = response.data.message || 'Update failed.';
+                        feedback.className = 'ml-2 text-sm text-red-600';
+                    }
+                })
+                .catch(error => {
+                    feedback.textContent = 'Network error.';
+                    feedback.className = 'ml-2 text-sm text-red-600';
+                });
         }
     </script>
 @endsection

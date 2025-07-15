@@ -58,8 +58,9 @@ class NurseController extends Controller
                 $myscore += 1;
             }
         }
-
-        $myscore += (count($lectures) * 5);
+        foreach ($lectures as $lecture) {
+            $myscore += $lecture->score;
+        }
 
         return view('nurse.history', compact('transactions', 'lectures', 'myscore'));
     }
@@ -568,6 +569,24 @@ class NurseController extends Controller
         return response()->json($response, 200);
     }
 
+    public function updateLecturerScore(Request $request)
+    {
+        $request->validate([
+            'lecture_id' => 'required|integer|exists:nurse_lecturers,id',
+            'score'      => 'required|numeric|min:0',
+        ]);
+
+        $lecture = NurseLecture::find($request->lecture_id);
+        if (! $lecture) {
+            return response()->json(['success' => false, 'message' => 'Lecture not found.'], 404);
+        }
+
+        $lecture->score = $request->score;
+        $lecture->save();
+
+        return response()->json(['success' => true, 'message' => 'Score updated successfully.']);
+    }
+
     public function ExcelUserExport($project_id)
     {
         ini_set('memory_limit', '1024M');
@@ -680,6 +699,7 @@ class NurseController extends Controller
             'แผนกศัลยกรรม',
             'แผนกสถาบันหัวใจและหลอดเลือด',
             'แผนกสูตินรีเวช',
+            'แผนกการพยาบาลกลาง',
         ];
 
         $projects = NurseProject::where('active', true)

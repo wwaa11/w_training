@@ -20,56 +20,68 @@ class NurseScoreExport implements FromArray
     {
         $data = [];
 
+        // Fetch all active projects, ordered by register_start
         $projects = NurseProject::where('active', true)
             ->orderBy('register_start', 'asc')
             ->get();
-        $data[0] = [
+
+        // Header row
+        $header = [
             'รหัสพนักงงาน',
             'ชื่อ - สกุล',
             'ตำแหน่ง',
         ];
         foreach ($projects as $project) {
-            $data[0][] = $project->title;
+            $header[] = $project->title;
         }
-        $data[0][] = 'วิทยากร';
-        $data[0][] = 'Total';
+        $header[] = 'วิทยากร';
+        $header[] = 'Total';
+        $data[0]  = $header;
 
+        // Fetch nurses in the department
         $nurses = User::where('department', $this->department)
             ->orderBy('department', 'asc')
             ->orderBy('userid', 'asc')
             ->get();
 
+        // Fetch all relevant transactions and lectures
         $transactions = NurseTransaction::where('active', true)
             ->whereNotNull('user_sign')
             ->whereNotNull('admin_sign')
             ->get();
 
-        $lecture = NurseLecture::where('active', true)->get();
+        $lectures = NurseLecture::where('active', true)->get();
 
-        foreach ($nurses as $index => $nurse) {
-            $data[$nurse->userid] = [
+        foreach ($nurses as $nurse) {
+            $row = [
                 'user'     => $nurse->userid,
                 'name'     => $nurse->name,
                 'position' => $nurse->position,
             ];
-            $lectureCount = collect($lecture)->where('user_id', $nurse->userid)->count();
-            $score        = 0;
+
+            $totalScore   = 0;
+            $lectureScore = 0;
+
+            // Count transactions for each project
             foreach ($projects as $project) {
-                $data[$nurse->userid][$project->title] = null;
-                $countTransaction                      = collect($transactions)->where('user_id', $nurse->userid)->where('nurse_project_id', $project->id)->count();
-                if ($countTransaction > 0) {
-                    $data[$nurse->userid][$project->title] = $countTransaction;
-                    $score += $countTransaction;
-                }
-            }
-            if ($lectureCount > 0) {
-                $data[$nurse->userid]['lecture'] = $lectureCount * 5;
-                $score += $lectureCount * 5;
-            } else {
-                $data[$nurse->userid]['lecture'] = $lectureCount * 0;
+                $count = $transactions->where('user_id', $nurse->userid)
+                    ->where('nurse_project_id', $project->id)
+                    ->count();
+                $row[$project->id] = $count > 0 ? $count : null;
+                $totalScore += $count;
             }
 
-            $data[$nurse->userid]['total'] = $score;
+            // Sum lecture scores
+            $nurseLectures = $lectures->where('user_id', $nurse->userid);
+            foreach ($nurseLectures as $lecture) {
+                $lectureScore += $lecture->score;
+                $totalScore += $lecture->score;
+            }
+
+            $row[] = $lectureScore;
+            $row[] = $totalScore;
+
+            $data[$nurse->userid] = $row;
         }
 
         return $data;

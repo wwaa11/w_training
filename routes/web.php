@@ -175,6 +175,7 @@ Route::middleware([NurseAdmin::class])->group(function () {
 
     Route::post('/nurse/admin/addLecture', [NurseController::class, 'adminAddLecture']);
     Route::post('/nurse/admin/deleteLecture', [NurseController::class, 'adminDeleteLecture']);
+    Route::post('/nurse/lecturer/update-score', [NurseController::class, 'updateLecturerScore'])->name('nurse.lecturer.update-score');
 
     Route::get('/nurse/admin/export/excel/users/{project_id}', [NurseController::class, 'ExcelUserExport']);
     Route::get('/nurse/admin/export/excel/lectures/{project_id}', [NurseController::class, 'ExcelLectureExport']);

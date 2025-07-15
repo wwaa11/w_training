@@ -24,7 +24,7 @@
                         <div class="prompt-medium text-2xl text-[#008387]">วิทยากร</div>
                         <div class="prompt-medium text-2xl text-[#008387]">{{ $lecture->dateData->projectData->title }}</div>
                         <div class="absolute bottom-0 right-3 top-0 text-4xl text-red-400">
-                            5
+                            {{ $lecture->score }}
                         </div>
                     </div>
                 </div>
