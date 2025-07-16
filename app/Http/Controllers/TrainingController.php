@@ -485,6 +485,11 @@ class TrainingController extends Controller
 
     public function indexRegister(Request $request)
     {
+        Log::channel('training_admin')->info("User registration", [
+            'user'    => auth()->user()->userid ?? null,
+            'request' => $request->all(),
+        ]);
+
         $user                 = TrainingUser::where('user_id', auth()->user()->userid)->first();
         $user->time_id        = $request->time_id;
         $time                 = TrainingTime::where('id', $request->time_id)->first();
@@ -493,6 +498,37 @@ class TrainingController extends Controller
         $user->save();
 
         return response()->json(['status' => 'success'], 200);
+    }
+
+    public function changeRegistration(Request $request)
+    {
+        Log::channel('training_admin')->info("User delete registration", [
+            'user'    => auth()->user()->userid ?? null,
+            'request' => $request->all(),
+        ]);
+
+        $user = TrainingUser::where('user_id', auth()->user()->userid)->first();
+
+        if (! $user) {
+            return response()->json(['status' => 'error', 'message' => 'ไม่พบข้อมูลผู้ใช้']);
+        }
+
+        if (! $user->time_id) {
+            return response()->json(['status' => 'error', 'message' => 'คุณยังไม่ได้ลงทะเบียนรอบใด']);
+        }
+
+        // Get the current time slot and increase available seats
+        $time = TrainingTime::find($user->time_id);
+        if ($time) {
+            $time->available_seat = $time->available_seat + 1;
+            $time->save();
+        }
+
+        // Clear the user's registration
+        $user->time_id = null;
+        $user->save();
+
+        return response()->json(['status' => 'success', 'message' => 'ยกเลิกการลงทะเบียนสำเร็จ']);
     }
 
     public function indexCheckIn(Request $request)
@@ -1249,37 +1285,6 @@ class TrainingController extends Controller
             $user->save();
         }
         return response()->json(['status' => 'success', 'message' => 'User unregistered successfully']);
-    }
-
-    public function changeRegistration(Request $request)
-    {
-        Log::channel('training_admin')->info("User changed registration", [
-            'user'    => auth()->user()->userid ?? null,
-            'request' => $request->all(),
-        ]);
-
-        $user = TrainingUser::where('user_id', auth()->user()->userid)->first();
-
-        if (! $user) {
-            return response()->json(['status' => 'error', 'message' => 'ไม่พบข้อมูลผู้ใช้']);
-        }
-
-        if (! $user->time_id) {
-            return response()->json(['status' => 'error', 'message' => 'คุณยังไม่ได้ลงทะเบียนรอบใด']);
-        }
-
-        // Get the current time slot and increase available seats
-        $time = TrainingTime::find($user->time_id);
-        if ($time) {
-            $time->available_seat = $time->available_seat + 1;
-            $time->save();
-        }
-
-        // Clear the user's registration
-        $user->time_id = null;
-        $user->save();
-
-        return response()->json(['status' => 'success', 'message' => 'ยกเลิกการลงทะเบียนสำเร็จ']);
     }
 
     public function adminExportIndex()

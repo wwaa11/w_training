@@ -32,9 +32,9 @@ class NurseLectureExport implements FromView, ShouldAutoSize, WithDrawings
         $row        = 0;
         foreach ($project->dateData as $date) {
             foreach ($date->lecturesData as $index => $lecture) {
-                $base64 = explode(',', $lecture->userData->sign, 2);
-                if (isset($base64[1])) {
-                    $sign = imagecreatefromstring(base64_decode($base64[1]));
+                if ($lecture->userData->sign !== null) {
+                    $base64 = explode(',', $lecture->userData->sign, 2);
+                    $sign   = imagecreatefromstring(base64_decode($base64[1]));
                     if ($sign !== false) {
                         imagesavealpha($sign, true);
 

@@ -37,7 +37,7 @@ class NurseDateExport implements FromArray, ShouldAutoSize, WithHeadings, WithDr
         $row  = 0;
         foreach ($date->timeData as $time) {
             foreach ($time->transactionData as $index => $transaction) {
-                if ($transaction->active) {
+                if ($transaction->active && $transaction->userData->sign !== null) {
                     $base64 = explode(',', $transaction->userData->sign, 2);
                     $sign   = imagecreatefromstring(base64_decode($base64[1]));
                     imagesavealpha($sign, true);

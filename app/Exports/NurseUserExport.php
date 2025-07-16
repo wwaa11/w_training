@@ -24,16 +24,18 @@ class NurseUserExport implements FromArray, ShouldAutoSize, WithDrawings
         foreach ($project->dateData as $date) {
             foreach ($date->timeData as $time) {
                 foreach ($time->transactionData as $index => $transaction) {
-                    $base64 = explode(',', $transaction->userData->sign, 2);
-                    $sign   = imagecreatefromstring(base64_decode($base64[1]));
-                    imagesavealpha($sign, true);
+                    if ($transaction->userData->sign !== null) {
+                        $base64 = explode(',', $transaction->userData->sign, 2);
+                        $sign   = imagecreatefromstring(base64_decode($base64[1]));
+                        imagesavealpha($sign, true);
 
-                    $drawing = new MemoryDrawing();
-                    $drawing->setImageResource($sign);
-                    $drawing->setHeight(15);
-                    $drawing->setWidth(120);
-                    $drawing->setCoordinates('J' . ($row + 2));
-                    $drawings[] = $drawing;
+                        $drawing = new MemoryDrawing();
+                        $drawing->setImageResource($sign);
+                        $drawing->setHeight(15);
+                        $drawing->setWidth(120);
+                        $drawing->setCoordinates('J' . ($row + 2));
+                        $drawings[] = $drawing;
+                    }
 
                     $row += 1;
                 }
