@@ -3,6 +3,7 @@ namespace App\Exports;
 
 use App\Models\TrainingDate;
 use DateTime;
+use DB;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -18,14 +19,24 @@ class TrainingAttendExport implements FromArray, WithHeadings, ShouldAutoSize
 
     public function array(): array
     {
-        $date = $this->date;
+        $date     = $this->date;
+        $allUsers = DB::connection('STAFF')
+            ->table('users')
+            ->join('departments', 'users.department', 'departments.id')
+            ->select(
+                'users.userid',
+                'users.name_EN',
+                'users.position_EN',
+                'departments.department_EN',
+            )
+            ->get();
 
         $dates      = TrainingDate::where('name', $date)->get();
         $exportRows = [];
         foreach ($dates as $trainingDate) {
             $totalHours = $this->calculateTrainingHours($trainingDate->time->name);
             foreach ($trainingDate->time->users as $user) {
-                $exportRows[] = $this->buildExportRow($user, $trainingDate, $date, $totalHours);
+                $exportRows[] = $this->buildExportRow($user, $trainingDate, $date, $totalHours, $allUsers);
             }
         }
         foreach ($exportRows as $index => $row) {
@@ -52,14 +63,18 @@ class TrainingAttendExport implements FromArray, WithHeadings, ShouldAutoSize
         return '-';
     }
 
-    private function buildExportRow($user, $trainingDate, $date, $totalHours)
+    private function buildExportRow($user, $trainingDate, $date, $totalHours, $allUsers)
     {
+        $userEN = collect($allUsers)->where('userid', $user->userData->userid)->first();
         $attend = $user->attend($date)->first();
         return [
             'รหัสพนักงงาน'   => $user->userData->userid,
             'ชื่อ - นามสกุล' => $user->userData->name,
+            'Name - Surname' => $userEN->name_EN,
             'ตำแหน่ง'        => $user->userData->position,
+            'Position'       => $userEN->position_EN,
             'แผนก'           => $user->userData->department,
+            'Department'     => $userEN->department_EN,
             'วันที่เรียน'    => $date,
             'เวลาที่เรียน'   => $trainingDate->time->name,
             'Teacher'        => $trainingDate->time->session->teacher->name,
@@ -75,8 +90,11 @@ class TrainingAttendExport implements FromArray, WithHeadings, ShouldAutoSize
             'ลำดับ',
             'รหัสพนักงงาน',
             'ชื่อ - นามสกุล',
+            'Name - Surname',
             'ตำแหน่ง',
+            'Position',
             'แผนก',
+            'Department',
             'วันที่เรียน',
             'เวลาที่เรียน',
             'Teacher',
