@@ -13,11 +13,10 @@
             <hr>
             <div class="flex flex-row gap-3">
                 <select class="mt-2 flex-none rounded border bg-gray-200 p-2" id="searchTime" onchange="changeSearch()">
-                    <option @if ($selectTime == "8") selected @endif value="8">08.30 - 10.00 น.</option>
-                    <option @if ($selectTime == "10") selected @endif value="10">10.30 - 12.00 น.</option>
-                    <option @if ($selectTime == "13") selected @endif value="13">13.30 - 15.00 น.</option>
-                    <option @if ($selectTime == "15") selected @endif value="15">15.30 - 17.00 น.</option>
-                    <option @if ($selectTime == "all") selected @endif value="15">โปรดระบุ</option>
+                    @foreach ($timeSelet as $time)
+                        <option @if ($selectTime == $time) selected @endif value="{{ $time }}">{{ $time }}</option>
+                    @endforeach
+                    <option @if ($selectTime == "all") selected @endif value="all">โปรดระบุ</option>
                 </select>
                 <input class="mt-3 w-full flex-1 rounded border border-gray-400 p-3" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
                 <div class="m-auto">

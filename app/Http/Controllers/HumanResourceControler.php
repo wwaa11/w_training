@@ -26,39 +26,96 @@ class HumanResourceControler extends Controller
     // Dev Function
     public function adminProjectCreate()
     {
-        die();
+        // die();
 
         $project                          = new Project;
-        $project->project_name            = 'หลักสูตร มาตรฐานระบบข้อมูลสาธารณสุขไทย (SNOMED-CT)';
+        $project->project_name            = 'หลักสูตร การอบรมการช่วยชีวิตขั้นพื้นฐานสำหรับบุคลากรทางการแพทย์ (Basic Life Support for Health Care Provider Course)';
         $project->project_detail          = '';
         $project->project_active          = true;
         $project->project_delete          = false;
         $project->start_register_datetime = '2025-07-01';
-        $project->last_register_datetime  = '2025-07-22';
+        $project->last_register_datetime  = '2025-07-23';
         // $project->save();
-        // dump($project);
-        // die();
 
-        $date             = new Slot;
-        $date->project_id = $project->id;
-        $date->project_id = 11;
-        $date->slot_index = 2;
-        $date->slot_date  = '2025-07-22';
-        $date->slot_name  = '22 กรกฎาคม 2568';
-        // $date->save();
-        // dump($date);
-        // die();
+        $dateArrays = [
+            [
+                'index'          => 1,
+                'date'           => '2025-07-21',
+                'title'          => '21 กรกฎาคม 2568',
+                'max'            => 24,
+                'location_title' => 'ห้องประชุม',
+                'location'       => 'ศูนย์การเรียนรู้ ชั้น 8 อาคาร A',
+                'times'          => [
+                    [
+                        'index' => 1,
+                        'title' => '07.30 - 12.00 น.',
+                    ],
+                    [
+                        'index' => 2,
+                        'title' => '12.30 - 17.00 น.',
+                    ],
+                ],
+            ],
+            [
+                'index'          => 1,
+                'date'           => '2025-07-22',
+                'title'          => '22 กรกฎาคม 2568',
+                'max'            => 24,
+                'location_title' => 'ห้องประชุม',
+                'location'       => 'ศูนย์การเรียนรู้ ชั้น 8 อาคาร A',
+                'times'          => [
+                    [
+                        'index' => 1,
+                        'title' => '07.30 - 12.00 น.',
+                    ],
+                    [
+                        'index' => 2,
+                        'title' => '12.30 - 17.00 น.',
+                    ],
+                ],
+            ],
+            [
+                'index'          => 1,
+                'date'           => '2025-07-23',
+                'title'          => '23 กรกฎาคม 2568',
+                'max'            => 24,
+                'location_title' => 'ห้องประชุม',
+                'location'       => 'ศูนย์การเรียนรู้ ชั้น 8 อาคาร A',
+                'times'          => [
+                    [
+                        'index' => 1,
+                        'title' => '07.30 - 12.00 น.',
+                    ],
+                    [
+                        'index' => 2,
+                        'title' => '12.30 - 17.00 น.',
+                    ],
+                ],
+            ],
+        ];
 
-        $time                     = new Item;
-        $time->slot_id            = $date->id;
-        $time->item_name          = '08.30 - 12.00 น';
-        $time->item_index         = 1;
-        $time->item_available     = 100;
-        $time->item_max_available = 100;
-        $time->item_note_1_active = true;
-        $time->item_note_1_title  = 'ห้องประชุม';
-        $time->item_note_1_value  = 'ห้องประชุม Granf Hall ชั้น 5 อาคาร A';
-        // $time->save();
+        foreach ($dateArrays as $detail) {
+            $date             = new Slot;
+            $date->project_id = $project->id;
+            $date->project_id = 12;
+            $date->slot_index = $detail['index'];
+            $date->slot_date  = $detail['date'];
+            $date->slot_name  = $detail['title'];
+            $date->save();
+            foreach ($detail['times'] as $deatil_time) {
+                $time                     = new Item;
+                $time->slot_id            = $date->id;
+                $time->item_name          = $deatil_time['title'];
+                $time->item_index         = $deatil_time['index'];
+                $time->item_available     = $detail['max'];
+                $time->item_max_available = $detail['max'];
+                $time->item_note_1_active = true;
+                $time->item_note_1_title  = $detail['location_title'];
+                $time->item_note_1_value  = $detail['location'];
+                $time->save();
+            }
+        }
+
         die();
 
         $arrayTransaction = [];
@@ -414,34 +471,22 @@ class HumanResourceControler extends Controller
             }
             if ($in == 'time') {
                 $selectTime = $value;
-                switch ($value) {
-                    case 8:
-                        $time = '08.30 - 10.00 น.';
-                        break;
-                    case 10:
-                        $time = '10.30 - 12.00 น.';
-                        break;
-                    case 13:
-                        $time = '13.30 - 15.00 น.';
-                        break;
-                    case 15:
-                        $time = '15.30 - 17.00 น.';
-                        break;
-                    default:
-                        $time = 'all';
-                        break;
-                }
             }
         }
 
-        $project      = Project::find($project_id);
-        $transactions = Transaction::where('project_id', $project_id)
+        $project           = Project::find($project_id);
+        $transactionsQuery = Transaction::where('project_id', $project_id)
             ->join('items', 'items.id', '=', 'transactions.item_id')
             ->where('transaction_active', true)
             ->where('checkin', true)
             ->whereDate('checkin_datetime', date('Y-m-d'))
-            ->where('item_name', $time)
-            ->where('hr_approve', $checkin)
+            ->where('hr_approve', $checkin);
+
+        if ($selectTime !== 'all') {
+            $transactionsQuery->where('items.item_name', $selectTime);
+        }
+
+        $transactions = $transactionsQuery
             ->orderBy('seat', 'ASC')
             ->select(
                 'transactions.*',
@@ -449,9 +494,17 @@ class HumanResourceControler extends Controller
             )
             ->get();
 
+        $timeSelet = [];
+        foreach ($project->slots as $slot) {
+            foreach ($slot->items as $item) {
+                if (! in_array($item->item_name, $timeSelet)) {
+                    $timeSelet[] = $item->item_name;
+                }
+            }
+        }
         $select = $checkin;
 
-        return view('hr.admin.project_approve')->with(compact('project', 'transactions', 'select', 'selectTime'));
+        return view('hr.admin.project_approve')->with(compact('project', 'transactions', 'select', 'selectTime', 'timeSelet'));
     }
     public function adminProjectApproveUser(Request $req)
     {
