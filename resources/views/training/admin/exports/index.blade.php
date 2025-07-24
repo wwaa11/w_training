@@ -22,24 +22,6 @@
 
             <!-- Card Body -->
             <div class="p-6">
-                <!-- Date Selection -->
-                <div class="mb-8">
-                    <label class="mb-2 block text-sm font-medium text-gray-700" for="date">
-                        <i class="fa-solid fa-calendar mr-2 text-blue-600"></i>
-                        เลือกวันที่ (Select Date)
-                    </label>
-                    <select class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" id="date" name="date" required>
-                        <option value="">-- กรุณาเลือกวันที่ --</option>
-                        @foreach ($arrayDates as $date)
-                            <option value="{{ $date }}">{{ date("d/m/Y", strtotime($date)) }}</option>
-                        @endforeach
-                    </select>
-                    <div class="mt-2 flex items-center text-sm text-gray-500">
-                        <i class="fa-solid fa-info-circle mr-1 text-blue-500"></i>
-                        กรุณาเลือกวันที่ที่ต้องการส่งออกข้อมูล
-                    </div>
-                </div>
-
                 <!-- Export Buttons Grid -->
                 <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
                     <!-- Attendance Export Card -->
@@ -53,6 +35,22 @@
                                     <h3 class="text-lg font-semibold text-gray-900">บันทึกการเข้าเรียน</h3>
                                     <p class="text-sm text-gray-600">Training Attendance Record</p>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="mb-8">
+                            <label class="mb-2 block text-sm font-medium text-gray-700" for="date_start">
+                                <i class="fa-solid fa-calendar mr-2 text-blue-600"></i>
+                                เลือกวันที่เริ่มต้น (Select Start Date)
+                            </label>
+                            <input class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" id="date_start" type="date" name="date_start" value="{{ date("Y-m-01") }}" required>
+                            <label class="mb-2 block text-sm font-medium text-gray-700" for="date_end">
+                                <i class="fa-solid fa-calendar mr-2 text-blue-600"></i>
+                                เลือกวันที่สิ้นสุด (Select End Date)
+                            </label>
+                            <input class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" id="date_end" type="date" name="date_end" value="{{ date("Y-m-d") }}" required>
+                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                <i class="fa-solid fa-info-circle mr-1 text-blue-500"></i>
+                                กรุณาเลือกวันที่ที่ต้องการส่งออกข้อมูล
                             </div>
                         </div>
                         <p class="mb-4 text-sm text-gray-600">Export detailed attendance records for the selected date</p>
@@ -78,6 +76,22 @@
                                     <h3 class="text-lg font-semibold text-gray-900">ใบบันทึกฝึกอบรมส่วนกลาง</h3>
                                     <p class="text-sm text-gray-600">Hospital Training Forms</p>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="mb-8">
+                            <label class="mb-2 block text-sm font-medium text-gray-700" for="date">
+                                <i class="fa-solid fa-calendar mr-2 text-blue-600"></i>
+                                เลือกวันที่ (Select Date)
+                            </label>
+                            <select class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" id="date" name="date" required>
+                                <option value="">-- กรุณาเลือกวันที่ --</option>
+                                @foreach ($arrayDates as $date)
+                                    <option value="{{ $date }}">{{ date("d/m/Y", strtotime($date)) }}</option>
+                                @endforeach
+                            </select>
+                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                <i class="fa-solid fa-info-circle mr-1 text-blue-500"></i>
+                                กรุณาเลือกวันที่ที่ต้องการส่งออกข้อมูล
                             </div>
                         </div>
                         <p class="mb-4 text-sm text-gray-600">Export hospital training forms for the selected date</p>
@@ -189,15 +203,17 @@
 
         async function exportAttend(e) {
             e.preventDefault();
-            const dateSelect = document.getElementById('date');
+            const dateStart = document.getElementById('date_start');
+            const dateEnd = document.getElementById('date_end');
             const exportBtn = document.getElementById('exportBtn');
             const btnText = document.getElementById('btnText');
             const btnSpinner = document.getElementById('btnSpinner');
-            const date = dateSelect.value;
+            const startDate = dateStart.value;
+            const endDate = dateEnd.value;
 
-            if (!date) {
+            if (!startDate || !endDate) {
                 showToast('กรุณาเลือกวันที่', 'warning');
-                dateSelect.focus();
+                dateStart.focus();
                 return;
             }
 
@@ -208,7 +224,8 @@
             try {
                 const response = await axios.get('{{ route("training.admin.exports.attends") }}', {
                     params: {
-                        date
+                        dateStart: startDate,
+                        dateEnd: endDate
                     },
                     responseType: 'blob',
                 });

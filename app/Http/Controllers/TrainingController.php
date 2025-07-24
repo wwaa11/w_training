@@ -1300,14 +1300,16 @@ class TrainingController extends Controller
 
     public function adminExportAttends(Request $request)
     {
-        $date  = $request->date;
-        $dates = TrainingDate::where('name', $date)->get();
+        $dateStart = $request->dateStart;
+        $dateEnd   = $request->dateEnd;
+        $date      = $dateStart . '-' . $dateEnd;
+        $dates     = TrainingDate::whereDate('name', '>=', $dateStart)->whereDate('name', '<=', $dateEnd)->get();
         if ($dates->isEmpty() && $dates->time[0]->isEmpty()) {
 
             return response()->json(['message' => 'ไม่พบวันที่ที่ต้องการ'], 404);
         }
 
-        return Excel::download(new TrainingAttendExport($date), 'บันทึกการเข้าเรียน_' . $date . '.xlsx');
+        return Excel::download(new TrainingAttendExport($request), 'บันทึกการเข้าเรียน_' . $date . '.xlsx');
     }
 
     public function adminExportHospitals(Request $request)
