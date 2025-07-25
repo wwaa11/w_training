@@ -30,6 +30,9 @@
             <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/type/{{ $project->id }}">
                 <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel {{ $project->export_type_name }}</div>
             </a>
+            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/onebook/{{ $project->id }}">
+                <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel Onebook หลักสูตร {{ $project->title }}</div>
+            </a>
             <div class="text-2xl font-bold">วันที่เปิดลงทะเบียน</div>
             <hr class="mb-3">
             @foreach ($project->dateData as $date)

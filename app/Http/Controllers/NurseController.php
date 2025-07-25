@@ -6,6 +6,7 @@ use App\Exports\NurseDateExport;
 use App\Exports\NurseDateLectureExport;
 use App\Exports\NurseDBDExport;
 use App\Exports\NurseLectureExport;
+use App\Exports\NurseOnebookExport;
 use App\Exports\NurseScoreExport;
 use App\Exports\NurseType1Export;
 use App\Exports\NurseType2Export;
@@ -666,6 +667,16 @@ class NurseController extends Controller
                 return Excel::download(new NurseType3Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
         }
 
+    }
+    public function ExcelOneBookExport($project_id)
+    {
+        ini_set('memory_limit', '1024M');
+        ini_set('max_execution_time', 600);
+
+        $project = NurseProject::find($project_id);
+        $name    = $project->title . '_onebook';
+
+        return Excel::download(new NurseOnebookExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
 
     public function UserScore(Request $request)
