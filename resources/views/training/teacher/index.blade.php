@@ -255,8 +255,7 @@
                 <div class="department">{{ session("department") }}</div>
             </div>
             <div class="navbar-user-actions">
-                <a href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
-                <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
+                <button class="logout" onclick="confirmLogout()">Logout</button>
             </div>
         </div>
     </nav>
@@ -266,8 +265,7 @@
             {{ session("name") }}
             <div class="department">{{ session("department") }}</div>
             <div class="user-actions">
-                <a href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
-                <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
+                <button class="logout" onclick="confirmLogout()">Logout</button>
             </div>
         </div>
     </div>
@@ -283,7 +281,7 @@
         @if (!$attendances->isEmpty() && $attendances->where("admin", false)->count() > 0)
             <div class="mb-4 flex justify-end">
                 <button class="flex items-center gap-2 rounded bg-green-600 px-5 py-2 text-white shadow transition hover:bg-green-700" id="approve-all-btn" type="button" onclick="approveusers()">
-                    <span id="approve-all-text">อนุมัติทั้งหมด</span>
+                    <span id="approve-all-text">Approve All records.</span>
                     <svg class="hidden h-5 w-5 animate-spin text-white" id="approve-all-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -296,15 +294,15 @@
             <table class="min-w-full rounded-lg border border-gray-200 bg-white">
                 <thead class="bg-blue-100">
                     <tr>
-                        <th class="px-4 py-2 text-left text-gray-700">รหัสผู้ใช้</th>
-                        <th class="px-4 py-2 text-left text-gray-700">วันที่</th>
-                        <th class="px-4 py-2 text-left text-gray-700">เวลาเช็คอิน</th>
-                        <th class="px-4 py-2 text-left text-gray-700">กลุ่ม</th>
-                        <th class="px-4 py-2 text-left text-gray-700">ครูผู้สอน</th>
-                        <th class="px-4 py-2 text-left text-gray-700">เวลา</th>
-                        <th class="px-4 py-2 text-center text-gray-700">สถานะผู้ใช้</th>
-                        <th class="px-4 py-2 text-center text-gray-700">สถานะแอดมิน</th>
-                        <th class="px-4 py-2 text-center text-gray-700">การดำเนินการ</th>
+                        <th class="px-4 py-2 text-left text-gray-700">UserID</th>
+                        <th class="px-4 py-2 text-left text-gray-700">DATE</th>
+                        <th class="px-4 py-2 text-left text-gray-700">Check-in Time</th>
+                        <th class="px-4 py-2 text-left text-gray-700">Group</th>
+                        <th class="px-4 py-2 text-left text-gray-700">Teacher</th>
+                        <th class="px-4 py-2 text-left text-gray-700">Time</th>
+                        <th class="px-4 py-2 text-center text-gray-700">User Status</th>
+                        <th class="px-4 py-2 text-center text-gray-700">Admin Status</th>
+                        <th class="px-4 py-2 text-center text-gray-700">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -313,7 +311,7 @@
                     @endphp
                     @if ($attendances->isEmpty())
                         <tr class="py-8 text-center text-gray-500">
-                            <td colspan="9">ไม่พบข้อมูลการเข้าอบรมสำหรับวันที่นี้</td>
+                            <td colspan="9">Not found check-in record.</td>
                         </tr>
                     @else
                         @foreach ($attendances as $attend)
@@ -393,16 +391,16 @@
                 } else {
                     if (button) {
                         button.disabled = false;
-                        button.innerHTML = 'อนุมัติ';
+                        button.innerHTML = 'Approve';
                     }
-                    alert('เกิดข้อผิดพลาด: ' + (res.data.message || 'ไม่สามารถอนุมัติได้'));
+                    alert('Error: ' + (res.data.message || 'could not approve selected user.'));
                 }
             }).catch(() => {
                 if (button) {
                     button.disabled = false;
-                    button.innerHTML = 'อนุมัติ';
+                    button.innerHTML = 'Approve';
                 }
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                alert('Error occurred while connecting.');
             });
         }
 
@@ -422,13 +420,13 @@
                     btn.disabled = false;
                     text.classList.remove('hidden');
                     spinner.classList.add('hidden');
-                    alert('เกิดข้อผิดพลาด: ' + (res.data.message || 'ไม่สามารถอนุมัติทั้งหมดได้'));
+                    alert('Error: ' + (res.data.message || 'could not approve all records.'));
                 }
             }).catch(() => {
                 btn.disabled = false;
                 text.classList.remove('hidden');
                 spinner.classList.add('hidden');
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                alert('Error occurred while connecting.');
             });
         }
 
