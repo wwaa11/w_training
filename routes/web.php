@@ -9,6 +9,8 @@ use App\Http\Middleware\NurseAdmin;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
+
 Route::get('/services', [CoreController::class, 'DispatchServices']);
 
 Route::get('/login', [CoreController::class, 'Login']);
@@ -95,6 +97,7 @@ Route::middleware([HrAdmin::class])->group(function () {
     Route::get('/training/admin/approve', [TrainingController::class, 'adminApprove'])->name('training.admin.approve.index');
     Route::post('/training/admin/approveUser', [TrainingController::class, 'adminApproveUser'])->name('training.admin.approve.user');
     Route::post('/training/admin/approveUsers', [TrainingController::class, 'adminApproveUsers'])->name('training.admin.approve.users');
+    Route::post('/training/admin/TeacherapproveUsers', [TrainingController::class, 'adminApproveUsersTeacher'])->name('training.admin.approve.teacher');
 
     // Team management routes
     Route::get('/training/admin/teams', [TrainingController::class, 'adminTeamIndex'])->name('training.admin.teams.index');
@@ -189,11 +192,3 @@ Route::middleware([NurseAdmin::class])->group(function () {
     Route::get('/nurse/admin/userscoreexport/{department}', [NurseController::class, 'UserScoreExport']);
 
 });
-
-// API routes for training selection UI
-Route::get('/training/api/teams', [TrainingController::class, 'apiTeams'])->name('training.api.teams');
-Route::get('/training/api/teams/{id}/teachers', [TrainingController::class, 'apiTeamTeachers'])->name('training.api.team.teachers');
-Route::get('/training/api/teachers/{id}/sessions', [TrainingController::class, 'apiTeacherSessions'])->name('training.api.teacher.sessions');
-Route::get('/training/api/sessions/{id}/times', [TrainingController::class, 'apiSessionTimes'])->name('training.api.session.times');
-Route::get('/training/api/times/{id}/dates', [TrainingController::class, 'apiTimeDates'])->name('training.api.time.dates');
-Route::get('/training/api/sessions/{id}', [TrainingController::class, 'apiSessionDetails'])->name('training.api.session.details');

@@ -15,7 +15,7 @@ class HrAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && (Auth::user()->role == 'hr' || Auth::user()->role == 'sa')) {
+        if (Auth::check() && (Auth::user()->role == 'hr' || Auth::user()->role == 'sa' || Auth::user()->role == 'teacher_english')) {
 
             return $next($request);
         }

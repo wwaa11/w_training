@@ -1221,6 +1221,18 @@ class TrainingController extends Controller
         return response()->json(['status' => 'success', 'updated' => $count]);
     }
 
+    public function adminApproveUsersTeacher(Request $request)
+    {
+        Log::channel('training_admin')->info("Bulk approved attendances for date: {$request->input('name', date('Y-m-d'))}", [
+            'user'    => auth()->user()->userid ?? null,
+            'request' => $request->all(),
+        ]);
+        $query = TrainingAttend::whereIn('id', json_decode($request->ids));
+        $count = $query->update(['admin' => true, 'admin_date' => now()]);
+
+        return response()->json(['status' => 'success', 'updated' => $count]);
+    }
+
     public function adminRegisterIndex(Request $request)
     {
         $teams    = TrainingTeam::where('status', 'active')->get();

@@ -2,9 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\HrAssignSeat;
-use App\Models\Item;
-use App\Models\Seat;
-use App\Models\Transaction;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -16,78 +13,19 @@ class CoreController extends Controller
 {
     public function TEST_FUNCTION()
     {
-        $transactions = Transaction::where('transaction_active', true)
-            ->whereNull('seat')
-            ->get();
-        foreach ($transactions as $transaction) {
-            $seatArray = Seat::firstOrNew(['item_id' => $transaction->item_id]);
-            if ($seatArray->seats == null) {
-                $arrayTemp = [];
-                $items     = Item::where('id', $transaction->item_id)->first();
-                for ($i = 0; $i < $items->item_max_available; $i++) {
-                    $arrayTemp[] = [
-                        'dept' => null,
-                        'user' => null,
-                    ];
-                }
-                $seatArray->seats = $arrayTemp;
-                $seatArray->save();
-            }
-            $maxSeat       = $seatArray->item->item_max_available;
-            $maxSeat_range = $maxSeat - 1;
-            $tempSeatArray = $seatArray->seats;
-            $success       = false;
-            $newUser       = [
-                'dept' => $transaction->userData->department,
-                'user' => $transaction->user,
-            ];
-            if (array_key_exists('-1', $tempSeatArray)) {
-                unset($tempSeatArray[-1]);
-            }
-            for ($i = 0; $i <= $maxSeat_range; $i++) {
-                $seatNumber = $i + 1;
-                if ($tempSeatArray[$i]['user'] == null) {
-                    switch ($i) {
-                        case 0:
-                            $tempSeatArray[$i] = $newUser;
-                            $success           = true;
-                            break;
-                        case $maxSeat_range:
-                            if ($tempSeatArray[$i - 1]['dept'] !== $newUser['dept']) {
-                                $tempSeatArray[$i] = $newUser;
-                                $success           = true;
-                            }
-                            break;
-                        default:
-                            if ($tempSeatArray[$i - 1]['dept'] !== $newUser['dept'] && $tempSeatArray[$i + 1]['dept'] !== $newUser['dept']) {
-                                $tempSeatArray[$i] = $newUser;
-                                $success           = true;
-                            }
-                            break;
-                    }
-                }
-                if ($success) {
-                    break;
-                }
-            }
-            if (! $success) {
-                for ($i = 0; $i <= $maxSeat_range; $i++) {
-                    $seatNumber = $i + 1;
-                    if ($tempSeatArray[$i]['user'] == null) {
-                        $tempSeatArray[$i] = $newUser;
-                        $success           = true;
-                        break;
-                    }
-                }
-            }
-            if ($success) {
-                $transaction->seat = $seatNumber;
-                $transaction->save();
+        // $array = ['tom', 'neill', 'gary'];
 
-                $seatArray->seats = $tempSeatArray;
-                $seatArray->save();
-            }
-        }
+        // foreach ($array as $name) {
+        //     $user             = new User();
+        //     $user->userid     = $name;
+        //     $user->password   = Hash::make($name);
+        //     $user->name       = $name;
+        //     $user->position   = 'English Teacher';
+        //     $user->department = '-';
+        //     $user->division   = '-';
+        //     $user->role       = 'teacher_english';
+        //     $user->save();
+        // }
     }
     public function DispatchServices()
     {
@@ -109,6 +47,27 @@ class CoreController extends Controller
             'status'  => 'failed',
             'message' => null,
         ];
+
+        if ($userid == 'tom' || $userid == 'neill' || $userid == 'gary') {
+            if (Auth::attempt(['userid' => $userid, 'password' => $password])) {
+                $user = Auth::user();
+                session([
+                    'name'       => $user->name,
+                    'position'   => $user->position,
+                    'department' => $user->department,
+                    'division'   => $user->division,
+                    'email'      => $user->email,
+                ]);
+
+                $data['status']  = 'success';
+                $data['message'] = 'เข้าสู่ระบบสำเร็จ';
+
+                return response()->json($data, 200);
+            } else {
+                $data['message'] = 'รหัสพนักงาน หรือ รหัสผ่านผิด';
+                return response()->json($data, 200);
+            }
+        }
 
         try {
             $response = Http::withHeaders(['token' => env('API_KEY')])
@@ -212,7 +171,7 @@ class CoreController extends Controller
     }
 
     // User
-    public function Index()
+    public function Index(Request $request)
     {
         $user = Auth::user();
         switch ($user) {
@@ -225,6 +184,20 @@ class CoreController extends Controller
             case $user->password_changed && $user->gender == null:
                 $view = 'auth.updateGender';
                 break;
+            case $user->role == 'teacher_english':
+                $view        = 'training.teacher.index';
+                $filterAdmin = $request->input('admin', 'all');
+                $query       = \App\Models\TrainingAttend::with(['date.time.session.teacher.team'])->where('name', date('Y-m-d'));
+                if ($filterAdmin === 'true') {
+                    $query->where('admin', true);
+                } elseif ($filterAdmin === 'false') {
+                    $query->where(function ($q) {
+                        $q->whereNull('admin')->orWhere('admin', false);
+                    });
+                }
+                $attendances = $query->get();
+
+                return view($view, compact('attendances', 'filterAdmin'));
             default:
                 $view = 'index';
                 break;
