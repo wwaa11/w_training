@@ -405,28 +405,41 @@
         }
 
         function approveusers() {
-            const btn = document.getElementById('approve-all-btn');
-            const text = document.getElementById('approve-all-text');
-            const spinner = document.getElementById('approve-all-spinner');
-            btn.disabled = true;
-            text.classList.add('hidden');
-            spinner.classList.remove('hidden');
-            axios.post('{{ route("training.admin.approve.teacher") }}', {
-                ids: '{{ json_encode($attend_array) }}'
-            }).then((res) => {
-                if (res.data.status === 'success') {
-                    window.location.reload();
-                } else {
-                    btn.disabled = false;
-                    text.classList.remove('hidden');
-                    spinner.classList.add('hidden');
-                    alert('Error: ' + (res.data.message || 'could not approve all records.'));
+            Swal.fire({
+                title: 'Confirm Approval',
+                text: 'Do you want to approve all items?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, approve all!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const btn = document.getElementById('approve-all-btn');
+                    const text = document.getElementById('approve-all-text');
+                    const spinner = document.getElementById('approve-all-spinner');
+                    btn.disabled = true;
+                    text.classList.add('hidden');
+                    spinner.classList.remove('hidden');
+                    axios.post('{{ route("training.admin.approve.teacher") }}', {
+                        ids: '{{ json_encode($attend_array) }}'
+                    }).then((res) => {
+                        if (res.data.status === 'success') {
+                            window.location.reload();
+                        } else {
+                            btn.disabled = false;
+                            text.classList.remove('hidden');
+                            spinner.classList.add('hidden');
+                            alert('Error: ' + (res.data.message || 'could not approve all records.'));
+                        }
+                    }).catch(() => {
+                        btn.disabled = false;
+                        text.classList.remove('hidden');
+                        spinner.classList.add('hidden');
+                        alert('Error occurred while connecting.');
+                    });
                 }
-            }).catch(() => {
-                btn.disabled = false;
-                text.classList.remove('hidden');
-                spinner.classList.add('hidden');
-                alert('Error occurred while connecting.');
             });
         }
 
