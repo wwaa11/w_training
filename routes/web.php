@@ -147,6 +147,7 @@ Route::middleware([HrAdmin::class])->group(function () {
 
     // Register management routes
     Route::get('/training/admin/register', [TrainingController::class, 'adminRegisterIndex'])->name('training.admin.register.index');
+    Route::post('/training/admin/register', [TrainingController::class, 'adminRegisterStore'])->name('training.admin.register.store');
     Route::post('/training/admin/unregister', [TrainingController::class, 'adminUnregisterUser'])->name('training.admin.unregister.user');
 
     // Export management routes

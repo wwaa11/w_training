@@ -4,6 +4,7 @@
         <h1 class="mb-8 flex items-center gap-2 text-3xl font-bold text-blue-800">
             <i class="fa-solid fa-user-check"></i> Register User View
         </h1>
+
         <div class="mb-8 rounded-xl bg-white p-6 shadow-lg">
             <div class="mb-4 flex items-center gap-2 border-b pb-2">
                 <i class="fa-solid fa-filter text-blue-600"></i>
@@ -60,8 +61,16 @@
                 </div>
             </form>
         </div>
-        <div class="mb-4 flex items-center justify-between">
-            <span class="text-lg font-semibold text-gray-700">Registered Users: <span class="text-blue-700">{{ $users->count() }}</span></span>
+        <div class="mb-6 flex items-center justify-between">
+            <div class="mb-4 flex items-center justify-between">
+                <span class="text-lg font-semibold text-gray-700">Registered Users: <span class="text-blue-700">{{ $users->count() }}</span></span>
+            </div>
+            <!-- Register New User Button -->
+            <div class="flex justify-end">
+                <button class="btn btn-success flex items-center gap-2 rounded-md bg-green-600 px-6 py-3 text-white shadow transition hover:bg-green-700" onclick="openRegisterModal()">
+                    <i class="fa-solid fa-user-plus"></i> Register New User
+                </button>
+            </div>
         </div>
         <div class="overflow-x-auto rounded-xl bg-white shadow-lg">
             <table class="min-w-full divide-y divide-gray-200">
@@ -104,6 +113,45 @@
             </table>
         </div>
     </div>
+
+    <!-- Register User Modal -->
+    <div class="fixed inset-0 z-50 hidden items-center justify-center" id="registerModal">
+        <div class="w-full max-w-md rounded-lg bg-gray-100 p-6 shadow-xl">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Register New User</h3>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeRegisterModal()">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form class="space-y-4" id="registerForm">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-gray-700" for="new_user_id">User ID</label>
+                    <input class="form-input w-full rounded-md border-gray-300 bg-white p-3 focus:border-blue-500 focus:ring-blue-500" id="new_user_id" type="text" required placeholder="Enter User ID">
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-gray-700" for="new_time_id">Select Time</label>
+                    <select class="form-select w-full rounded-md border-gray-300 bg-white p-3 focus:border-blue-500 focus:ring-blue-500" id="new_time_id" required>
+                        <option value="">Choose a time slot</option>
+                        @foreach ($times as $time)
+                            <option value="{{ $time->id }}">{{ $time->session->teacher->team->name }} : {{ $time->session->teacher->name }} : {{ $time->session->name }} : {{ $time->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button class="btn btn-secondary rounded-md px-4 py-2 text-gray-700 hover:bg-gray-200" type="button" onclick="closeRegisterModal()">
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" type="submit">
+                        Register User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Cascading dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -135,7 +183,79 @@
                     teamSelect.value = '';
                 }
             });
+
+            // Register form submission
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                registerUser();
+            });
         });
+
+        function openRegisterModal() {
+            document.getElementById('registerModal').classList.remove('hidden');
+            document.getElementById('registerModal').classList.add('flex');
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').classList.add('hidden');
+            document.getElementById('registerModal').classList.remove('flex');
+            document.getElementById('registerForm').reset();
+        }
+
+        function registerUser() {
+            const userId = document.getElementById('new_user_id').value;
+            const timeId = document.getElementById('new_time_id').value;
+
+            if (!userId || !timeId) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            Swal.fire({
+                title: 'ยืนยันการลงทะเบียน',
+                text: 'คุณต้องการลงทะเบียนผู้ใช้งานนี้หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f97316',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post("{{ route("training.admin.register.store") }}", {
+                            user_id: userId,
+                            time_id: timeId
+                        })
+                        .then(res => {
+                            if (res.data.status === 'success') {
+                                Swal.fire({
+                                    title: 'สำเร็จ!',
+                                    text: 'ลงทะเบียนผู้ใช้งานสำเร็จ! กำลังโหลดหน้าใหม่...',
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'ล้มเหลว!',
+                                    text: res.data.message || 'ลงทะเบียนผู้ใช้งานไม่สำเร็จ!',
+                                    icon: 'error',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire({
+                                title: 'ล้มเหลว!',
+                                text: 'ลงทะเบียนผู้ใช้งานไม่สำเร็จ!',
+                                icon: 'error',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        });
+                }
+            });
+        }
 
         function unregisterUser(userId) {
             if (!confirm('Are you sure you want to unregister this user?')) return;

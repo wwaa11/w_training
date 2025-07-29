@@ -490,11 +490,16 @@ class TrainingController extends Controller
             'request' => $request->all(),
         ]);
 
-        $user                 = TrainingUser::where('user_id', auth()->user()->userid)->first();
-        $user->time_id        = $request->time_id;
-        $time                 = TrainingTime::where('id', $request->time_id)->first();
+        $user          = TrainingUser::where('user_id', auth()->user()->userid)->first();
+        $user->time_id = $request->time_id;
+        $time          = TrainingTime::where('id', $request->time_id)->first();
+        if ($time->max_seat == 0) {
+
+            return response()->json(['status' => 'error', 'message' => 'รอบนี้ไม่มีที่นั่งที่สามารถลงทะเบียนได้']);
+        }
         $time->available_seat = $time->available_seat - 1;
         $time->save();
+
         $user->save();
 
         return response()->json(['status' => 'success'], 200);
@@ -1277,6 +1282,38 @@ class TrainingController extends Controller
         return view('training.admin.register.index', compact('teams', 'teachers', 'sessions', 'times', 'users'));
     }
 
+    public function adminRegisterStore(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:training_users,user_id',
+            'time_id' => 'required|exists:training_times,id',
+        ]);
+
+        $user_id = $request->user_id;
+        $time_id = $request->time_id;
+        $user    = TrainingUser::where('user_id', $user_id)->first();
+        if ($user) {
+
+            $old_time_id = $user->time_id;
+            if ($old_time_id !== null) {
+                $old_time = TrainingTime::find($old_time_id);
+                if ($old_time) {
+                    $old_time->available_seat = $old_time->available_seat + 1;
+                    $old_time->save();
+                }
+            }
+
+            $time = TrainingTime::find($time_id);
+            if ($time->max_seat == 0) {
+                $time->max_seat = $time->max_seat + 1;
+            }
+            $time->save();
+
+            $user->time_id = $time_id;
+            $user->save();
+        }
+        return response()->json(['status' => 'success', 'message' => 'User registered successfully']);
+    }
     public function adminUnregisterUser(Request $request)
     {
         Log::channel('training_admin')->info("Unregistered user '{$request->user_id}' from training", [
