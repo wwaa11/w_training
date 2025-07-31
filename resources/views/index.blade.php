@@ -3,11 +3,6 @@
     <div class="flex flex-col text-gray-600">
         <div class="m-auto flex w-full flex-col rounded-lg py-6 text-center text-lg md:w-1/2 lg:w-1/3">
             <div class="flex flex-col">
-                <a href="{{ route("hrd.index") }}">
-                    <div class="mx-3 mt-3 rounded-2xl border-2 border-[#eaf7ab] bg-[#c1dccd] py-12 text-3xl font-bold text-[#143429]">
-                        HRD TEST
-                    </div>
-                </a>
                 <a href="{{ env("APP_URL") }}/hr">
                     <div class="mx-3 mt-3 rounded-2xl border-2 border-[#eaf7ab] bg-[#c1dccd] py-12 text-3xl font-bold text-[#143429]">
                         HRD Division
@@ -21,6 +16,11 @@
                 <a href="{{ env("APP_URL") }}/training">
                     <div class="mx-3 mt-3 rounded-2xl border-2 border-[#eaf7ab] bg-[#c1dccd] py-12 text-3xl font-bold text-[#143429]">
                         English Training Program
+                    </div>
+                </a>
+                <a href="{{ route("hrd.index") }}">
+                    <div class="mx-3 mt-3 rounded-2xl border-2 border-gray-200 bg-gray-100 py-12 text-3xl font-bold text-gray-800">
+                        ทดสอบระบบ HRD Version 2.0
                     </div>
                 </a>
             </div>

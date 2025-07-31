@@ -789,6 +789,14 @@ class HRController extends Controller
     }
 
     /**
+     * Display admin documentation page
+     */
+    public function adminDocumentation()
+    {
+        return view('hrd.admin.documentation');
+    }
+
+    /**
      * Display project creation form
      */
     public function adminProjectCreate()
@@ -1211,10 +1219,61 @@ class HRController extends Controller
     {
         try {
             $project = HrProject::findOrFail($id);
-            $project->update(['project_delete' => true]);
 
-            return redirect()->route('hrd.admin.index')
-                ->with('success', 'Project deleted successfully.');
+            // Start transaction to ensure data consistency
+            DB::beginTransaction();
+
+            try {
+                // Delete all related data in proper order
+
+                // 1. Delete results (evaluation data)
+                $project->results()->delete();
+
+                // 2. Delete result headers
+                if ($project->resultHeader) {
+                    $project->resultHeader->delete();
+                }
+
+                // 3. Delete seat assignments
+                HrSeat::whereIn('time_id', function ($query) use ($project) {
+                    $query->select('id')
+                        ->from('hr_times')
+                        ->whereIn('date_id', function ($subQuery) use ($project) {
+                            $subQuery->select('id')
+                                ->from('hr_dates')
+                                ->where('project_id', $project->id);
+                        });
+                })->delete();
+
+                // 4. Delete attendance records
+                $project->attends()->delete();
+
+                // 5. Delete time slots
+                HrTime::whereIn('date_id', function ($query) use ($project) {
+                    $query->select('id')
+                        ->from('hr_dates')
+                        ->where('project_id', $project->id);
+                })->delete();
+
+                // 6. Delete dates
+                $project->dates()->delete();
+
+                // 7. Delete links
+                $project->links()->delete();
+
+                // 8. Finally, delete the project itself
+                $project->delete();
+
+                DB::commit();
+
+                return redirect()->route('hrd.admin.index')
+                    ->with('success', 'Project and all related data deleted successfully.');
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to delete project: ' . $e->getMessage());
         }

@@ -104,6 +104,7 @@ Route::middleware([HrAdmin::class])->group(function () {
 
     Route::prefix('hrd/admin')->name('hrd.admin.')->group(function () {
         Route::get('/', [HRController::class, 'adminIndex'])->name('index');
+        Route::get('/documentation', [HRController::class, 'adminDocumentation'])->name('documentation');
 
         // Project CRUD Routes
         Route::prefix('projects')->name('projects.')->group(function () {

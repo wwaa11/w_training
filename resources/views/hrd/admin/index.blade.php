@@ -5,10 +5,16 @@
         <div class="rounded-lg bg-white p-6 shadow-lg">
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-800">การจัดการโปรเจกต์ HRD</h1>
-                <a class="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.projects.create") }}">
-                    <i class="fas fa-plus"></i>
-                    สร้างโปรเจกต์ใหม่
-                </a>
+                <div class="flex items-center gap-3">
+                    <a class="flex items-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-green-700" href="{{ route("hrd.admin.documentation") }}">
+                        <i class="fas fa-book"></i>
+                        คู่มือการใช้งาน
+                    </a>
+                    <a class="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.projects.create") }}">
+                        <i class="fas fa-plus"></i>
+                        สร้างโปรเจกต์ใหม่
+                    </a>
+                </div>
             </div>
 
             @if (session("success"))
@@ -22,6 +28,22 @@
                     {{ session("error") }}
                 </div>
             @endif
+
+            <!-- Quick Help Section -->
+            <div class="mb-6 rounded-lg bg-blue-50 p-4">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-800">💡 ต้องการความช่วยเหลือ?</h3>
+                        <p class="mt-1 text-sm text-blue-700">
+                            ดูคู่มือการใช้งานแบบละเอียดเพื่อเรียนรู้วิธีการใช้ระบบ HRD อย่างมีประสิทธิภาพ
+                        </p>
+                    </div>
+                    <a class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.documentation") }}">
+                        <i class="fas fa-book"></i>
+                        เปิดคู่มือ
+                    </a>
+                </div>
+            </div>
 
             <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-200 bg-white">
