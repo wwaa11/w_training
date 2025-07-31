@@ -35,6 +35,7 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/hrd/projects/{id}/attend', [HRController::class, 'projectAttendStore'])->name('hrd.projects.attend.store');
     Route::post('/hrd/projects/{id}/stamp/{attendId}', [HRController::class, 'projectStampAttendance'])->name('hrd.projects.stamp.store');
     Route::delete('/hrd/projects/{id}/reselect', [HRController::class, 'projectReselectRegistration'])->name('hrd.projects.reselect');
+    Route::delete('/hrd/projects/{id}/unregister/{registrationId}', [HRController::class, 'projectUnregister'])->name('hrd.projects.unregister');
     Route::get('/hrd/history', [HRController::class, 'userHistory'])->name('hrd.history');
 
     Route::get('/hr', [HumanResourceControler::class, 'Index']);

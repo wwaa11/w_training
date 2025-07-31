@@ -1,107 +1,63 @@
 @extends("layouts.hrd")
 
 @section("content")
-    <div class="container mx-auto px-4">
-        <div class="mb-8">
+    <div class="container mx-auto px-4 pb-20">
+        <!-- Header Section -->
+        <div class="mb-6">
             <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="mb-2 text-3xl font-bold text-gray-800">โปรแกรมพัฒนาบุคลากร HRD</h1>
-                    <p class="text-gray-600">สำรวจและลงทะเบียนสำหรับโปรแกรมการฝึกอบรมและโอกาสในการพัฒนาที่มีอยู่</p>
+                <div class="flex-1">
+                    <h1 class="text-2xl font-bold text-gray-800 sm:text-3xl">โปรแกรมพัฒนาบุคลากร HRD</h1>
+                    <p class="mt-1 text-sm text-gray-600 sm:text-base">สำรวจและลงทะเบียนสำหรับโปรแกรมการฝึกอบรม</p>
                 </div>
-                <a class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700" href="{{ route("hrd.history") }}">
+                <a class="ml-4 inline-flex items-center rounded-lg bg-gray-600 px-3 py-2 text-sm font-medium text-white hover:bg-gray-700 sm:px-4" href="{{ route("hrd.history") }}">
                     <i class="fas fa-history mr-2"></i>
-                    ประวัติการเข้าร่วม
+                    <span class="hidden sm:inline">ประวัติการเข้าร่วม</span>
+                    <span class="sm:hidden">ประวัติ</span>
                 </a>
             </div>
         </div>
 
+        <!-- Flash Messages -->
         @if (session("success"))
-            <div class="mb-6 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
+            <div class="mb-4 rounded-lg border border-green-400 bg-green-100 px-4 py-3 text-green-700">
                 <div class="flex items-center">
                     <i class="fas fa-check-circle mr-2"></i>
-                    {{ session("success") }}
+                    <span class="text-sm">{{ session("success") }}</span>
                 </div>
             </div>
         @endif
 
         @if (session("error"))
-            <div class="mb-6 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+            <div class="mb-4 rounded-lg border border-red-400 bg-red-100 px-4 py-3 text-red-700">
                 <div class="flex items-center">
                     <i class="fas fa-exclamation-circle mr-2"></i>
-                    {{ session("error") }}
+                    <span class="text-sm">{{ session("error") }}</span>
                 </div>
             </div>
         @endif
 
         <!-- Ongoing Projects Section -->
-        @php
-            $now = now();
-            $ongoingProjects = $projects->filter(function ($project) use ($now) {
-                // Check if project has dates today and user can check in
-                foreach ($project->dates->where("date_delete", false) as $date) {
-                    $dateString = $date->date_datetime->format("Y-m-d");
-                    $today = $now->format("Y-m-d");
-
-                    if ($dateString === $today) {
-                        foreach ($date->times->where("time_delete", false) as $time) {
-                            $timeStart = \Carbon\Carbon::parse($time->time_start)->format("H:i:s");
-                            $timeEnd = \Carbon\Carbon::parse($time->time_end)->format("H:i:s");
-                            $currentTime = $now->format("H:i:s");
-
-                            // Check if current time is within the time slot
-                            if ($currentTime >= $timeStart && $currentTime <= $timeEnd) {
-                                // For attendance projects, check if user hasn't attended yet
-                    if ($project->project_type === "attendance") {
-                        $attendanceRecord = $project->attends
-                            ->where("user_id", auth()->id())
-                            ->where("time_id", $time->id)
-                            ->where("attend_delete", false)
-                            ->first();
-
-                        if (!$attendanceRecord || !$attendanceRecord->attend_datetime) {
-                            return true;
-                        }
-                    } else {
-                        // For registered projects, check if user is registered but hasn't attended
-                                    $userRegistration = $project->attends
-                                        ->where("user_id", auth()->id())
-                                        ->where("time_id", $time->id)
-                                        ->where("attend_delete", false)
-                                        ->first();
-
-                                    if ($userRegistration && !$userRegistration->attend_datetime) {
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                return false;
-            });
-        @endphp
-
         @if ($ongoingProjects->count() > 0)
-            <div class="mb-8 rounded-lg bg-blue-50 p-6 shadow-sm">
-                <div class="mb-4 flex items-center">
-                    <i class="fas fa-clock mr-3 text-2xl text-blue-600"></i>
-                    <h2 class="text-xl font-semibold text-blue-900">โปรแกรมที่กำลังดำเนินการ</h2>
+            <div class="mb-6 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4 shadow-sm">
+                <div class="mb-3 flex items-center">
+                    <i class="fas fa-clock mr-2 text-xl text-blue-600"></i>
+                    <h2 class="text-lg font-semibold text-blue-900">โปรแกรมที่กำลังดำเนินการ</h2>
                 </div>
-                <p class="mb-4 text-blue-700">คุณสามารถเช็คอินสำหรับโปรแกรมต่อไปนี้ได้ตอนนี้:</p>
+                <p class="mb-4 text-sm text-blue-700">คุณสามารถเช็คอินสำหรับโปรแกรมต่อไปนี้ได้ตอนนี้:</p>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div class="space-y-3">
                     @foreach ($ongoingProjects as $project)
-                        @foreach ($project->dates->where("date_delete", false) as $date)
+                        @foreach ($project->dates as $date)
                             @php
                                 $dateString = $date->date_datetime->format("Y-m-d");
-                                $today = $now->format("Y-m-d");
+                                $today = now()->format("Y-m-d");
                             @endphp
                             @if ($dateString === $today)
-                                @foreach ($date->times->where("time_delete", false) as $time)
+                                @foreach ($date->times as $time)
                                     @php
                                         $timeStart = \Carbon\Carbon::parse($time->time_start)->format("H:i:s");
                                         $timeEnd = \Carbon\Carbon::parse($time->time_end)->format("H:i:s");
-                                        $currentTime = $now->format("H:i:s");
+                                        $currentTime = now()->format("H:i:s");
                                         $canCheckIn = false;
                                         $checkInRoute = "";
                                         $checkInMethod = "POST";
@@ -112,7 +68,6 @@
                                                 $attendanceRecord = $project->attends
                                                     ->where("user_id", auth()->id())
                                                     ->where("time_id", $time->id)
-                                                    ->where("attend_delete", false)
                                                     ->first();
 
                                                 if (!$attendanceRecord || !$attendanceRecord->attend_datetime) {
@@ -124,7 +79,6 @@
                                                 $userRegistration = $project->attends
                                                     ->where("user_id", auth()->id())
                                                     ->where("time_id", $time->id)
-                                                    ->where("attend_delete", false)
                                                     ->first();
 
                                                 if ($userRegistration && !$userRegistration->attend_datetime) {
@@ -147,7 +101,7 @@
                                                 </p>
                                             </div>
 
-                                            <form action="{{ $checkInRoute }}" method="{{ $checkInMethod }}">
+                                            <form class="checkin-form" action="{{ $checkInRoute }}" method="{{ $checkInMethod }}">
                                                 @csrf
                                                 @foreach ($checkInData as $key => $value)
                                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -167,31 +121,31 @@
             </div>
         @endif
 
-        <!-- Search -->
+        <!-- Search Section -->
         <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
-            <div class="flex items-center">
-                <label class="mr-2 text-sm font-medium text-gray-700">ค้นหา:</label>
-                <input class="rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" id="searchInput" type="text" placeholder="ค้นหาโปรเจกต์...">
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input class="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" id="searchInput" type="text" placeholder="ค้นหาโปรเจกต์...">
             </div>
         </div>
 
         <!-- Projects Grid -->
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3" id="projectsGrid">
+        <div class="space-y-4" id="projectsGrid">
             @forelse($projects as $project)
-                <div class="project-card rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg" data-type="{{ $project->project_type }}" data-name="{{ strtolower($project->project_name) }}">
+                <div class="project-card rounded-lg bg-white shadow-sm transition-shadow duration-200 hover:shadow-md" data-type="{{ $project->project_type }}" data-name="{{ strtolower($project->project_name) }}">
 
                     <!-- Project Header -->
-                    <div class="border-b border-gray-200 p-6">
+                    <div class="border-b border-gray-100 p-4">
                         <div class="mb-3 flex items-start justify-between">
                             <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
                                 @elseif($project->project_type === "multiple") bg-green-100 text-green-800
                                 @else bg-purple-100 text-purple-800 @endif inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                                 @if ($project->project_type === "single")
-                                    เดี่ยว
+                                    ลงทะเบียน 1 ครั้ง
                                 @elseif($project->project_type === "multiple")
-                                    หลาย
+                                    ลงทะเบียนได้มากกว่า 1 ครั้ง
                                 @else
-                                    เข้าร่วม
+                                    ไม่ต้องลงทะเบียน
                                 @endif
                             </span>
                             @php
@@ -231,18 +185,18 @@
                         <h3 class="mb-2 text-lg font-semibold text-gray-900">{{ $project->project_name }}</h3>
 
                         @if ($project->project_detail)
-                            <p class="line-clamp-3 text-sm text-gray-600">{{ $project->project_detail }}</p>
+                            <p class="line-clamp-2 text-sm text-gray-600">{{ $project->project_detail }}</p>
                         @endif
                     </div>
 
                     <!-- Registration Period -->
-                    <div class="bg-gray-50 px-6 py-3">
+                    <div class="bg-gray-50 px-4 py-3">
                         <div class="text-sm text-gray-600">
                             <div class="mb-1 flex items-center">
                                 <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
                                 <span class="font-medium">ช่วงเวลาลงทะเบียน</span>
                             </div>
-                            <div class="ml-5">
+                            <div class="ml-5 text-xs">
                                 {{ $project->project_start_register->format("d M Y, H:i") }} -
                                 {{ $project->project_end_register->format("d M Y, H:i") }}
                             </div>
@@ -250,24 +204,24 @@
                     </div>
 
                     <!-- Project Dates -->
-                    @if ($project->dates->where("date_delete", false)->count() > 0)
-                        <div class="px-6 py-3">
+                    @if ($project->dates->count() > 0)
+                        <div class="px-4 py-3">
                             <div class="mb-2 text-sm text-gray-600">
                                 <i class="fas fa-calendar-check mr-2 text-green-500"></i>
-                                <span class="font-medium">วันที่โปรเจกต์ ({{ $project->dates->where("date_delete", false)->count() }})</span>
+                                <span class="font-medium">วันที่โปรเจกต์ ({{ $project->dates->count() }})</span>
                             </div>
-                            <div class="ml-5 space-y-2">
-                                @foreach ($project->dates->where("date_delete", false)->take(3) as $date)
-                                    <div class="flex items-center text-sm text-gray-700">
-                                        <i class="fas fa-dot-circle mr-2 text-gray-400" style="font-size: 8px;"></i>
+                            <div class="ml-5 space-y-1">
+                                @foreach ($project->dates->take(2) as $date)
+                                    <div class="flex items-center text-xs text-gray-700">
+                                        <i class="fas fa-dot-circle mr-2 text-gray-400" style="font-size: 6px;"></i>
                                         <span class="font-medium">{{ $date->date_title }}</span>
                                         <span class="mx-2">•</span>
                                         <span>{{ $date->date_datetime->format("d M Y") }}</span>
                                     </div>
                                 @endforeach
-                                @if ($project->dates->where("date_delete", false)->count() > 3)
+                                @if ($project->dates->count() > 2)
                                     <div class="ml-4 text-xs text-gray-500">
-                                        +{{ $project->dates->where("date_delete", false)->count() - 3 }} วันที่เพิ่มเติม
+                                        +{{ $project->dates->count() - 2 }} วันที่เพิ่มเติม
                                     </div>
                                 @endif
                             </div>
@@ -275,31 +229,29 @@
                     @endif
 
                     <!-- Project Links -->
-                    @if ($project->links->where("link_delete", false)->count() > 0)
-                        <div class="border-t border-gray-100 px-6 py-3">
-                            <div class="mb-2 text-sm text-gray-600">
+                    @if ($project->links->count() > 0)
+                        <div class="border-t border-gray-100 px-4 py-3">
+                            <div class="text-sm text-gray-600">
                                 <i class="fas fa-link mr-2 text-blue-500"></i>
-                                <span class="font-medium">ทรัพยากร ({{ $project->links->where("link_delete", false)->count() }})</span>
+                                <span class="font-medium">ทรัพยากร ({{ $project->links->count() }})</span>
                             </div>
                         </div>
                     @endif
 
                     <!-- Actions -->
-                    <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                    <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
                         <div class="flex items-center justify-between">
                             <div class="text-xs text-gray-500">
-                                @if ($project->attends->where("attend_delete", false)->count() > 0)
+                                @if ($project->attends->count() > 0)
                                     <i class="fas fa-users mr-1"></i>
-                                    {{ $project->attends->where("attend_delete", false)->count() }} คนลงทะเบียน
+                                    {{ $project->attends->count() }} คนลงทะเบียน
                                 @endif
                             </div>
 
-                            <div class="flex space-x-2">
-                                <a class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" href="{{ route("hrd.projects.show", $project->id) }}">
-                                    <i class="fas fa-eye mr-1"></i>
-                                    ดูรายละเอียด
-                                </a>
-                            </div>
+                            <a class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" href="{{ route("hrd.projects.show", $project->id) }}">
+                                <i class="fas fa-eye mr-1"></i>
+                                ดูรายละเอียด
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -357,6 +309,49 @@
             }
 
             searchInput.addEventListener('input', searchProjects);
+
+            // Handle check-in form submissions with confirmation
+            const checkinForms = document.querySelectorAll('.checkin-form');
+            checkinForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    // Get session details from the card
+                    const sessionCard = this.closest('.rounded-lg');
+                    if (!sessionCard) {
+                        console.error('Could not find session card for check-in form');
+                        return;
+                    }
+
+                    const projectName = sessionCard.querySelector('h3')?.textContent || 'Unknown Project';
+                    const dateTitle = sessionCard.querySelector('p:nth-of-type(1)')?.textContent || '';
+                    const timeTitle = sessionCard.querySelector('p:nth-of-type(2)')?.textContent || '';
+                    const timeSchedule = sessionCard.querySelector('.text-blue-600')?.textContent || '';
+
+                    Swal.fire({
+                        title: 'ยืนยันการเช็คอิน',
+                        html: `
+                            <div class="text-left">
+                                <p class="mb-3"><strong>โปรแกรม:</strong> ${projectName}</p>
+                                ${dateTitle ? `<p class="mb-2"><strong>วันที่:</strong> ${dateTitle}</p>` : ''}
+                                ${timeTitle ? `<p class="mb-2"><strong>เซสชัน:</strong> ${timeTitle}</p>` : ''}
+                                ${timeSchedule ? `<p class="mb-3"><strong>เวลา:</strong> ${timeSchedule}</p>` : ''}
+                            </div>
+                            <p class="mt-4 text-sm text-gray-600">คุณแน่ใจหรือไม่ที่จะเช็คอินสำหรับเซสชันนี้?</p>
+                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#16a34a',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'ใช่, เช็คอิน',
+                        cancelButtonText: 'ยกเลิก'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.submit();
+                        }
+                    });
+                });
+            });
         });
     </script>
 @endsection

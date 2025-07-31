@@ -66,7 +66,7 @@
                 <div class="flex items-center">
                     <i class="fas fa-calendar mr-3 text-2xl text-purple-600"></i>
                     <div>
-                        <p class="text-2xl font-bold text-purple-900">{{ $project->dates->count() }}</p>
+                        <p class="text-2xl font-bold text-purple-900">{{ $project->dates->where("date_delete", false)->count() }}</p>
                         <p class="text-sm text-purple-700">วันที่จัดงานทั้งหมด</p>
                     </div>
                 </div>
@@ -78,12 +78,12 @@
             <h2 class="mb-4 text-xl font-semibold text-gray-800">
                 <i class="fas fa-filter mr-2 text-blue-600"></i>ตัวกรอง
             </h2>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <form class="grid grid-cols-1 gap-4 md:grid-cols-4" method="GET" action="{{ route("hrd.admin.projects.approvals", $project->id) }}">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                    <select class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" id="filterDate" onchange="applyFilters()">
-                        <option value="">ทุกวันที่</option>
-                        @foreach ($availableDates as $date)
+                    <select class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" name="filter_date" onchange="this.form.submit()">
+                        <option value="" {{ $filterDate === null || $filterDate === "" ? "selected" : "" }}>ทุกวันที่</option>
+                        @foreach ($availableDates->where("date_delete", false) as $date)
                             @php
                                 $dateValue = \Carbon\Carbon::parse($date->date_datetime)->format("Y-m-d");
                                 $isSelected = $dateValue == $filterDate;
@@ -96,28 +96,26 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">ช่วงเวลา</label>
-                    <select class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" id="filterTime" onchange="applyFilters()">
-                        <option value="">ทุกช่วงเวลา</option>
-                        @if ($filterDate)
-                            @php
-                                $selectedDate = $project->dates->where("date_datetime", "like", $filterDate . "%")->first();
-                            @endphp
-                            @if ($selectedDate)
-                                @foreach ($selectedDate->times as $time)
-                                    <option value="{{ $time->id }}">
-                                        {{ $time->time_title }} ({{ $time->time_start }} - {{ $time->time_end }})
-                                    </option>
-                                @endforeach
-                            @endif
-                        @endif
+                    <select class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" name="filter_time" onchange="this.form.submit()">
+                        <option value="" {{ $filterTime === null || $filterTime === "" ? "selected" : "" }}>ทุกช่วงเวลา</option>
+                        @foreach ($availableTimes as $time)
+                            <option value="{{ $time->id }}" {{ request("filter_time") == $time->id ? "selected" : "" }}>
+                                {{ $time->time_title }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button class="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700" onclick="applyFilters()">
+                    <button class="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700" type="submit">
                         <i class="fas fa-search mr-2"></i>กรอง
                     </button>
                 </div>
-            </div>
+                <div class="flex items-end">
+                    <a class="w-full rounded-lg bg-gray-500 px-4 py-2 text-center font-semibold text-white hover:bg-gray-600" href="{{ route("hrd.admin.projects.approvals", $project->id) }}">
+                        <i class="fas fa-undo mr-2"></i>รีเซ็ต
+                    </a>
+                </div>
+            </form>
         </div>
 
         <!-- Bulk Actions -->
@@ -165,7 +163,7 @@
                         </thead>
                         <tbody>
                             @foreach ($registrations as $registration)
-                                <tr class="registration-row border-b border-gray-100 hover:bg-gray-50" data-date="{{ \Carbon\Carbon::parse($registration->date->date_datetime)->format("Y-m-d") }}" data-time="{{ $registration->time_id }}">
+                                <tr class="registration-row border-b border-gray-100 hover:bg-gray-50">
                                     <td class="px-4 py-3 text-sm">
                                         @if (!$registration->approve_datetime)
                                             <input class="registration-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" type="checkbox" value="{{ $registration->id }}">
@@ -251,61 +249,6 @@
 
 @section("scripts")
     <script>
-        function applyFilters() {
-            const filterDate = document.getElementById('filterDate').value;
-            const filterTime = document.getElementById('filterTime').value;
-
-            const rows = document.querySelectorAll('.registration-row');
-
-            rows.forEach(row => {
-                const rowDate = row.getAttribute('data-date');
-                const rowTime = row.getAttribute('data-time');
-
-                let showRow = true;
-
-                if (filterDate && rowDate !== filterDate) {
-                    showRow = false;
-                }
-
-                if (filterTime && rowTime !== filterTime) {
-                    showRow = false;
-                }
-
-                row.style.display = showRow ? '' : 'none';
-            });
-
-            // Update select all checkbox
-            updateSelectAllCheckbox();
-        }
-
-        function updateTimeFilter() {
-            const filterDate = document.getElementById('filterDate').value;
-            const filterTimeSelect = document.getElementById('filterTime');
-
-            // Clear current options
-            filterTimeSelect.innerHTML = '<option value="">ทุกช่วงเวลา</option>';
-
-            if (filterDate) {
-                // Get times for the selected date from all project dates
-                const projectDates = @json($project->dates);
-                const selectedDate = projectDates.find(date =>
-                    date.date_datetime.startsWith(filterDate)
-                );
-
-                if (selectedDate && selectedDate.times) {
-                    selectedDate.times.forEach(time => {
-                        const option = document.createElement('option');
-                        option.value = time.id;
-                        option.textContent = `${time.time_title} (${time.time_start} - ${time.time_end})`;
-                        filterTimeSelect.appendChild(option);
-                    });
-                }
-            }
-
-            // Apply filters after updating time options
-            applyFilters();
-        }
-
         function selectAllPending() {
             const checkboxes = document.querySelectorAll('.registration-checkbox:not(:disabled)');
             checkboxes.forEach(checkbox => {
@@ -348,70 +291,136 @@
             const attendIds = Array.from(selectedCheckboxes).map(cb => cb.value);
 
             if (attendIds.length === 0) {
-                alert('กรุณาเลือกการลงทะเบียนที่ต้องการอนุมัติ');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่พบการลงทะเบียนที่ต้องการอนุมัติ',
+                    text: 'กรุณาเลือกการลงทะเบียนที่ต้องการอนุมัติก่อนคลิกปุ่มอนุมัติ',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'ตกลง',
+                    cancelButtonText: 'ยกเลิก'
+                });
                 return;
             }
 
-            if (confirm(`คุณแน่ใจหรือไม่ที่จะอนุมัติการลงทะเบียน ${attendIds.length} รายการ?`)) {
-                const filterDate = document.getElementById('filterDate').value;
-                const filterTime = document.getElementById('filterTime').value;
+            Swal.fire({
+                title: `คุณแน่ใจหรือไม่ที่จะอนุมัติการลงทะเบียน ${attendIds.length} รายการ?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ใช่, อนุมัติ!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const filterDate = document.querySelector('select[name="filter_date"]').value;
+                    const filterTime = document.querySelector('select[name="filter_time"]').value;
 
-                axios.post(`{{ route("hrd.admin.projects.bulk_approve", $project->id) }}`, {
-                        attend_ids: attendIds,
-                        filter_date: filterDate,
-                        filter_time_id: filterTime
-                    })
-                    .then(response => {
-                        alert(response.data.success);
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error bulk approving:', error);
-                        alert('เกิดข้อผิดพลาดในการอนุมัติ กรุณาลองใหม่อีกครั้ง');
-                    });
-            }
+                    axios.post(`{{ route("hrd.admin.projects.bulk_approve", $project->id) }}`, {
+                            attend_ids: attendIds,
+                            filter_date: filterDate,
+                            filter_time_id: filterTime
+                        })
+                        .then(response => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: response.data.success,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'ตกลง'
+                            });
+                            location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error bulk approving:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาดในการอนุมัติ',
+                                text: 'เกิดข้อผิดพลาดในการอนุมัติ กรุณาลองใหม่อีกครั้ง',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'ตกลง'
+                            });
+                        });
+                }
+            });
         }
 
         function approveRegistration(attendId, userId) {
-            if (confirm(`คุณแน่ใจหรือไม่ที่จะอนุมัติการลงทะเบียนของ ${userId}?`)) {
-                axios.post(`{{ route("hrd.admin.projects.approve_registration", $project->id) }}`, {
-                        attend_id: attendId
-                    })
-                    .then(response => {
-                        alert('อนุมัติการลงทะเบียนเรียบร้อยแล้ว!');
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error approving registration:', error);
-                        alert('เกิดข้อผิดพลาดในการอนุมัติ กรุณาลองใหม่อีกครั้ง');
-                    });
-            }
+            Swal.fire({
+                title: `คุณแน่ใจหรือไม่ที่จะอนุมัติการลงทะเบียนของ ${userId}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ใช่, อนุมัติ!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post(`{{ route("hrd.admin.projects.approve_registration", $project->id) }}`, {
+                            attend_id: attendId
+                        })
+                        .then(response => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'อนุมัติการลงทะเบียนเรียบร้อยแล้ว!',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'ตกลง'
+                            });
+                            location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error approving registration:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาดในการอนุมัติ',
+                                text: 'เกิดข้อผิดพลาดในการอนุมัติ กรุณาลองใหม่อีกครั้ง',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'ตกลง'
+                            });
+                        });
+                }
+            });
         }
 
         function unapproveRegistration(attendId, userId) {
-            if (confirm(`คุณแน่ใจหรือไม่ที่จะยกเลิกการอนุมัติของ ${userId}?`)) {
-                axios.post(`{{ route("hrd.admin.projects.unapprove_registration", $project->id) }}`, {
-                        attend_id: attendId
-                    })
-                    .then(response => {
-                        alert('ยกเลิกการอนุมัติเรียบร้อยแล้ว!');
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error unapproving registration:', error);
-                        alert('เกิดข้อผิดพลาดในการยกเลิกการอนุมัติ กรุณาลองใหม่อีกครั้ง');
-                    });
-            }
+            Swal.fire({
+                title: `คุณแน่ใจหรือไม่ที่จะยกเลิกการอนุมัติของ ${userId}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ใช่, ยกเลิก!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post(`{{ route("hrd.admin.projects.unapprove_registration", $project->id) }}`, {
+                            attend_id: attendId
+                        })
+                        .then(response => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'ยกเลิกการอนุมัติเรียบร้อยแล้ว!',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'ตกลง'
+                            });
+                            location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error unapproving registration:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาดในการยกเลิกการอนุมัติ',
+                                text: 'เกิดข้อผิดพลาดในการยกเลิกการอนุมัติ กรุณาลองใหม่อีกครั้ง',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'ตกลง'
+                            });
+                        });
+                }
+            });
         }
 
         // Initialize select all checkbox state
         document.addEventListener('DOMContentLoaded', function() {
             updateSelectAllCheckbox();
-
-            // Set up date filter change handler
-            document.getElementById('filterDate').addEventListener('change', function() {
-                updateTimeFilter();
-            });
         });
     </script>
 @endsection

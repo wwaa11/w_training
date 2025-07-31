@@ -4,21 +4,93 @@ namespace App\Http\Controllers;
 use App\Models\HrAttend;
 use App\Models\HrProject;
 use App\Models\HrTime;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HRController extends Controller
 {
+    /**
+     * Display the main HRD index page with available projects
+     */
     public function Index()
     {
-        $projects = HrProject::with(['dates', 'links', 'attends'])
-            ->availableForRegistration()
-            ->orderBy('project_start_register', 'asc')
+        $projects = HrProject::availableForRegistration()
+            ->with([
+                'dates'       => function ($query) {
+                    $query->where('date_delete', false)
+                        ->orderBy('date_datetime', 'asc');
+                },
+                'dates.times' => function ($query) {
+                    $query->where('time_delete', false)
+                        ->orderBy('time_start', 'asc');
+                },
+                'attends'     => function ($query) {
+                    $query->where('attend_delete', false);
+                },
+            ])
+            ->orderBy('created_at', 'desc')
             ->paginate(12);
 
-        return view('hrd.index', compact('projects'));
+        $ongoingProjects = $this->getOngoingProjects($projects);
+
+        return view('hrd.index', compact('projects', 'ongoingProjects'));
     }
 
+    /**
+     * Get ongoing projects that user can check in for
+     */
+    private function getOngoingProjects($projects)
+    {
+        $now    = now();
+        $userId = auth()->id();
+
+        return $projects->filter(function ($project) use ($now, $userId) {
+            foreach ($project->dates as $date) {
+                $dateString = $date->date_datetime->format('Y-m-d');
+                $today      = $now->format('Y-m-d');
+
+                if ($dateString === $today) {
+                    foreach ($date->times as $time) {
+                        $timeStart   = Carbon::parse($time->time_start)->format('H:i:s');
+                        $timeEnd     = Carbon::parse($time->time_end)->format('H:i:s');
+                        $currentTime = $now->format('H:i:s');
+
+                        // Check if current time is within the time slot
+                        if ($currentTime >= $timeStart && $currentTime <= $timeEnd) {
+                            // For attendance projects, check if user hasn't attended yet
+                            if ($project->project_type === 'attendance') {
+                                $attendanceRecord = $project->attends
+                                    ->where('user_id', $userId)
+                                    ->where('time_id', $time->id)
+                                    ->first();
+
+                                if (! $attendanceRecord || ! $attendanceRecord->attend_datetime) {
+                                    return true;
+                                }
+                            } else {
+                                // For registered projects, check if user is registered but hasn't attended
+                                $userRegistration = $project->attends
+                                    ->where('user_id', $userId)
+                                    ->where('time_id', $time->id)
+                                    ->first();
+
+                                if ($userRegistration && ! $userRegistration->attend_datetime) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Display project details page
+     */
     public function projectShow($id)
     {
         $project = HrProject::with([
@@ -46,6 +118,9 @@ class HRController extends Controller
         return view('hrd.projects.show', compact('project', 'registrationData'));
     }
 
+    /**
+     * Calculate registration state and availability for a project
+     */
     private function calculateRegistrationState($project)
     {
         $now    = now();
@@ -53,7 +128,7 @@ class HRController extends Controller
         $userId = auth()->id();
 
         // Get user's current registrations using direct query to ensure accuracy
-        $userRegistrations = \App\Models\HrAttend::where('project_id', $project->id)
+        $userRegistrations = HrAttend::where('project_id', $project->id)
             ->where('user_id', $userId)
             ->where('attend_delete', false)
             ->get();
@@ -103,7 +178,7 @@ class HRController extends Controller
             $statusBadge = [
                 'type' => 'purple',
                 'icon' => 'fas fa-info-circle',
-                'text' => 'No Registration Required',
+                'text' => 'ไม่ต้องลงทะเบียน',
             ];
         } elseif ($project->project_type === 'multiple') {
             // Multiple type always shows registration form if within registration period
@@ -111,10 +186,11 @@ class HRController extends Controller
             $canRegister      = $baseCanRegister;
 
             if ($userRegistrations->count() > 0) {
+                $sessionText = $userRegistrations->count() > 1 ? 'เซสชัน' : 'เซสชัน';
                 $statusBadge = [
                     'type' => 'green',
                     'icon' => 'fas fa-check-circle',
-                    'text' => "You're Registered ({$userRegistrations->count()} " . ($userRegistrations->count() > 1 ? 'sessions' : 'session') . ")",
+                    'text' => "ลงทะเบียนแล้ว ({$userRegistrations->count()} {$sessionText})",
                 ];
             }
         } else { // single type
@@ -142,17 +218,18 @@ class HRController extends Controller
                 }
 
                 // Set status badge for registered users
+                $sessionText = $userRegistrations->count() > 1 ? 'เซสชัน' : 'เซสชัน';
                 if ($canReselect) {
                     $statusBadge = [
                         'type' => 'orange',
                         'icon' => 'fas fa-edit',
-                        'text' => "Registered - Can Reselect ({$userRegistrations->count()} " . ($userRegistrations->count() > 1 ? 'sessions' : 'session') . ")",
+                        'text' => "ลงทะเบียนแล้ว - สามารถเลือกใหม่ได้ ({$userRegistrations->count()} {$sessionText})",
                     ];
                 } else {
                     $statusBadge = [
                         'type' => 'green',
                         'icon' => 'fas fa-check-circle',
-                        'text' => "You're Registered ({$userRegistrations->count()} " . ($userRegistrations->count() > 1 ? 'sessions' : 'session') . ")",
+                        'text' => "ลงทะเบียนแล้ว ({$userRegistrations->count()} {$sessionText})",
                     ];
                 }
             }
@@ -164,25 +241,25 @@ class HRController extends Controller
                 $statusBadge = [
                     'type' => 'blue',
                     'icon' => 'fas fa-circle',
-                    'text' => 'Open for Registration',
+                    'text' => 'เปิดรับลงทะเบียน',
                 ];
             } elseif ($isUpcoming) {
                 $statusBadge = [
                     'type' => 'yellow',
                     'icon' => 'fas fa-clock',
-                    'text' => 'Coming Soon',
+                    'text' => 'เร็วๆ นี้',
                 ];
             } elseif ($isExpired) {
                 $statusBadge = [
                     'type' => 'gray',
                     'icon' => 'fas fa-lock',
-                    'text' => 'Registration Closed',
+                    'text' => 'ปิดรับลงทะเบียน',
                 ];
             } elseif (! $canRegisterToday && ! $hasFutureDates) {
                 $statusBadge = [
                     'type' => 'red',
                     'icon' => 'fas fa-ban',
-                    'text' => 'Same-day Registration Not Allowed',
+                    'text' => 'ไม่อนุญาตให้ลงทะเบียนในวันเดียวกัน',
                 ];
             }
         }
@@ -208,6 +285,9 @@ class HRController extends Controller
         ];
     }
 
+    /**
+     * Calculate time slot states for each session
+     */
     private function calculateTimeSlotStates($project, $userRegistrations, $today)
     {
         $timeSlotStates = [];
@@ -218,8 +298,8 @@ class HRController extends Controller
             $dateString = $date->date_datetime->format('Y-m-d');
 
             foreach ($date->times as $time) {
-                $timeStart = \Carbon\Carbon::parse($time->time_start)->format('H:i:s');
-                $timeEnd   = \Carbon\Carbon::parse($time->time_end)->format('H:i:s');
+                $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
+                $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
                 $userRegisteredForTime = $userRegistrations->where('time_id', $time->id)->first();
                 $hasAttendedRegistered = $userRegisteredForTime && $userRegisteredForTime->attend_datetime;
@@ -255,7 +335,7 @@ class HRController extends Controller
                         if ($today !== $dateString) {
                             $state['timeSlotMessage'] = 'Check-in available on ' . $date->date_datetime->format('d M Y');
                         } elseif ($currentTime < $timeStart) {
-                            $state['timeSlotMessage'] = 'Check-in available from ' . \Carbon\Carbon::parse($time->time_start)->format('H:i');
+                            $state['timeSlotMessage'] = 'Check-in available from ' . Carbon::parse($time->time_start)->format('H:i');
                         } elseif ($currentTime > $timeEnd) {
                             $state['timeSlotMessage'] = 'Check-in period ended';
                         }
@@ -272,7 +352,7 @@ class HRController extends Controller
                         if ($today !== $dateString) {
                             $state['timeSlotMessage'] = 'Check-in on ' . $date->date_datetime->format('d M Y');
                         } elseif ($currentTime < $timeStart) {
-                            $state['timeSlotMessage'] = 'Check-in from ' . \Carbon\Carbon::parse($time->time_start)->format('H:i');
+                            $state['timeSlotMessage'] = 'Check-in from ' . Carbon::parse($time->time_start)->format('H:i');
                         } elseif ($currentTime > $timeEnd) {
                             $state['timeSlotMessage'] = 'Check-in period ended';
                         }
@@ -445,8 +525,8 @@ class HRController extends Controller
             }
 
             // Check if current time is within the time slot range
-            $timeStart = \Carbon\Carbon::parse($time->time_start)->format('H:i:s');
-            $timeEnd   = \Carbon\Carbon::parse($time->time_end)->format('H:i:s');
+            $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
+            $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
             if ($currentTime < $timeStart || $currentTime > $timeEnd) {
                 return redirect()->back()->with('error', 'Attendance is only available during the scheduled time slot.');
@@ -517,8 +597,8 @@ class HRController extends Controller
             }
 
             // Check if current time is within the time slot range
-            $timeStart = \Carbon\Carbon::parse($time->time_start)->format('H:i:s');
-            $timeEnd   = \Carbon\Carbon::parse($time->time_end)->format('H:i:s');
+            $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
+            $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
             if ($currentTime < $timeStart || $currentTime > $timeEnd) {
                 return redirect()->back()->with('error', 'Check-in is only available during the scheduled time slot.');
@@ -542,57 +622,140 @@ class HRController extends Controller
             $project = HrProject::findOrFail($id);
             $userId  = auth()->id();
 
-            // Get user's current registrations for this project
+            // Check if user has registrations for this project
             $userRegistrations = $project->attends()
                 ->where('user_id', $userId)
                 ->where('attend_delete', false)
                 ->get();
 
             if ($userRegistrations->isEmpty()) {
-                return redirect()->back()->with('error', 'You are not registered for this project.');
+                return redirect()->route('hrd.projects.show', $id)
+                    ->with('error', 'คุณยังไม่ได้ลงทะเบียนสำหรับโปรเจกต์นี้');
             }
 
-            // Check if any registration has been attended
-            $hasAttended = $userRegistrations->where('attend_datetime', '!=', null)->isNotEmpty();
+            // Check if any registrations are for today and project doesn't allow same-day registration
+            if (! $project->project_register_today) {
+                $today              = now()->format('Y-m-d');
+                $todayRegistrations = $userRegistrations->filter(function ($registration) use ($today) {
+                    return $registration->date && $registration->date->date_datetime->format('Y-m-d') === $today;
+                });
 
-            if ($hasAttended) {
-                return redirect()->back()->with('error', 'Cannot reselect registration after attending.');
+                if ($todayRegistrations->isNotEmpty()) {
+                    return redirect()->route('hrd.projects.show', $id)
+                        ->with('error', 'ไม่สามารถล้างการลงทะเบียนในวันเดียวกันได้');
+                }
             }
 
-            // Soft delete all current registrations
+            // Soft delete all user registrations for this project
             $userRegistrations->each(function ($registration) {
                 $registration->update(['attend_delete' => true]);
             });
 
-            return redirect()->back()->with('success', 'Registration cancelled successfully. You can now register for different time slots.');
+            return redirect()->route('hrd.projects.show', $id)
+                ->with('success', 'ล้างการลงทะเบียนเรียบร้อยแล้ว คุณสามารถลงทะเบียนใหม่ได้');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to cancel registration: ' . $e->getMessage());
+            return redirect()->route('hrd.projects.show', $id)
+                ->with('error', 'เกิดข้อผิดพลาดในการล้างการลงทะเบียน: ' . $e->getMessage());
         }
     }
 
+    public function projectUnregister(Request $request, $id, $registrationId)
+    {
+        try {
+            $project = HrProject::findOrFail($id);
+            $userId  = auth()->id();
+
+            // Find the specific registration
+            $registration = $project->attends()
+                ->where('id', $registrationId)
+                ->where('user_id', $userId)
+                ->where('attend_delete', false)
+                ->first();
+
+            if (! $registration) {
+                return redirect()->route('hrd.projects.show', $id)
+                    ->with('error', 'ไม่พบการลงทะเบียนที่ต้องการยกเลิก');
+            }
+
+            // Check if this is a multiple project type
+            if ($project->project_type !== 'multiple') {
+                return redirect()->route('hrd.projects.show', $id)
+                    ->with('error', 'ไม่สามารถยกเลิกการลงทะเบียนสำหรับโปรเจกต์ประเภทนี้ได้');
+            }
+
+            // Check if user has already attended this session
+            if ($registration->attend_datetime) {
+                return redirect()->route('hrd.projects.show', $id)
+                    ->with('error', 'ไม่สามารถยกเลิกการลงทะเบียนหลังจากเข้าร่วมแล้ว');
+            }
+
+            // Check if this is for today and project doesn't allow same-day registration
+            if (! $project->project_register_today) {
+                $today            = now()->format('Y-m-d');
+                $registrationDate = $registration->date->date_datetime->format('Y-m-d');
+
+                if ($registrationDate === $today) {
+                    return redirect()->route('hrd.projects.show', $id)
+                        ->with('error', 'ไม่สามารถยกเลิกการลงทะเบียนในวันเดียวกันได้');
+                }
+            }
+
+            // Soft delete the registration
+            $registration->update(['attend_delete' => true]);
+
+            return redirect()->route('hrd.projects.show', $id)
+                ->with('success', 'ยกเลิกการลงทะเบียนเรียบร้อยแล้ว');
+
+        } catch (\Exception $e) {
+            return redirect()->route('hrd.projects.show', $id)
+                ->with('error', 'เกิดข้อผิดพลาดในการยกเลิกการลงทะเบียน: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display user's attendance history
+     */
     public function userHistory()
     {
-        $userId = auth()->id();
-
-        // Get all attendance records for the current user
-        $attendanceHistory = \App\Models\HrAttend::with([
-            'project',
-            'date',
-            'time',
-            'user',
+        $userId            = auth()->id();
+        $attendanceHistory = HrAttend::with([
+            'project', 'date', 'time', 'user',
         ])
             ->where('user_id', $userId)
             ->where('attend_delete', false)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        // Group by project for better organization
-        $groupedHistory = $attendanceHistory->groupBy('project_id');
+        // Calculate statistics
+        $statistics = $this->calculateHistoryStatistics($attendanceHistory);
 
-        return view('hrd.history', compact('attendanceHistory', 'groupedHistory'));
+        return view('hrd.history', compact('attendanceHistory', 'statistics'));
     }
 
+    /**
+     * Calculate statistics for user history
+     */
+    private function calculateHistoryStatistics($attendanceHistory)
+    {
+        $totalRegistrations   = $attendanceHistory->total();
+        $attendedCount        = $attendanceHistory->where('attend_datetime', '!=', null)->count();
+        $pendingCount         = $totalRegistrations - $attendedCount;
+        $approvedCount        = $attendanceHistory->where('approve_datetime', '!=', null)->count();
+        $pendingApprovalCount = $totalRegistrations - $approvedCount;
+
+        return [
+            'total'           => $totalRegistrations,
+            'attended'        => $attendedCount,
+            'pending'         => $pendingCount,
+            'approved'        => $approvedCount,
+            'pendingApproval' => $pendingApprovalCount,
+        ];
+    }
+
+    /**
+     * Display admin index page with all projects
+     */
     public function adminIndex()
     {
         $projects = HrProject::with(['dates', 'attends'])
@@ -603,11 +766,17 @@ class HRController extends Controller
         return view('hrd.admin.index', compact('projects'));
     }
 
+    /**
+     * Display project creation form
+     */
     public function adminProjectCreate()
     {
         return view('hrd.admin.projects.create');
     }
 
+    /**
+     * Store a new project
+     */
     public function adminProjectStore(Request $request)
     {
         $request->validate([
@@ -642,7 +811,6 @@ class HRController extends Controller
             'links.*.link_limit'          => 'boolean',
             'links.*.link_time_start'     => 'nullable|date_format:H:i',
             'links.*.link_time_end'       => 'nullable|date_format:H:i|after:links.*.link_time_start',
-
         ]);
 
         DB::beginTransaction();
@@ -707,6 +875,9 @@ class HRController extends Controller
         }
     }
 
+    /**
+     * Display project details (admin view)
+     */
     public function adminProjectShow($id)
     {
         $project = HrProject::with([
@@ -719,12 +890,21 @@ class HRController extends Controller
         return view('hrd.admin.projects.show', compact('project'));
     }
 
+    /**
+     * Display project edit form
+     */
     public function adminProjectEdit($id)
     {
         $project = HrProject::with([
-            'dates'       => function ($query) {$query->orderBy('date_datetime', 'asc');},
-            'dates.times' => function ($query) {$query->orderBy('time_start', 'asc');},
-            'links'       => function ($query) {$query->orderBy('created_at', 'asc');},
+            'dates'       => function ($query) {
+                $query->orderBy('date_datetime', 'asc');
+            },
+            'dates.times' => function ($query) {
+                $query->orderBy('time_start', 'asc');
+            },
+            'links'       => function ($query) {
+                $query->orderBy('created_at', 'asc');
+            },
         ])->findOrFail($id);
 
         // Format data for frontend
@@ -1041,6 +1221,9 @@ class HRController extends Controller
         return view('hrd.admin.projects.registrations', compact('project', 'registrations'));
     }
 
+    /**
+     * Store a new registration (admin function)
+     */
     public function adminRegistrationStore(Request $request, $projectId)
     {
         $request->validate([
@@ -1051,11 +1234,11 @@ class HRController extends Controller
 
         try {
             $project = HrProject::findOrFail($projectId);
-            $time    = \App\Models\HrTime::findOrFail($request->time_id);
+            $time    = HrTime::findOrFail($request->time_id);
             $date    = $time->date;
 
             // Find user by userid and get the actual user id
-            $user = \App\Models\User::where('userid', $request->user_id)->first();
+            $user = User::where('userid', $request->user_id)->first();
             if (! $user) {
                 return redirect()->back()->with('error', 'User not found with the provided user ID.');
             }
@@ -1094,6 +1277,9 @@ class HRController extends Controller
         }
     }
 
+    /**
+     * Update an existing registration (admin function)
+     */
     public function adminRegistrationUpdate(Request $request, $projectId, $registrationId)
     {
         $request->validate([
@@ -1102,8 +1288,8 @@ class HRController extends Controller
         ]);
 
         try {
-            $registration = \App\Models\HrAttend::findOrFail($registrationId);
-            $time         = \App\Models\HrTime::findOrFail($request->time_id);
+            $registration = HrAttend::findOrFail($registrationId);
+            $time         = HrTime::findOrFail($request->time_id);
 
             // Check if new time slot is different and if it's full
             if ($registration->time_id != $request->time_id) {
@@ -1139,10 +1325,13 @@ class HRController extends Controller
         }
     }
 
+    /**
+     * Delete a registration (admin function)
+     */
     public function adminRegistrationDelete(Request $request, $projectId, $registrationId)
     {
         try {
-            $registration = \App\Models\HrAttend::findOrFail($registrationId);
+            $registration = HrAttend::findOrFail($registrationId);
             $registration->update(['attend_delete' => true]);
 
             return redirect()->back()->with('success', 'Registration deleted successfully.');
@@ -1151,6 +1340,9 @@ class HRController extends Controller
         }
     }
 
+    /**
+     * Approve a registration (admin function)
+     */
     public function adminApproveRegistration(Request $request, $projectId)
     {
         $request->validate([
@@ -1158,7 +1350,7 @@ class HRController extends Controller
         ]);
 
         try {
-            $registration = \App\Models\HrAttend::findOrFail($request->attend_id);
+            $registration = HrAttend::findOrFail($request->attend_id);
 
             // Check if this registration belongs to the project
             if ($registration->project_id != $projectId) {
@@ -1175,6 +1367,9 @@ class HRController extends Controller
         }
     }
 
+    /**
+     * Unapprove a registration (admin function)
+     */
     public function adminUnapproveRegistration(Request $request, $projectId)
     {
         $request->validate([
@@ -1182,7 +1377,7 @@ class HRController extends Controller
         ]);
 
         try {
-            $registration = \App\Models\HrAttend::findOrFail($request->attend_id);
+            $registration = HrAttend::findOrFail($request->attend_id);
 
             // Check if this registration belongs to the project
             if ($registration->project_id != $projectId) {
@@ -1204,7 +1399,8 @@ class HRController extends Controller
         $project = HrProject::findOrFail($projectId);
 
         // Get filter parameters
-        $filterDate = request('filter_date', now()->format('Y-m-d'));
+        $filterDate = request('filter_date');
+        $filterTime = request('filter_time');
 
         // Build query for registrations that have been attended
         $query = $project->attends()
@@ -1213,21 +1409,72 @@ class HRController extends Controller
             ->with(['user', 'date', 'time'])
             ->orderBy('created_at', 'desc');
 
-        // Apply date filter
-        if ($filterDate) {
+        // Apply date filter only if a specific date is selected
+        if ($filterDate && $filterDate !== '') {
             $query->whereHas('date', function ($q) use ($filterDate) {
-                $q->whereDate('date_datetime', $filterDate);
+                $q->whereDate('date_datetime', $filterDate)
+                    ->where('date_delete', false);
+            });
+        }
+
+        // Apply time filter only if a specific time is selected
+        if ($filterTime && $filterTime !== '') {
+            $query->whereHas('time', function ($q) use ($filterTime) {
+                $q->where('id', $filterTime)
+                    ->where('time_delete', false);
             });
         }
 
         $registrations = $query->get();
 
-        // Get all available dates for the filter dropdown
+        // Get all available dates for the filter dropdown (only non-deleted dates)
         $availableDates = $project->dates()
+            ->where('date_delete', false)
             ->orderBy('date_datetime', 'asc')
             ->get();
 
-        return view('hrd.admin.projects.approvals', compact('project', 'registrations', 'availableDates', 'filterDate'));
+        // Get available times for the selected date (for time filter dropdown)
+        $availableTimes = collect();
+        if ($filterDate && $filterDate !== '') {
+            $selectedDate = $project->dates()
+                ->where('date_delete', false)
+                ->whereDate('date_datetime', $filterDate)
+                ->first();
+
+            if ($selectedDate) {
+                $availableTimes = $selectedDate->times()
+                    ->where('time_delete', false)
+                    ->orderBy('time_start', 'asc')
+                    ->get();
+            }
+        } else {
+            // If no date selected, get all times from all dates
+            $availableTimes = $project->dates()
+                ->where('date_delete', false)
+                ->with(['times' => function ($query) {
+                    $query->where('time_delete', false)->orderBy('time_start', 'asc');
+                }])
+                ->get()
+                ->flatMap(function ($date) {
+                    return $date->times->map(function ($time) use ($date) {
+                        return (object) [
+                            'id'         => $time->id,
+                            'time_title' => $date->date_title . ' - ' . $time->time_title,
+                            'time_start' => $time->time_start,
+                            'time_end'   => $time->time_end,
+                        ];
+                    });
+                });
+        }
+
+        return view('hrd.admin.projects.approvals', compact(
+            'project',
+            'registrations',
+            'availableDates',
+            'availableTimes',
+            'filterDate',
+            'filterTime'
+        ));
     }
 
     public function adminBulkApprove(Request $request, $projectId)
@@ -1250,12 +1497,16 @@ class HRController extends Controller
             // Apply filters
             if ($request->filter_date) {
                 $query->whereHas('date', function ($q) use ($request) {
-                    $q->whereDate('date_datetime', $request->filter_date);
+                    $q->whereDate('date_datetime', $request->filter_date)
+                        ->where('date_delete', false);
                 });
             }
 
             if ($request->filter_time_id) {
-                $query->where('time_id', $request->filter_time_id);
+                $query->whereHas('time', function ($q) use ($request) {
+                    $q->where('id', $request->filter_time_id)
+                        ->where('time_delete', false);
+                });
             }
 
             // If specific attend_ids provided, use them; otherwise use filtered results
