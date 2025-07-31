@@ -3,11 +3,13 @@ namespace App\Http\Controllers;
 
 use App\Models\HrAttend;
 use App\Models\HrProject;
+use App\Models\HrSeat;
 use App\Models\HrTime;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+// Added HrSeat model
 
 class HRController extends Controller
 {
@@ -1529,6 +1531,195 @@ class HRController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to bulk approve: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Manually trigger seat assignment for testing
+     */
+    public function triggerSeatAssignment()
+    {
+        try {
+            \App\Jobs\HrProjectSeatAssignment::dispatch();
+            return response()->json(['success' => 'Seat assignment job has been dispatched successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to dispatch seat assignment job: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get seat assignments for a project
+     */
+    public function getProjectSeats($projectId)
+    {
+        try {
+            $project = HrProject::with([
+                'dates.times.seats.user',
+                'dates.times.attends.user',
+            ])->findOrFail($projectId);
+
+            $seatData = [];
+
+            foreach ($project->dates as $date) {
+                foreach ($date->times as $time) {
+                    $seatData[] = [
+                        'date'          => $date->date_title,
+                        'time'          => $time->time_title,
+                        'time_id'       => $time->id,
+                        'seats'         => $time->seats->map(function ($seat) {
+                            return [
+                                'seat_number' => $seat->seat_number,
+                                'user_id'     => $seat->user_id,
+                                'user_name'   => $seat->user->name ?? $seat->user->userid,
+                                'department'  => $seat->department,
+                            ];
+                        }),
+                        'registrations' => $time->attends->where('attend_delete', false)->map(function ($attend) {
+                            return [
+                                'user_id'     => $attend->user_id,
+                                'user_name'   => $attend->user->name ?? $attend->user->userid,
+                                'seat_number' => $attend->seat ? $attend->seat->seat_number : null,
+                                'department'  => $attend->user->department ?? 'Unknown',
+                            ];
+                        }),
+                    ];
+                }
+            }
+
+            return response()->json([
+                'project'   => $project->project_name,
+                'seat_data' => $seatData,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to get seat data: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Show seat management page for a project
+     */
+    public function adminProjectSeatManagement($id)
+    {
+        try {
+            $project = HrProject::with([
+                'dates.times.seats.user',
+                'dates.times.attends.user',
+            ])->findOrFail($id);
+
+            return view('hrd.admin.projects.seats', compact('project'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('hrd.admin.index')
+                ->with('error', 'ไม่พบโปรเจกต์ที่ระบุ');
+        }
+    }
+
+    /**
+     * Manually assign a seat to a user
+     */
+    public function assignManualSeat(Request $request, $projectId)
+    {
+        try {
+            $request->validate([
+                'time_id'     => 'required|integer',
+                'user_id'     => 'required|integer',
+                'seat_number' => 'required|integer|min:1',
+            ]);
+
+            $time = HrTime::findOrFail($request->time_id);
+
+            // Check if seat is already taken
+            $existingSeat = HrSeat::where('time_id', $request->time_id)
+                ->where('seat_number', $request->seat_number)
+                ->where('seat_delete', false)
+                ->first();
+
+            if ($existingSeat) {
+                return response()->json(['error' => 'ที่นั่งนี้ถูกใช้งานแล้ว'], 400);
+            }
+
+            // Check if user already has a seat in this time slot
+            $existingUserSeat = HrSeat::where('time_id', $request->time_id)
+                ->where('user_id', $request->user_id)
+                ->where('seat_delete', false)
+                ->first();
+
+            if ($existingUserSeat) {
+                return response()->json(['error' => 'ผู้ใช้นี้มีที่นั่งแล้วในช่วงเวลานี้'], 400);
+            }
+
+            // Get user department
+            $user       = User::findOrFail($request->user_id);
+            $department = $user->department ?? 'Unknown';
+
+            // Create seat assignment
+            HrSeat::create([
+                'time_id'     => $request->time_id,
+                'user_id'     => $request->user_id,
+                'department'  => $department,
+                'seat_number' => $request->seat_number,
+                'seat_delete' => false,
+            ]);
+
+            return response()->json(['success' => 'จัดที่นั่งสำเร็จ']);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'เกิดข้อผิดพลาดในการจัดที่นั่ง: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Remove a seat assignment
+     */
+    public function removeManualSeat(Request $request, $projectId)
+    {
+        try {
+            $request->validate([
+                'time_id' => 'required|integer',
+                'user_id' => 'required|integer',
+            ]);
+
+            $seat = HrSeat::where('time_id', $request->time_id)
+                ->where('user_id', $request->user_id)
+                ->where('seat_delete', false)
+                ->first();
+
+            if (! $seat) {
+                return response()->json(['error' => 'ไม่พบการจัดที่นั่งที่ระบุ'], 404);
+            }
+
+            $seat->update(['seat_delete' => true]);
+
+            return response()->json(['success' => 'ลบการจัดที่นั่งสำเร็จ']);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'เกิดข้อผิดพลาดในการลบการจัดที่นั่ง: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Clear all seats for a time slot
+     */
+    public function clearTimeSeats(Request $request, $projectId)
+    {
+        try {
+            $request->validate([
+                'time_id' => 'required|integer',
+            ]);
+
+            $seats = HrSeat::where('time_id', $request->time_id)
+                ->where('seat_delete', false)
+                ->get();
+
+            foreach ($seats as $seat) {
+                $seat->update(['seat_delete' => true]);
+            }
+
+            return response()->json(['success' => 'ล้างที่นั่งทั้งหมดสำเร็จ']);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'เกิดข้อผิดพลาดในการล้างที่นั่ง: ' . $e->getMessage()], 500);
         }
     }
 }

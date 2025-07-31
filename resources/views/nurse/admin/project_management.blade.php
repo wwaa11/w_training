@@ -299,7 +299,7 @@
             feedback.className = 'ml-2 text-sm text-gray-500';
 
             axios.post(
-                    '{{ route("nurse.lecturer.update-score") }}', {
+                    '{{ route("nurse.admin.lecturer.update-score") }}', {
                         lecture_id: lectureId,
                         score: score
                     }

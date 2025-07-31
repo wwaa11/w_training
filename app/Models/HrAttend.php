@@ -50,6 +50,13 @@ class HrAttend extends Model
         return $this->hasOne(HrResult::class, 'attend_id');
     }
 
+    public function seat()
+    {
+        return $this->hasOne(HrSeat::class, 'user_id', 'user_id')
+            ->where('time_id', $this->time_id)
+            ->where('seat_delete', false);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

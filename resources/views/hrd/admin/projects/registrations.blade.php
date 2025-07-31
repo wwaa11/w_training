@@ -185,7 +185,7 @@
                 </button>
             </div>
 
-            <form action="{{ route("hrd.admin.registrations.store", $project->id) }}" method="POST">
+            <form action="{{ route("hrd.admin.projects.registrations.store", $project->id) }}" method="POST">
                 @csrf
                 <div class="space-y-4">
                     <div>

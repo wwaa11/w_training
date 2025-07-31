@@ -22,12 +22,17 @@
                     </span>
                 </div>
                 <div class="flex space-x-2">
-                    <a class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700" href="{{ route("hrd.admin.projects.registrations", $project->id) }}">
+                    <a class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700" href="{{ route("hrd.admin.projects.registrations.index", $project->id) }}">
                         <i class="fas fa-users"></i> จัดการการลงทะเบียน
                     </a>
-                    <a class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700" href="{{ route("hrd.admin.projects.approvals", $project->id) }}">
+                    <a class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700" href="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
                         <i class="fas fa-check-circle"></i> จัดการการอนุมัติ
                     </a>
+                    @if ($project->project_seat_assign)
+                        <a class="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700" href="{{ route("hrd.admin.projects.seat.management", $project->id) }}">
+                            <i class="fas fa-cogs"></i> จัดการที่นั่ง
+                        </a>
+                    @endif
                     <a class="rounded-lg bg-yellow-600 px-4 py-2 font-semibold text-white hover:bg-yellow-700" href="{{ route("hrd.admin.projects.edit", $project->id) }}">
                         <i class="fas fa-edit"></i> แก้ไข
                     </a>
@@ -490,5 +495,8 @@
                     });
             }
         }
+
+        // Seat Assignment Functions - Removed as buttons are no longer needed
+        // All seat management functionality is now available in the dedicated seat management page
     </script>
 @endsection

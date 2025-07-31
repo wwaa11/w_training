@@ -1,7 +1,7 @@
 @extends("layouts.nurse")
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
-        <form class="mb-6 rounded-lg p-3 shadow" action="{{ route("NurseAdminStore") }}" method="POST">
+        <form class="mb-6 rounded-lg p-3 shadow" action="{{ route("nurse.admin.create.store") }}" method="POST">
             @csrf
             @if ($errors->any())
                 <div class="text-red-600">

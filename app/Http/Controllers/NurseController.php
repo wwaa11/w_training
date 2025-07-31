@@ -288,7 +288,7 @@ class NurseController extends Controller
             }
         }
 
-        return redirect()->route('NurseAdminIndex')->with('success', 'Project created successfully.');
+        return redirect()->route('nurse.admin.index')->with('success', 'Project created successfully.');
     }
 
     public function adminProjectManagement($project_id)
@@ -319,7 +319,7 @@ class NurseController extends Controller
 
             Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete project id: ' . $project->id);
 
-            return redirect()->route('NurseAdminIndex')->with('success', 'ลบโครงการสำเร็จ');
+            return redirect()->route('nurse.admin.index')->with('success', 'ลบโครงการสำเร็จ');
         }
 
         return redirect()->back()->with('error', 'ไม่พบโครงการนี้');

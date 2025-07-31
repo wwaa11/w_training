@@ -78,7 +78,7 @@
             <h2 class="mb-4 text-xl font-semibold text-gray-800">
                 <i class="fas fa-filter mr-2 text-blue-600"></i>ตัวกรอง
             </h2>
-            <form class="grid grid-cols-1 gap-4 md:grid-cols-4" method="GET" action="{{ route("hrd.admin.projects.approvals", $project->id) }}">
+            <form class="grid grid-cols-1 gap-4 md:grid-cols-4" method="GET" action="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">วันที่</label>
                     <select class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" name="filter_date" onchange="this.form.submit()">
@@ -111,7 +111,7 @@
                     </button>
                 </div>
                 <div class="flex items-end">
-                    <a class="w-full rounded-lg bg-gray-500 px-4 py-2 text-center font-semibold text-white hover:bg-gray-600" href="{{ route("hrd.admin.projects.approvals", $project->id) }}">
+                    <a class="w-full rounded-lg bg-gray-500 px-4 py-2 text-center font-semibold text-white hover:bg-gray-600" href="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
                         <i class="fas fa-undo mr-2"></i>รีเซ็ต
                     </a>
                 </div>
@@ -316,7 +316,7 @@
                     const filterDate = document.querySelector('select[name="filter_date"]').value;
                     const filterTime = document.querySelector('select[name="filter_time"]').value;
 
-                    axios.post(`{{ route("hrd.admin.projects.bulk_approve", $project->id) }}`, {
+                    axios.post(`{{ route("hrd.admin.projects.approvals.bulk_approve", $project->id) }}`, {
                             attend_ids: attendIds,
                             filter_date: filterDate,
                             filter_time_id: filterTime
