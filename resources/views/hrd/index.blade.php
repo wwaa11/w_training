@@ -99,6 +99,26 @@
                                                     <i class="fas fa-clock mr-1"></i>
                                                     {{ \Carbon\Carbon::parse($time->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($time->time_end)->format("H:i") }}
                                                 </p>
+                                                @if ($project->project_seat_assign)
+                                                    @php
+                                                        $userSeat = $time
+                                                            ->seats()
+                                                            ->where("user_id", auth()->id())
+                                                            ->where("seat_delete", false)
+                                                            ->first();
+                                                    @endphp
+                                                    @if ($userSeat)
+                                                        <div class="mt-3 transform animate-pulse">
+                                                            <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 shadow-lg">
+                                                                <i class="fas fa-chair mr-3 text-lg text-white"></i>
+                                                                <div class="text-center">
+                                                                    <div class="text-xs font-medium text-purple-100">ที่นั่งของคุณ</div>
+                                                                    <div class="text-xl font-bold text-white">{{ $userSeat->seat_number }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                @endif
                                             </div>
 
                                             <form class="checkin-form" action="{{ $checkInRoute }}" method="{{ $checkInMethod }}">
@@ -106,9 +126,11 @@
                                                 @foreach ($checkInData as $key => $value)
                                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                                 @endforeach
-                                                <button class="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" type="submit">
-                                                    <i class="fas fa-user-check mr-2"></i>
-                                                    เช็คอินตอนนี้
+                                                <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                                    <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                                                    <i class="fas fa-user-check mr-3 text-lg"></i>
+                                                    <span class="text-base font-semibold">เช็คอินตอนนี้</span>
+                                                    <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -234,6 +256,22 @@
                             <div class="text-sm text-gray-600">
                                 <i class="fas fa-link mr-2 text-blue-500"></i>
                                 <span class="font-medium">ทรัพยากร ({{ $project->links->count() }})</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Seat Assignment Info -->
+                    @if ($project->project_seat_assign)
+                        <div class="border-t border-gray-100 px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-600">
+                                    <i class="fas fa-chair mr-2 text-purple-500"></i>
+                                    <span class="font-medium">เปิดใช้งานการจัดที่นั่ง</span>
+                                </div>
+                                <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-1 shadow-md">
+                                    <i class="fas fa-star mr-2 text-yellow-300"></i>
+                                    <span class="text-sm font-bold text-white">ที่นั่ง</span>
+                                </div>
                             </div>
                         </div>
                     @endif

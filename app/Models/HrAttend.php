@@ -24,6 +24,17 @@ class HrAttend extends Model
         'attend_delete'    => 'boolean',
     ];
 
+    // Model Events
+    protected static function booted()
+    {
+        static::created(function ($attendance) {
+            // Dispatch seat assignment job if project has seat assignment enabled
+            if ($attendance->project && $attendance->project->project_seat_assign) {
+                \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+            }
+        });
+    }
+
     // Relationships
     public function project()
     {
@@ -71,5 +82,16 @@ class HrAttend extends Model
     public function scopePending($query)
     {
         return $query->whereNull('approve_datetime');
+    }
+
+    // Methods
+    public function removeSeatAssignment()
+    {
+        if ($this->project && $this->project->project_seat_assign) {
+            HrSeat::where('time_id', $this->time_id)
+                ->where('user_id', $this->user_id)
+                ->where('seat_delete', false)
+                ->update(['seat_delete' => true]);
+        }
     }
 }

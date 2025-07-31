@@ -208,6 +208,27 @@
                                         <span class="font-medium">สถานที่:</span>
                                         <span class="ml-1">{{ $date->date_location ?? "ไม่ระบุ" }}</span>
                                     </div>
+
+                                    @if ($project->project_seat_assign && $time)
+                                        @php
+                                            $userSeat = $time
+                                                ->seats()
+                                                ->where("user_id", auth()->id())
+                                                ->where("seat_delete", false)
+                                                ->first();
+                                        @endphp
+                                        @if ($userSeat)
+                                            <div class="col-span-full sm:col-span-2 lg:col-span-3">
+                                                <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2 shadow-md">
+                                                    <i class="fas fa-chair mr-2 text-lg text-white"></i>
+                                                    <div class="text-center">
+                                                        <div class="text-xs font-medium text-purple-100">ที่นั่งของคุณ</div>
+                                                        <div class="text-lg font-bold text-white">{{ $userSeat->seat_number }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endif
                                 </div>
 
                                 <!-- Attendance and Approval Info -->

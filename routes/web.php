@@ -147,6 +147,7 @@ Route::middleware([HrAdmin::class])->group(function () {
         Route::prefix('seats')->name('seats.')->group(function () {
             Route::post('/trigger-assignment', [HRController::class, 'triggerSeatAssignment'])->name('trigger_assignment');
             Route::get('/{id}', [HRController::class, 'getProjectSeats'])->name('get');
+            Route::post('/{id}/cleanup', [HRController::class, 'cleanupDuplicateSeats'])->name('cleanup');
         });
     });
 

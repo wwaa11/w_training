@@ -9,6 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 // Added HrSeat model
 
 class HRController extends Controller
@@ -465,13 +466,18 @@ class HRController extends Controller
 
             // Create registrations for all selected time slots
             foreach ($request->time_ids as $timeId) {
-                $project->attends()->create([
+                $attendance = $project->attends()->create([
                     'date_id'         => $dateTimeMap[$timeId],
                     'time_id'         => $timeId,
                     'user_id'         => auth()->id(),
                     'attend_datetime' => ($project->project_type === 'attendance') ? now() : null,
                     'attend_delete'   => false,
                 ]);
+
+                // Dispatch seat assignment job if project has seat assignment enabled
+                if ($project->project_seat_assign) {
+                    \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+                }
             }
 
             DB::commit();
@@ -546,7 +552,7 @@ class HRController extends Controller
             }
 
             // Create attendance record
-            HrAttend::create([
+            $attendance = HrAttend::create([
                 'project_id'      => $project->id,
                 'date_id'         => $time->date_id,
                 'time_id'         => $timeId,
@@ -554,6 +560,11 @@ class HRController extends Controller
                 'attend_datetime' => now(),
                 'attend_delete'   => false,
             ]);
+
+            // Dispatch seat assignment job if project has seat assignment enabled
+            if ($project->project_seat_assign) {
+                \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+            }
 
             return redirect()->route('hrd.projects.show', $id)->with('success', 'Attendance recorded successfully!');
 
@@ -648,9 +659,10 @@ class HRController extends Controller
                 }
             }
 
-            // Soft delete all user registrations for this project
+            // Soft delete all user registrations for this project and remove seat assignments
             $userRegistrations->each(function ($registration) {
                 $registration->update(['attend_delete' => true]);
+                $registration->removeSeatAssignment();
             });
 
             return redirect()->route('hrd.projects.show', $id)
@@ -705,6 +717,7 @@ class HRController extends Controller
 
             // Soft delete the registration
             $registration->update(['attend_delete' => true]);
+            $registration->removeSeatAssignment();
 
             return redirect()->route('hrd.projects.show', $id)
                 ->with('success', 'ยกเลิกการลงทะเบียนเรียบร้อยแล้ว');
@@ -1265,13 +1278,18 @@ class HRController extends Controller
             }
 
             // Create registration
-            $project->attends()->create([
+            $attendance = $project->attends()->create([
                 'date_id'         => $date->id,
                 'time_id'         => $request->time_id,
                 'user_id'         => $user->id,
                 'attend_datetime' => $request->attend_datetime ? now() : null,
                 'attend_delete'   => false,
             ]);
+
+            // Dispatch seat assignment job if project has seat assignment enabled
+            if ($project->project_seat_assign) {
+                \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+            }
 
             return redirect()->back()->with('success', 'Registration created successfully.');
         } catch (\Exception $e) {
@@ -1334,7 +1352,10 @@ class HRController extends Controller
     {
         try {
             $registration = HrAttend::findOrFail($registrationId);
+            $project      = HrProject::findOrFail($projectId);
+
             $registration->update(['attend_delete' => true]);
+            $registration->removeSeatAssignment();
 
             return redirect()->back()->with('success', 'Registration deleted successfully.');
         } catch (\Exception $e) {
@@ -1535,20 +1556,71 @@ class HRController extends Controller
     }
 
     /**
-     * Manually trigger seat assignment for testing
+     * Trigger seat assignment for all projects
      */
     public function triggerSeatAssignment()
     {
         try {
+            // Get all projects with seat assignment enabled
+            $projects = HrProject::where('project_seat_assign', true)
+                ->where('project_active', true)
+                ->where('project_delete', false)
+                ->get();
+
+            $processedCount = 0;
+            $errors         = [];
+
+            foreach ($projects as $project) {
+                try {
+                    // Get all unassigned registrations for this project
+                    $unassignedRegistrations = HrAttend::where('project_id', $project->id)
+                        ->where('attend_delete', false)
+                        ->whereDoesntHave('seat', function ($query) {
+                            $query->where('seat_delete', false);
+                        })
+                        ->get();
+
+                    foreach ($unassignedRegistrations as $registration) {
+                        // Dispatch the new event-driven job for each registration
+                        \App\Jobs\HrAssignSeatForAttendance::dispatch($registration->id);
+                        $processedCount++;
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Project {$project->project_name}: " . $e->getMessage();
+                }
+            }
+
+            // Also dispatch the bulk assignment job for any remaining cases
             \App\Jobs\HrProjectSeatAssignment::dispatch();
-            return response()->json(['success' => 'Seat assignment job has been dispatched successfully.']);
+
+            $message = "Seat assignment triggered successfully. ";
+            if ($processedCount > 0) {
+                $message .= "Processed {$processedCount} registrations across " . $projects->count() . " projects.";
+            } else {
+                $message .= "No unassigned registrations found.";
+            }
+
+            if (! empty($errors)) {
+                $message .= " Some errors occurred: " . implode('; ', $errors);
+            }
+
+            return response()->json([
+                'success'         => true,
+                'message'         => $message,
+                'processed_count' => $processedCount,
+                'projects_count'  => $projects->count(),
+                'errors'          => $errors,
+            ]);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to dispatch seat assignment job: ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Failed to trigger seat assignment: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
     /**
-     * Get seat assignments for a project
+     * Get seat data for a project
      */
     public function getProjectSeats($projectId)
     {
@@ -1562,33 +1634,69 @@ class HRController extends Controller
 
             foreach ($project->dates as $date) {
                 foreach ($date->times as $time) {
-                    $seatData[] = [
-                        'date'          => $date->date_title,
-                        'time'          => $time->time_title,
-                        'time_id'       => $time->id,
-                        'seats'         => $time->seats->map(function ($seat) {
+                    // Get seat assignments for this time slot
+                    $seats = $time->seats()
+                        ->where('seat_delete', false)
+                        ->with('user')
+                        ->get()
+                        ->map(function ($seat) {
                             return [
                                 'seat_number' => $seat->seat_number,
                                 'user_id'     => $seat->user_id,
-                                'user_name'   => $seat->user->name ?? $seat->user->userid,
-                                'department'  => $seat->department,
+                                'user_name'   => $seat->user->name ?? 'Unknown',
+                                'department'  => $seat->department ?? 'Unknown',
                             ];
-                        }),
-                        'registrations' => $time->attends->where('attend_delete', false)->map(function ($attend) {
+                        })
+                        ->toArray();
+
+                    // Get registrations for this time slot
+                    $registrations = $time->attends()
+                        ->where('attend_delete', false)
+                        ->with('user')
+                        ->get()
+                        ->map(function ($attend) use ($seats) {
+                            $seat = collect($seats)->firstWhere('user_id', $attend->user_id);
                             return [
-                                'user_id'     => $attend->user_id,
-                                'user_name'   => $attend->user->name ?? $attend->user->userid,
-                                'seat_number' => $attend->seat ? $attend->seat->seat_number : null,
-                                'department'  => $attend->user->department ?? 'Unknown',
+                                'user_id'          => $attend->user_id,
+                                'user_name'        => $attend->user->name ?? 'Unknown',
+                                'department'       => $attend->user->department ?? 'Unknown',
+                                'seat_number'      => $seat ? $seat['seat_number'] : null,
+                                'attend_datetime'  => $attend->attend_datetime,
+                                'approve_datetime' => $attend->approve_datetime,
                             ];
-                        }),
+                        })
+                        ->toArray();
+
+                    $seatData[] = [
+                        'date'                => $date->date_title,
+                        'time'                => $time->time_title,
+                        'time_id'             => $time->id,
+                        'time_start'          => \Carbon\Carbon::parse($time->time_start)->format('H:i'),
+                        'time_end'            => \Carbon\Carbon::parse($time->time_end)->format('H:i'),
+                        'time_limit'          => $time->time_limit,
+                        'time_max'            => $time->time_max,
+                        'seats'               => $seats,
+                        'registrations'       => $registrations,
+                        'total_seats'         => count($seats),
+                        'total_registrations' => count($registrations),
+                        'unassigned_count'    => count(array_filter($registrations, function ($reg) {
+                            return $reg['seat_number'] === null;
+                        })),
                     ];
                 }
             }
 
             return response()->json([
-                'project'   => $project->project_name,
-                'seat_data' => $seatData,
+                'project'      => $project->project_name,
+                'seat_data'    => $seatData,
+                'project_info' => [
+                    'id'                  => $project->id,
+                    'seat_assign_enabled' => $project->project_seat_assign,
+                    'total_dates'         => $project->dates->count(),
+                    'total_times'         => $project->dates->sum(function ($date) {
+                        return $date->times->count();
+                    }),
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -1622,12 +1730,29 @@ class HRController extends Controller
     {
         try {
             $request->validate([
-                'time_id'     => 'required|integer',
-                'user_id'     => 'required|integer',
+                'time_id'     => 'required|integer|exists:hr_times,id',
+                'user_id'     => 'required|integer|exists:users,id',
                 'seat_number' => 'required|integer|min:1',
             ]);
 
-            $time = HrTime::findOrFail($request->time_id);
+            $project = HrProject::findOrFail($projectId);
+            $time    = HrTime::findOrFail($request->time_id);
+
+            // Verify the time belongs to this project
+            if ($time->date->project_id != $project->id) {
+                return response()->json(['error' => 'Invalid time slot for this project.'], 400);
+            }
+
+            // Check if user is registered for this time slot
+            $registration = HrAttend::where('project_id', $project->id)
+                ->where('time_id', $request->time_id)
+                ->where('user_id', $request->user_id)
+                ->where('attend_delete', false)
+                ->first();
+
+            if (! $registration) {
+                return response()->json(['error' => 'User is not registered for this time slot.'], 400);
+            }
 
             // Check if seat is already taken
             $existingSeat = HrSeat::where('time_id', $request->time_id)
@@ -1636,7 +1761,7 @@ class HRController extends Controller
                 ->first();
 
             if ($existingSeat) {
-                return response()->json(['error' => 'ที่นั่งนี้ถูกใช้งานแล้ว'], 400);
+                return response()->json(['error' => 'Seat number ' . $request->seat_number . ' is already assigned to another user.'], 400);
             }
 
             // Check if user already has a seat in this time slot
@@ -1646,26 +1771,31 @@ class HRController extends Controller
                 ->first();
 
             if ($existingUserSeat) {
-                return response()->json(['error' => 'ผู้ใช้นี้มีที่นั่งแล้วในช่วงเวลานี้'], 400);
+                // Update existing seat assignment
+                $existingUserSeat->update([
+                    'seat_number' => $request->seat_number,
+                    'department'  => $registration->user->department ?? 'Unknown',
+                ]);
+            } else {
+                // Create new seat assignment
+                HrSeat::create([
+                    'time_id'     => $request->time_id,
+                    'user_id'     => $request->user_id,
+                    'department'  => $registration->user->department ?? 'Unknown',
+                    'seat_number' => $request->seat_number,
+                    'seat_delete' => false,
+                ]);
             }
 
-            // Get user department
-            $user       = User::findOrFail($request->user_id);
-            $department = $user->department ?? 'Unknown';
-
-            // Create seat assignment
-            HrSeat::create([
-                'time_id'     => $request->time_id,
-                'user_id'     => $request->user_id,
-                'department'  => $department,
+            return response()->json([
+                'success'     => true,
+                'message'     => 'Seat assigned successfully.',
                 'seat_number' => $request->seat_number,
-                'seat_delete' => false,
+                'user_name'   => $registration->user->name,
             ]);
 
-            return response()->json(['success' => 'จัดที่นั่งสำเร็จ']);
-
         } catch (\Exception $e) {
-            return response()->json(['error' => 'เกิดข้อผิดพลาดในการจัดที่นั่ง: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to assign seat: ' . $e->getMessage()], 500);
         }
     }
 
@@ -1699,27 +1829,37 @@ class HRController extends Controller
     }
 
     /**
-     * Clear all seats for a time slot
+     * Clear all seats for a specific time slot
      */
     public function clearTimeSeats(Request $request, $projectId)
     {
         try {
             $request->validate([
-                'time_id' => 'required|integer',
+                'time_id' => 'required|integer|exists:hr_times,id',
             ]);
 
-            $seats = HrSeat::where('time_id', $request->time_id)
-                ->where('seat_delete', false)
-                ->get();
+            $project = HrProject::findOrFail($projectId);
+            $time    = HrTime::findOrFail($request->time_id);
 
-            foreach ($seats as $seat) {
-                $seat->update(['seat_delete' => true]);
+            // Verify the time belongs to this project
+            if ($time->date->project_id != $project->id) {
+                return response()->json(['error' => 'Invalid time slot for this project.'], 400);
             }
 
-            return response()->json(['success' => 'ล้างที่นั่งทั้งหมดสำเร็จ']);
+            // Soft delete all seats for this time slot
+            $deletedCount = HrSeat::where('time_id', $request->time_id)
+                ->where('seat_delete', false)
+                ->update(['seat_delete' => true]);
+
+            return response()->json([
+                'success'       => true,
+                'message'       => "ล้างที่นั่งทั้งหมดสำเร็จ ({$deletedCount} รายการ)",
+                'deleted_count' => $deletedCount,
+            ]);
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'เกิดข้อผิดพลาดในการล้างที่นั่ง: ' . $e->getMessage()], 500);
         }
     }
+
 }

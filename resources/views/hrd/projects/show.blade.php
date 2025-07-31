@@ -170,6 +170,28 @@
                                                                 <p class="mt-1 text-xs text-gray-500">{{ $time->time_detail }}</p>
                                                             @endif
 
+                                                            <!-- Seat Assignment Info -->
+                                                            @if ($project->project_seat_assign)
+                                                                @php
+                                                                    $userSeat = $time
+                                                                        ->seats()
+                                                                        ->where("user_id", auth()->id())
+                                                                        ->where("seat_delete", false)
+                                                                        ->first();
+                                                                @endphp
+                                                                @if ($userSeat)
+                                                                    <div class="mt-3 transform animate-pulse">
+                                                                        <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2 shadow-lg">
+                                                                            <i class="fas fa-chair mr-2 text-lg text-white"></i>
+                                                                            <div class="text-center">
+                                                                                <div class="text-xs font-medium text-purple-100">ที่นั่งของคุณ</div>
+                                                                                <div class="text-lg font-bold text-white">{{ $userSeat->seat_number }}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
+                                                            @endif
+
                                                             <!-- Registration Status -->
                                                             @if ($userRegistration)
                                                                 <div class="mt-2 border-t border-gray-200 pt-2">
@@ -236,9 +258,11 @@
                                                                 <div class="mt-3">
                                                                     <form class="stamp-form" action="{{ route("hrd.projects.stamp.store", [$project->id, $registrationData["userRegistrations"]->where("time_id", $time->id)->first()->id]) }}" method="POST">
                                                                         @csrf
-                                                                        <button class="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" type="submit">
-                                                                            <i class="fas fa-stamp mr-2"></i>
-                                                                            เช็คอินตอนนี้
+                                                                        <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                                                            <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                                                                            <i class="fas fa-stamp mr-2 text-lg"></i>
+                                                                            <span class="text-sm font-semibold">เช็คอินตอนนี้</span>
+                                                                            <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                                                         </button>
                                                                     </form>
                                                                 </div>
@@ -247,9 +271,11 @@
                                                                     <form class="attendance-form" action="{{ route("hrd.projects.attend.store", $project->id) }}" method="POST">
                                                                         @csrf
                                                                         <input type="hidden" name="time_id" value="{{ $time->id }}">
-                                                                        <button class="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" type="submit">
-                                                                            <i class="fas fa-user-check mr-2"></i>
-                                                                            เช็คอินตอนนี้
+                                                                        <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                                                            <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                                                                            <i class="fas fa-user-check mr-2 text-lg"></i>
+                                                                            <span class="text-sm font-semibold">เช็คอินตอนนี้</span>
+                                                                            <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                                                         </button>
                                                                     </form>
                                                                 </div>
@@ -271,9 +297,11 @@
                                                                             <form class="unregister-form" action="{{ route("hrd.projects.unregister", [$project->id, $userRegistration->id]) }}" method="POST">
                                                                                 @csrf
                                                                                 @method("DELETE")
-                                                                                <button class="inline-flex w-full items-center justify-center rounded-md border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" type="submit">
-                                                                                    <i class="fas fa-user-times mr-2"></i>
-                                                                                    ยกเลิกการลงทะเบียน
+                                                                                <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-red-600 hover:to-red-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                                                                    <div class="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                                                                                    <i class="fas fa-user-times mr-2 text-lg"></i>
+                                                                                    <span class="text-sm font-semibold">ยกเลิกการลงทะเบียน</span>
+                                                                                    <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                                                                 </button>
                                                                             </form>
                                                                         </div>
@@ -361,9 +389,11 @@
                                     <form class="reselect-form mt-3" action="{{ route("hrd.projects.reselect", $project->id) }}" method="POST">
                                         @csrf
                                         @method("DELETE")
-                                        <button class="inline-flex items-center rounded-md border border-orange-300 bg-white px-3 py-2 text-sm font-medium text-orange-700 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2" type="submit">
-                                            <i class="fas fa-redo mr-2"></i>
-                                            ล้างการลงทะเบียนและเลือกใหม่
+                                        <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                                            <i class="fas fa-redo mr-2 text-lg"></i>
+                                            <span class="text-sm font-semibold">ล้างการลงทะเบียนและเลือกใหม่</span>
+                                            <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -468,6 +498,28 @@
                                                                                     <p class="mt-1 text-xs text-gray-500">{{ $time->time_detail }}</p>
                                                                                 @endif
 
+                                                                                <!-- Seat Assignment Info for Registration -->
+                                                                                @if ($project->project_seat_assign)
+                                                                                    @php
+                                                                                        $userSeat = $time
+                                                                                            ->seats()
+                                                                                            ->where("user_id", auth()->id())
+                                                                                            ->where("seat_delete", false)
+                                                                                            ->first();
+                                                                                    @endphp
+                                                                                    @if ($userSeat)
+                                                                                        <div class="mt-3 transform animate-pulse">
+                                                                                            <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2 shadow-lg">
+                                                                                                <i class="fas fa-chair mr-2 text-lg text-white"></i>
+                                                                                                <div class="text-center">
+                                                                                                    <div class="text-xs font-medium text-purple-100">ที่นั่งของคุณ</div>
+                                                                                                    <div class="text-lg font-bold text-white">{{ $userSeat->seat_number }}</div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    @endif
+                                                                                @endif
+
                                                                                 @if ($isFull)
                                                                                     <div class="mt-1 text-xs text-red-600">
                                                                                         <i class="fas fa-exclamation-circle mr-1"></i>
@@ -507,9 +559,11 @@
 
                                 <!-- Submit Button -->
                                 <div class="mt-4 flex justify-end">
-                                    <button class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:px-6 sm:text-base" type="submit">
-                                        <i class="fas fa-user-plus mr-2"></i>
-                                        เสร็จสิ้นการลงทะเบียน
+                                    <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                                        <i class="fas fa-user-plus mr-3 text-lg"></i>
+                                        <span class="text-base font-semibold">เสร็จสิ้นการลงทะเบียน</span>
+                                        <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                     </button>
                                 </div>
                             </form>

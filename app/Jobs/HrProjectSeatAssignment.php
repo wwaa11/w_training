@@ -42,8 +42,7 @@ class HrProjectSeatAssignment implements ShouldQueue
                 $this->processProjectSeats($project);
             }
 
-            // Schedule the next run in 1 minute
-            self::dispatch()->delay(now()->addMinute());
+            Log::info('HR Project Seat Assignment Job completed successfully');
 
         } catch (\Exception $e) {
             Log::error('HR Project Seat Assignment Job Error: ' . $e->getMessage(), [
@@ -51,9 +50,6 @@ class HrProjectSeatAssignment implements ShouldQueue
                 'line'  => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-
-            // Still schedule the next run even if there's an error
-            self::dispatch()->delay(now()->addMinute());
         }
     }
 
