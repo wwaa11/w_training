@@ -1,223 +1,398 @@
 @extends("layouts.hrd")
 
 @section("content")
-    <div class="container mx-auto px-4">
-        <div class="rounded-lg bg-white p-6 shadow-lg">
-            <div class="mb-6 flex items-center justify-between">
-                <div class="flex items-center">
-                    <a class="mr-4 text-blue-600 hover:text-blue-800" href="{{ route("hrd.admin.index") }}">
-                        <i class="fas fa-arrow-left text-xl"></i>
-                    </a>
-                    <h1 class="text-3xl font-bold text-gray-800">{{ $project->project_name }}</h1>
-                    <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
-                    @elseif($project->project_type === "multiple") bg-green-100 text-green-800
-                    @else bg-purple-100 text-purple-800 @endif ml-4 inline-flex rounded-full px-3 py-1 text-sm font-semibold">
-                        @if ($project->project_type === "single")
-                            เดี่ยว
-                        @elseif($project->project_type === "multiple")
-                            หลาย
-                        @else
-                            เข้าร่วม
-                        @endif
-                    </span>
-                </div>
-                <div class="flex space-x-2">
-                    <a class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700" href="{{ route("hrd.admin.projects.registrations.index", $project->id) }}">
-                        <i class="fas fa-users"></i> จัดการการลงทะเบียน
-                    </a>
-                    <a class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700" href="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
-                        <i class="fas fa-check-circle"></i> จัดการการอนุมัติ
-                    </a>
-                    @if ($project->project_seat_assign)
-                        <a class="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700" href="{{ route("hrd.admin.projects.seat.management", $project->id) }}">
-                            <i class="fas fa-cogs"></i> จัดการที่นั่ง
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <!-- Header Section -->
+        <div class="border-b border-gray-200 bg-white shadow-lg">
+            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <a class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors duration-200 hover:bg-blue-200" href="{{ route("hrd.admin.index") }}">
+                            <i class="fas fa-arrow-left text-lg"></i>
                         </a>
-                    @endif
-                    <a class="rounded-lg bg-yellow-600 px-4 py-2 font-semibold text-white hover:bg-yellow-700" href="{{ route("hrd.admin.projects.edit", $project->id) }}">
-                        <i class="fas fa-edit"></i> แก้ไข
-                    </a>
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">{{ $project->project_name }}</h1>
+                            <div class="mt-2 flex items-center space-x-3">
+                                <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
+                                @elseif($project->project_type === "multiple") bg-green-100 text-green-800
+                                @else bg-purple-100 text-purple-800 @endif inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
+                                    <i class="fas fa-{{ $project->project_type === "single" ? "user" : ($project->project_type === "multiple" ? "users" : "calendar") }} mr-2"></i>
+                                    @if ($project->project_type === "single")
+                                        ลงทะเบียน 1 ครั้ง
+                                    @elseif($project->project_type === "multiple")
+                                        ลงทะเบียนได้มากกว่า 1 ครั้ง
+                                    @else
+                                        ไม่ต้องลงทะเบียน
+                                    @endif
+                                </span>
+                                <span class="{{ $project->project_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
+                                    <i class="fas fa-{{ $project->project_active ? "check-circle" : "times-circle" }} mr-2"></i>
+                                    {{ $project->project_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <a class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.projects.registrations.index", $project->id) }}">
+                            <i class="fas fa-users mr-2"></i>
+                            จัดการการลงทะเบียน
+                        </a>
+                        <a class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-green-700" href="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            จัดการการอนุมัติ
+                        </a>
+                        @if ($project->project_seat_assign)
+                            <a class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700" href="{{ route("hrd.admin.projects.seat.management", $project->id) }}">
+                                <i class="fas fa-cogs mr-2"></i>
+                                จัดการที่นั่ง
+                            </a>
+                        @endif
+                        <a class="inline-flex items-center rounded-lg bg-yellow-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-yellow-700" href="{{ route("hrd.admin.projects.edit", $project->id) }}">
+                            <i class="fas fa-edit mr-2"></i>
+                            แก้ไข
+                        </a>
+                    </div>
                 </div>
-            </div>
 
-            @if (session("success"))
-                <div class="mb-6 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
-                    {{ session("success") }}
-                </div>
-            @endif
+                @if (session("success"))
+                    <div class="mt-4 rounded-lg border border-green-200 bg-green-50 p-4">
+                        <div class="flex">
+                            <i class="fas fa-check-circle mr-3 mt-0.5 text-green-400"></i>
+                            <p class="text-green-800">{{ session("success") }}</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
             <!-- Project Information -->
-            <div class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div class="lg:col-span-2">
-                    <div class="rounded-lg bg-gray-50 p-6">
-                        <h2 class="mb-4 text-xl font-semibold text-gray-800">
-                            <i class="fas fa-info-circle text-blue-600"></i> ข้อมูลโปรเจกต์
-                        </h2>
-                        <div class="space-y-4">
-                            @if ($project->project_detail)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">รายละเอียด</label>
-                                    <p class="mt-1 text-gray-900">{{ $project->project_detail }}</p>
-                                </div>
-                            @endif
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">เริ่มลงทะเบียน</label>
-                                    <p class="mt-1 text-gray-900">{{ \Carbon\Carbon::parse($project->project_start_register)->format("d/m/Y H:i") }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">สิ้นสุดลงทะเบียน</label>
-                                    <p class="mt-1 text-gray-900">{{ \Carbon\Carbon::parse($project->project_end_register)->format("d/m/Y H:i") }}</p>
-                                </div>
-                            </div>
-                            <div class="flex space-x-6">
-                                <div class="flex items-center">
-                                    <i class="fas fa-{{ $project->project_seat_assign ? "check-circle text-green-600" : "times-circle text-red-600" }} mr-2"></i>
-                                    <span class="text-sm text-gray-700">การจัดที่นั่ง</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-{{ $project->project_register_today ? "check-circle text-green-600" : "times-circle text-red-600" }} mr-2"></i>
-                                    <span class="text-sm text-gray-700">ลงทะเบียนวันเดียวกัน</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-{{ $project->project_active ? "check-circle text-green-600" : "times-circle text-red-600" }} mr-2"></i>
-                                    <span class="text-sm text-gray-700">ใช้งาน</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats -->
-                <div class="space-y-4">
-                    <div class="rounded-lg bg-blue-50 p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar mr-3 text-2xl text-blue-600"></i>
-                            <div>
-                                <p class="text-2xl font-bold text-blue-900">{{ $project->dates->where("date_delete", false)->count() }}</p>
-                                <p class="text-sm text-blue-700">วันที่ทั้งหมด</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="rounded-lg bg-green-50 p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-clock mr-3 text-2xl text-green-600"></i>
-                            <div>
-                                <p class="text-2xl font-bold text-green-900">{{ $project->dates->where("date_delete", false)->sum(function ($date) {return $date->times->where("time_delete", false)->count();}) }}</p>
-                                <p class="text-sm text-green-700">ช่วงเวลาทั้งหมด</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="rounded-lg bg-purple-50 p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-users mr-3 text-2xl text-purple-600"></i>
-                            <div>
-                                <p class="text-2xl font-bold text-purple-900">{{ $project->attends->where("attend_delete", false)->count() }}</p>
-                                <p class="text-sm text-purple-700">ผู้เข้าร่วมทั้งหมด</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="rounded-lg bg-yellow-50 p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-link mr-3 text-2xl text-yellow-600"></i>
-                            <div>
-                                <p class="text-2xl font-bold text-yellow-900">{{ $project->links->where("link_delete", false)->count() }}</p>
-                                <p class="text-sm text-yellow-700">ลิงก์ทั้งหมด</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dates and Times -->
-            <div class="mb-8">
-                <button class="flex w-full items-center justify-between rounded-lg bg-gray-100 p-4 text-left hover:bg-gray-200" onclick="toggleSection('datesSection')">
-                    <h2 class="text-xl font-semibold text-gray-800">
-                        <i class="fas fa-calendar text-blue-600"></i> วันที่และเวลาของโปรเจกต์
+            <div class="rounded-xl border border-gray-200 bg-white py-6 shadow-sm">
+                <div class="border-b border-gray-200 px-6 pb-4">
+                    <h2 class="flex items-center text-lg font-semibold text-gray-900">
+                        <i class="fas fa-info-circle mr-3 text-blue-600"></i>
+                        ข้อมูลโปรเจกต์
                     </h2>
-                    <i class="fas fa-chevron-down text-gray-500 transition-transform" id="datesSectionIcon"></i>
-                </button>
-                <div class="mt-4 hidden" id="datesSection">
-                    <div class="space-y-4">
-                        @foreach ($project->dates->where("date_delete", false) as $date)
-                            <div class="rounded-lg border border-gray-200 p-6">
-                                <div class="mb-4 flex items-start justify-between">
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-gray-800">{{ $date->date_title }}</h3>
-                                        <p class="text-gray-600">{{ \Carbon\Carbon::parse($date->date_datetime)->format("l, d F Y H:i") }}</p>
-                                        @if ($date->date_location)
-                                            <p class="text-sm text-gray-500">
-                                                <i class="fas fa-map-marker-alt mr-1"></i>{{ $date->date_location }}
+                </div>
+                <div class="p-6">
+                    @if ($project->project_detail)
+                        <div class="mb-6">
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">รายละเอียด</h3>
+                            <p class="leading-relaxed text-gray-900">{{ $project->project_detail }}</p>
+                        </div>
+                    @endif
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">เริ่มลงทะเบียน</h3>
+                            <p class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($project->project_start_register)->format("d/m/Y H:i") }}</p>
+                        </div>
+                        <div>
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">สิ้นสุดลงทะเบียน</h3>
+                            <p class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($project->project_end_register)->format("d/m/Y H:i") }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h3 class="mb-4 text-sm font-medium text-gray-700">การตั้งค่าพิเศษ</h3>
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div class="{{ $project->project_seat_assign ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50" }} rounded-lg border-2 p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="{{ $project->project_seat_assign ? "bg-green-100" : "bg-red-100" }} flex h-10 w-10 items-center justify-center rounded-full">
+                                            <i class="fas fa-{{ $project->project_seat_assign ? "chair text-green-600" : "times text-red-600" }} text-lg"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="{{ $project->project_seat_assign ? "text-green-900" : "text-red-900" }} font-medium">การจัดที่นั่ง</p>
+                                            <p class="{{ $project->project_seat_assign ? "text-green-700" : "text-red-700" }} text-sm">
+                                                {{ $project->project_seat_assign ? "เปิดใช้งาน" : "ปิดใช้งาน" }}
                                             </p>
-                                        @endif
-                                        @if ($date->date_detail)
-                                            <p class="mt-1 text-sm text-gray-700">{{ $date->date_detail }}</p>
-                                        @endif
-                                    </div>
-                                    <span class="{{ $date->date_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex rounded-full px-2 py-1 text-xs font-semibold">
-                                        {{ $date->date_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
-                                    </span>
-                                </div>
-
-                                @if ($date->times->where("time_delete", false)->count() > 0)
-                                    <div class="rounded-lg bg-gray-50 p-4">
-                                        <h4 class="mb-3 font-medium text-gray-700">ช่วงเวลา</h4>
-                                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                            @foreach ($date->times->where("time_delete", false) as $time)
-                                                <div class="rounded border border-gray-200 bg-white p-3">
-                                                    <div class="mb-2 flex items-start justify-between">
-                                                        <h5 class="font-medium text-gray-800">{{ $time->time_title }}</h5>
-                                                        <span class="{{ $time->time_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex rounded px-1 py-0.5 text-xs font-semibold">
-                                                            {{ $time->time_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
-                                                        </span>
-                                                    </div>
-                                                    <div class="text-sm text-gray-600">
-                                                        <p><i class="fas fa-clock mr-1"></i>{{ $time->time_start }} - {{ $time->time_end }}</p>
-                                                        @if ($time->time_limit)
-                                                            <p><i class="fas fa-users mr-1"></i>สูงสุด: {{ $time->time_max }} คน</p>
-                                                            <p><i class="fas fa-user-check mr-1"></i>ลงทะเบียนแล้ว: {{ $time->attends->where("attend_delete", false)->count() }} คน</p>
-                                                        @endif
-                                                        @if ($time->time_detail)
-                                                            <p class="mt-1 text-xs">{{ $time->time_detail }}</p>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            @endforeach
                                         </div>
                                     </div>
-                                @endif
+                                    <span class="{{ $project->project_seat_assign ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                                        <i class="fas fa-{{ $project->project_seat_assign ? "check-circle" : "times-circle" }} mr-1"></i>
+                                        {{ $project->project_seat_assign ? "เปิด" : "ปิด" }}
+                                    </span>
+                                </div>
                             </div>
-                        @endforeach
+
+                            <div class="{{ $project->project_register_today ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50" }} rounded-lg border-2 p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="{{ $project->project_register_today ? "bg-green-100" : "bg-red-100" }} flex h-10 w-10 items-center justify-center rounded-full">
+                                            <i class="fas fa-{{ $project->project_register_today ? "calendar-day text-green-600" : "times text-red-600" }} text-lg"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="{{ $project->project_register_today ? "text-green-900" : "text-red-900" }} font-medium">ลงทะเบียนวันเดียวกัน</p>
+                                            <p class="{{ $project->project_register_today ? "text-green-700" : "text-red-700" }} text-sm">
+                                                {{ $project->project_register_today ? "เปิดใช้งาน" : "ปิดใช้งาน" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="{{ $project->project_register_today ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                                        <i class="fas fa-{{ $project->project_register_today ? "check-circle" : "times-circle" }} mr-1"></i>
+                                        {{ $project->project_register_today ? "เปิด" : "ปิด" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Links -->
+            <!-- Quick Stats Cards -->
+            <div class="grid grid-cols-1 gap-6 py-6 md:grid-cols-2 lg:grid-cols-4">
+                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                                <i class="fas fa-calendar text-xl text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">วันที่ทั้งหมด</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $project->dates->where("date_delete", false)->count() }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
+                                <i class="fas fa-clock text-xl text-green-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">ช่วงเวลาทั้งหมด</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $project->dates->where("date_delete", false)->sum(function ($date) {return $date->times->where("time_delete", false)->count();}) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
+                                <i class="fas fa-users text-xl text-purple-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">ผู้เข้าร่วมทั้งหมด</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $project->attends->where("attend_delete", false)->count() }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-yellow-100">
+                                <i class="fas fa-link text-xl text-yellow-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">ลิงก์ทั้งหมด</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $project->links->where("link_delete", false)->count() }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports and Management Section -->
+            <div class="space-y-6">
+                <!-- Export Reports Section -->
+                <div class="rounded-xl bg-white p-6 shadow-sm">
+                    <h2 class="mb-6 flex items-center text-lg font-semibold text-gray-900">
+                        <i class="fas fa-chart-line mr-3 text-blue-600"></i>
+                        รายงานการส่งออก
+                    </h2>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <a class="group flex items-center rounded-lg bg-green-50 p-4 transition-colors duration-200 hover:bg-green-100" href="{{ route("hrd.admin.export.excel.all_date", $project->id) }}">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 transition-colors duration-200 group-hover:bg-green-200">
+                                    <i class="fas fa-file-excel text-green-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="font-semibold text-green-900">รายงานผู้ลงทะเบียนทั้งหมด</p>
+                                <p class="text-sm text-green-700">ดาวน์โหลดข้อมูลผู้ลงทะเบียนทั้งหมด</p>
+                            </div>
+                            <i class="fas fa-download text-green-600 transition-transform duration-200 group-hover:translate-x-1"></i>
+                        </a>
+
+                        <a class="group flex items-center rounded-lg bg-blue-50 p-4 transition-colors duration-200 hover:bg-blue-100" href="{{ route("hrd.admin.export.excel.dbd", $project->id) }}">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 transition-colors duration-200 group-hover:bg-blue-200">
+                                    <i class="fas fa-file-excel text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="font-semibold text-blue-900">แบบฟอร์มกรมพัฒน์</p>
+                                <p class="text-sm text-blue-700">รายงานแบบฟอร์มกรมพัฒน์</p>
+                            </div>
+                            <i class="fas fa-download text-blue-600 transition-transform duration-200 group-hover:translate-x-1"></i>
+                        </a>
+
+                        <a class="group flex items-center rounded-lg bg-purple-50 p-4 transition-colors duration-200 hover:bg-purple-100" href="{{ route("hrd.admin.export.excel.onebook", $project->id) }}">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 transition-colors duration-200 group-hover:bg-purple-200">
+                                    <i class="fas fa-file-excel text-purple-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="font-semibold text-purple-900">รายงาน Onebook</p>
+                                <p class="text-sm text-purple-700">รายงาน Onebook สำหรับโปรเจกต์</p>
+                            </div>
+                            <i class="fas fa-download text-purple-600 transition-transform duration-200 group-hover:translate-x-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Dates and Times Section -->
+                <div class="rounded-xl bg-white p-6 shadow-sm">
+                    <h2 class="mb-6 flex items-center text-lg font-semibold text-gray-900">
+                        <i class="fas fa-calendar-alt mr-3 text-blue-600"></i>
+                        วันที่และเวลา
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">วันที่</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">สถานะ</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">เวลา</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">สถานที่</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">รายละเอียด</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">การดำเนินการ</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                @foreach ($project->dates->where("date_delete", false) as $date)
+                                    <tr class="bg-gray-50">
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ $date->date_title }}</div>
+                                            <div class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($date->date_datetime)->format("l, d F Y") }}</div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            <span class="{{ $date->date_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                                                <i class="fas fa-{{ $date->date_active ? "check-circle" : "times-circle" }} mr-1"></i>
+                                                {{ $date->date_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
+                                            </span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            @if ($date->times->where("time_delete", false)->count() > 0)
+                                                <div class="text-sm text-gray-900">
+                                                    {{ $date->times->where("time_delete", false)->count() }} ช่วงเวลา
+                                                </div>
+                                            @else
+                                                <div class="text-sm text-gray-500">ไม่มีช่วงเวลา</div>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            @if ($date->date_location)
+                                                <div class="text-sm text-gray-900">{{ $date->date_location }}</div>
+                                            @else
+                                                <div class="text-sm text-gray-500">ไม่ระบุ</div>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            @if ($date->date_detail)
+                                                <div class="max-w-xs truncate text-sm text-gray-900" title="{{ $date->date_detail }}">{{ $date->date_detail }}</div>
+                                            @else
+                                                <div class="text-sm text-gray-500">ไม่มีรายละเอียด</div>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            <a class="inline-flex items-center rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-orange-700" href="{{ route("hrd.admin.export.excel.date", $date->id) }}">
+                                                <i class="fas fa-file-excel mr-2"></i>
+                                                Export
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @if ($date->times->where("time_delete", false)->count() > 0)
+                                        @foreach ($date->times->where("time_delete", false) as $time)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="whitespace-nowrap px-6 py-4">
+                                                    <div class="ml-6 text-sm font-medium text-gray-900">{{ $time->time_title }}</div>
+                                                    <div class="ml-6 text-sm text-gray-500">{{ $time->time_start }} - {{ $time->time_end }}</div>
+                                                </td>
+                                                <td class="whitespace-nowrap px-6 py-4">
+                                                    <span class="{{ $time->time_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                                                        <i class="fas fa-{{ $time->time_active ? "check-circle" : "times-circle" }} mr-1"></i>
+                                                        {{ $time->time_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
+                                                    </span>
+                                                </td>
+                                                <td class="whitespace-nowrap px-6 py-4">
+                                                    @if ($time->time_limit)
+                                                        <div class="text-sm text-gray-900">สูงสุด: {{ $time->time_max }} คน</div>
+                                                        <div class="text-sm text-gray-500">ลงทะเบียนแล้ว: {{ $time->attends->where("attend_delete", false)->count() }} คน</div>
+                                                    @else
+                                                        <div class="text-sm text-gray-500">ไม่จำกัด</div>
+                                                    @endif
+                                                </td>
+                                                <td class="whitespace-nowrap px-6 py-4">
+                                                    <div class="text-sm text-gray-500">-</div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    @if ($time->time_detail)
+                                                        <div class="max-w-xs truncate text-sm text-gray-900" title="{{ $time->time_detail }}">{{ $time->time_detail }}</div>
+                                                    @else
+                                                        <div class="text-sm text-gray-500">ไม่มีรายละเอียด</div>
+                                                    @endif
+                                                </td>
+                                                <td class="whitespace-nowrap px-6 py-4">
+                                                    <a class="inline-flex items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-700" href="{{ route("hrd.admin.export.pdf.time", $time->id) }}">
+                                                        <i class="fas fa-file-pdf mr-2"></i>
+                                                        ใบลงทะเบียน
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Links Section -->
             @if ($project->links->where("link_delete", false)->count() > 0)
-                <div class="mb-8">
-                    <button class="flex w-full items-center justify-between rounded-lg bg-gray-100 p-4 text-left hover:bg-gray-200" onclick="toggleSection('linksSection')">
-                        <h2 class="text-xl font-semibold text-gray-800">
-                            <i class="fas fa-link text-blue-600"></i> ลิงก์โปรเจกต์
-                        </h2>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform" id="linksSectionIcon"></i>
-                    </button>
-                    <div class="mt-4 hidden" id="linksSection">
+                <div class="mt-8 rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="flex items-center text-lg font-semibold text-gray-900">
+                                <i class="fas fa-link mr-3 text-blue-600"></i>
+                                ลิงก์โปรเจกต์
+                            </h2>
+                            <button class="text-sm font-medium text-blue-600 hover:text-blue-800" onclick="toggleSection('linksSection')">
+                                <i class="fas fa-eye mr-1"></i>
+                                แสดง/ซ่อน
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hidden p-6" id="linksSection">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             @foreach ($project->links->where("link_delete", false) as $link)
-                                <div class="rounded-lg border border-gray-200 p-4">
-                                    <div class="mb-2 flex items-start justify-between">
-                                        <h3 class="font-semibold text-gray-800">{{ $link->link_name }}</h3>
-                                        <span class="{{ !$link->link_delete ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex rounded-full px-2 py-1 text-xs font-semibold">
+                                <div class="rounded-lg border border-gray-200 p-4 transition-shadow duration-200 hover:shadow-md">
+                                    <div class="mb-3 flex items-start justify-between">
+                                        <h3 class="font-semibold text-gray-900">{{ $link->link_name }}</h3>
+                                        <span class="{{ !$link->link_delete ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium">
+                                            <i class="fas fa-{{ !$link->link_delete ? "check-circle" : "times-circle" }} mr-1"></i>
                                             {{ !$link->link_delete ? "ใช้งาน" : "ถูกลบ" }}
                                         </span>
                                     </div>
-                                    <a class="break-all text-sm text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
+                                    <a class="mb-3 block break-all text-sm text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
                                         {{ $link->link_url }}
                                     </a>
                                     @if ($link->link_limit)
-                                        <div class="mt-2 text-xs text-gray-600">
-                                            <p><i class="fas fa-clock mr-1"></i>ใช้งานได้:</p>
-                                            <p>ตั้งแต่: {{ $link->link_time_start ? \Carbon\Carbon::parse($link->link_time_start)->format("d/m/Y H:i") : "ไม่จำกัด" }}</p>
-                                            <p>จนถึง: {{ $link->link_time_end ? \Carbon\Carbon::parse($link->link_time_end)->format("d/m/Y H:i") : "ไม่จำกัด" }}</p>
+                                        <div class="space-y-1 text-xs text-gray-600">
+                                            <p class="flex items-center">
+                                                <i class="fas fa-clock mr-2"></i>
+                                                ใช้งานได้:
+                                            </p>
+                                            <p class="ml-4">ตั้งแต่: {{ $link->link_time_start ? \Carbon\Carbon::parse($link->link_time_start)->format("d/m/Y H:i") : "ไม่จำกัด" }}</p>
+                                            <p class="ml-4">จนถึง: {{ $link->link_time_end ? \Carbon\Carbon::parse($link->link_time_end)->format("d/m/Y H:i") : "ไม่จำกัด" }}</p>
                                         </div>
                                     @endif
                                 </div>
@@ -227,88 +402,102 @@
                 </div>
             @endif
 
-            <!-- Recent Attendees -->
+            <!-- Recent Attendees Section -->
             @if ($project->attends->where("attend_delete", false)->count() > 0)
-                <div class="mb-8">
-                    <button class="flex w-full items-center justify-between rounded-lg bg-gray-100 p-4 text-left hover:bg-gray-200" onclick="toggleSection('attendeesSection')">
-                        <h2 class="text-xl font-semibold text-gray-800">
-                            <i class="fas fa-users text-blue-600"></i> ผู้เข้าร่วมล่าสุด
-                        </h2>
-                        <i class="fas fa-chevron-down text-gray-500 transition-transform" id="attendeesSectionIcon"></i>
-                    </button>
-                    <div class="mt-4 hidden" id="attendeesSection">
-                        <div class="rounded-lg bg-gray-50 p-4">
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full">
-                                    <thead>
-                                        <tr class="border-b border-gray-200">
-                                            <th class="px-3 py-2 text-left text-sm font-medium text-gray-700">ผู้ใช้</th>
-                                            <th class="px-3 py-2 text-left text-sm font-medium text-gray-700">วันที่</th>
-                                            <th class="px-3 py-2 text-left text-sm font-medium text-gray-700">เวลา</th>
-                                            <th class="px-3 py-2 text-left text-sm font-medium text-gray-700">ลงทะเบียนเมื่อ</th>
-                                            <th class="px-3 py-2 text-left text-sm font-medium text-gray-700">สถานะ</th>
-                                            <th class="px-3 py-2 text-left text-sm font-medium text-gray-700">การดำเนินการ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($project->attends->where("attend_delete", false)->take(10) as $attend)
-                                            <tr class="border-b border-gray-100">
-                                                <td class="px-3 py-2 text-sm text-gray-900">{{ $attend->user->userid ?? "N/A" }}</td>
-                                                <td class="px-3 py-2 text-sm text-gray-900">{{ $attend->date->date_title ?? "N/A" }}</td>
-                                                <td class="px-3 py-2 text-sm text-gray-900">{{ $attend->time->time_title ?? "N/A" }}</td>
-                                                <td class="px-3 py-2 text-sm text-gray-900">{{ \Carbon\Carbon::parse($attend->created_at)->format("d/m/Y H:i") }}</td>
-                                                <td class="px-3 py-2 text-sm">
-                                                    @if ($attend->approve_datetime)
-                                                        <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
-                                                            <i class="fas fa-check-circle mr-1"></i>อนุมัติแล้ว
-                                                        </span>
-                                                        <div class="mt-1 text-xs text-gray-500">
-                                                            {{ \Carbon\Carbon::parse($attend->approve_datetime)->format("d/m/Y H:i") }}
-                                                        </div>
-                                                    @else
-                                                        <span class="inline-flex rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">
-                                                            <i class="fas fa-clock mr-1"></i>รออนุมัติ
-                                                        </span>
-                                                    @endif
-                                                </td>
-                                                <td class="px-3 py-2 text-sm">
-                                                    @if (!$attend->approve_datetime)
-                                                        <button class="rounded bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700" onclick="approveRegistration({{ $attend->id }}, '{{ $attend->user->userid ?? "N/A" }}')">
-                                                            <i class="fas fa-check mr-1"></i>อนุมัติ
-                                                        </button>
-                                                    @else
-                                                        <button class="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700" onclick="unapproveRegistration({{ $attend->id }}, '{{ $attend->user->userid ?? "N/A" }}')">
-                                                            <i class="fas fa-times mr-1"></i>ยกเลิกการอนุมัติ
-                                                        </button>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            @if ($project->attends->where("attend_delete", false)->count() > 10)
-                                <div class="mt-4 text-center">
-                                    <span class="text-sm text-gray-600">แสดง 10 จาก {{ $project->attends->where("attend_delete", false)->count() }} คน</span>
-                                </div>
-                            @endif
+                <div class="mt-8 rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="flex items-center text-lg font-semibold text-gray-900">
+                                <i class="fas fa-users mr-3 text-blue-600"></i>
+                                ผู้เข้าร่วมล่าสุด
+                            </h2>
+                            <button class="text-sm font-medium text-blue-600 hover:text-blue-800" onclick="toggleSection('attendeesSection')">
+                                <i class="fas fa-eye mr-1"></i>
+                                แสดง/ซ่อน
+                            </button>
                         </div>
+                    </div>
+                    <div class="hidden p-6" id="attendeesSection">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ผู้ใช้</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">วันที่</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">เวลา</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ลงทะเบียนเมื่อ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">สถานะ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">การดำเนินการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    @foreach ($project->attends->where("attend_delete", false)->take(10) as $attend)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ $attend->user->userid ?? "N/A" }}</td>
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attend->date->date_title ?? "N/A" }}</td>
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attend->time->time_title ?? "N/A" }}</td>
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ \Carbon\Carbon::parse($attend->created_at)->format("d/m/Y H:i") }}</td>
+                                            <td class="whitespace-nowrap px-6 py-4">
+                                                @if ($attend->approve_datetime)
+                                                    <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                                                        <i class="fas fa-check-circle mr-1"></i>
+                                                        อนุมัติแล้ว
+                                                    </span>
+                                                    <div class="mt-1 text-xs text-gray-500">
+                                                        {{ \Carbon\Carbon::parse($attend->approve_datetime)->format("d/m/Y H:i") }}
+                                                    </div>
+                                                @else
+                                                    <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        รออนุมัติ
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm">
+                                                @if (!$attend->approve_datetime)
+                                                    <button class="inline-flex items-center rounded-md border border-transparent bg-green-600 px-3 py-1 text-xs font-medium text-white transition-colors duration-200 hover:bg-green-700" onclick="approveRegistration({{ $attend->id }}, '{{ $attend->user->userid ?? "N/A" }}')">
+                                                        <i class="fas fa-check mr-1"></i>
+                                                        อนุมัติ
+                                                    </button>
+                                                @else
+                                                    <button class="inline-flex items-center rounded-md border border-transparent bg-red-600 px-3 py-1 text-xs font-medium text-white transition-colors duration-200 hover:bg-red-700" onclick="unapproveRegistration({{ $attend->id }}, '{{ $attend->user->userid ?? "N/A" }}')">
+                                                        <i class="fas fa-times mr-1"></i>
+                                                        ยกเลิกการอนุมัติ
+                                                    </button>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @if ($project->attends->where("attend_delete", false)->count() > 10)
+                            <div class="mt-4 text-center">
+                                <span class="text-sm text-gray-600">แสดง 10 จาก {{ $project->attends->where("attend_delete", false)->count() }} คน</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif
 
-            <!-- Advanced Settings Section (Hidden by default) -->
-            <div class="mb-8">
-                <button class="flex w-full items-center justify-between rounded-lg bg-red-50 p-4 text-left hover:bg-red-100" onclick="toggleAdvancedSettings()">
-                    <h2 class="text-xl font-semibold text-red-800">
-                        <i class="fas fa-cog text-red-600"></i> การตั้งค่าขั้นสูง
-                    </h2>
-                    <i class="fas fa-chevron-down text-red-500 transition-transform" id="advancedSettingsIcon"></i>
-                </button>
-                <div class="mt-4 hidden" id="advancedSettingsSection">
-                    <div class="rounded-lg border-2 border-red-200 bg-red-50 p-6">
+            <!-- Advanced Settings Section -->
+            <div class="mt-8 rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="flex items-center text-lg font-semibold text-red-800">
+                            <i class="fas fa-cog mr-3 text-red-600"></i>
+                            การตั้งค่าขั้นสูง
+                        </h2>
+                        <button class="text-sm font-medium text-red-600 hover:text-red-800" onclick="toggleAdvancedSettings()">
+                            <i class="fas fa-eye mr-1"></i>
+                            แสดง/ซ่อน
+                        </button>
+                    </div>
+                </div>
+                <div class="hidden" id="advancedSettingsSection">
+                    <div class="border-l-4 border-red-400 bg-red-50 p-6">
                         <div class="mb-4">
-                            <h3 class="mb-2 text-lg font-semibold text-red-800">
+                            <h3 class="mb-2 flex items-center text-lg font-semibold text-red-800">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
                                 โปรดระวัง: การตั้งค่าขั้นสูง
                             </h3>
@@ -319,7 +508,7 @@
 
                         <!-- Delete Project Section -->
                         <div class="rounded-lg border border-red-300 bg-white p-4">
-                            <h4 class="mb-3 font-semibold text-red-800">
+                            <h4 class="mb-3 flex items-center font-semibold text-red-800">
                                 <i class="fas fa-trash mr-2"></i>
                                 ลบโปรเจกต์
                             </h4>
@@ -389,29 +578,47 @@
     <script>
         function toggleAdvancedSettings() {
             const section = document.getElementById('advancedSettingsSection');
-            const icon = document.getElementById('advancedSettingsIcon');
             if (section.classList.contains('hidden')) {
                 section.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
             } else {
                 section.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
             }
         }
 
         function toggleSection(sectionId) {
             const section = document.getElementById(sectionId);
-            const icon = document.getElementById(`${sectionId}Icon`);
             if (section.classList.contains('hidden')) {
                 section.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
             } else {
                 section.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function switchTab(tabId) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+
+            // Add active class to clicked button
+            const clickedButton = event.target.closest('.tab-button');
+            if (clickedButton) {
+                clickedButton.classList.remove('border-transparent', 'text-gray-500');
+                clickedButton.classList.add('border-blue-500', 'text-blue-600');
             }
         }
 
@@ -495,8 +702,5 @@
                     });
             }
         }
-
-        // Seat Assignment Functions - Removed as buttons are no longer needed
-        // All seat management functionality is now available in the dedicated seat management page
     </script>
 @endsection

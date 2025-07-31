@@ -32,7 +32,7 @@ class HrProject extends Model
     // Relationships
     public function dates()
     {
-        return $this->hasMany(HrDate::class, 'project_id');
+        return $this->hasMany(HrDate::class, 'project_id')->active();
     }
 
     public function attends()
@@ -47,7 +47,7 @@ class HrProject extends Model
 
     public function links()
     {
-        return $this->hasMany(HrLink::class, 'project_id');
+        return $this->hasMany(HrLink::class, 'project_id')->active();
     }
 
     public function resultHeader()

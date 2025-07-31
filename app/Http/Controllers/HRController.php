@@ -1,14 +1,21 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\Hr\AllDateExport;
+use App\Exports\Hr\DateExport;
+use App\Exports\Hr\DBDExport;
+use App\Exports\Hr\OnebookExport;
 use App\Models\HrAttend;
+use App\Models\HrDate;
 use App\Models\HrProject;
 use App\Models\HrSeat;
 use App\Models\HrTime;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 // Added HrSeat model
 
@@ -912,13 +919,13 @@ class HRController extends Controller
     {
         $project = HrProject::with([
             'dates'       => function ($query) {
-                $query->orderBy('date_datetime', 'asc');
+                $query->withoutGlobalScope('active')->orderBy('date_datetime', 'asc');
             },
             'dates.times' => function ($query) {
-                $query->orderBy('time_start', 'asc');
+                $query->withoutGlobalScope('active')->orderBy('time_start', 'asc');
             },
             'links'       => function ($query) {
-                $query->orderBy('created_at', 'asc');
+                $query->withoutGlobalScope('active')->orderBy('created_at', 'asc');
             },
         ])->findOrFail($id);
 
@@ -947,7 +954,6 @@ class HRController extends Controller
                         'time_max'    => $time->time_max,
                         'time_detail' => $time->time_detail,
                         'time_limit'  => $time->time_limit,
-                        'time_delete' => $time->time_delete,
                     ];
                 })->toArray(),
             ];
@@ -1009,7 +1015,6 @@ class HRController extends Controller
             'dates.*.times.*.time_start'  => 'required|date_format:H:i',
             'dates.*.times.*.time_end'    => 'required|date_format:H:i|after:dates.*.times.*.time_start',
             'dates.*.times.*.time_limit'  => 'boolean',
-            'dates.*.times.*.time_delete' => 'nullable|boolean',
 
             // Links validation (optional)
             'links'                       => 'nullable|array',
@@ -1093,7 +1098,6 @@ class HRController extends Controller
                             'time_limit'  => $timeData['time_limit'] ?? false,
                             'time_max'    => $timeData['time_limit'] ? ($timeData['time_max'] ?? 1) : 0,
                             'time_active' => true,
-                            'time_delete' => $timeData['time_delete'] ?? false, // Use submitted value
                         ]);
                         $submittedTimeIds[] = $existingTime->id;
                     } else {
@@ -1106,7 +1110,6 @@ class HRController extends Controller
                             'time_limit'  => $timeData['time_limit'] ?? false,
                             'time_max'    => $timeData['time_limit'] ? ($timeData['time_max'] ?? 1) : 0,
                             'time_active' => true,
-                            'time_delete' => $timeData['time_delete'] ?? false, // Use submitted value
                         ]);
                         $submittedTimeIds[] = $newTime->id;
                     }
@@ -1860,6 +1863,80 @@ class HRController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'เกิดข้อผิดพลาดในการล้างที่นั่ง: ' . $e->getMessage()], 500);
         }
+    }
+
+    // ========================================================================
+    // EXPORT METHODS
+    // ========================================================================
+
+    /**
+     * Export all date registrations for a project
+     */
+    public function exportAllDateRegistrations($projectId)
+    {
+        $project = HrProject::findOrFail($projectId);
+
+        // Get all registrations for the project
+        $registrations = HrAttend::with(['user', 'date', 'time'])
+            ->where('project_id', $projectId)
+            ->where('attend_delete', false)
+            ->get();
+
+        return Excel::download(new AllDateExport($projectId), 'AllDateExport_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Export DBD format for a project
+     */
+    public function exportDBD($projectId)
+    {
+        $project = HrProject::findOrFail($projectId);
+
+        return Excel::download(new DBDExport($projectId), 'DBDExport_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Export Onebook format for a project
+     */
+    public function exportOnebook($projectId)
+    {
+        $project = HrProject::findOrFail($projectId);
+
+        return Excel::download(new OnebookExport($projectId), 'OnebookExport_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Export date-specific registrations
+     */
+    public function exportDateRegistrations($dateId)
+    {
+        $date = HrDate::with('project')->findOrFail($dateId);
+
+        // Get all registrations for this specific date
+        $registrations = HrAttend::with(['user', 'time'])
+            ->where('date_id', $dateId)
+            ->where('attend_delete', false)
+            ->get();
+
+        return Excel::download(new DateExport($dateId), 'DateExport_' . $date->date_title . '_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Export time-specific registrations as PDF
+     */
+    public function exportTimePDF($timeId)
+    {
+        $time = HrTime::with(['date.project', 'attends.user'])->findOrFail($timeId);
+
+        // Get all registrations for this specific time slot
+        $registrations = HrAttend::with(['user'])
+            ->where('time_id', $timeId)
+            ->where('attend_delete', false)
+            ->get();
+
+        $pdf = Pdf::loadView('hrd.admin.export.PDF_TIME', compact('time', 'registrations'));
+
+        return $pdf->stream($time->time_title . '_' . date('Y-m-d') . '.pdf');
     }
 
 }

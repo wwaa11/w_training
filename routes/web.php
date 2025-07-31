@@ -149,6 +149,15 @@ Route::middleware([HrAdmin::class])->group(function () {
             Route::get('/{id}', [HRController::class, 'getProjectSeats'])->name('get');
             Route::post('/{id}/cleanup', [HRController::class, 'cleanupDuplicateSeats'])->name('cleanup');
         });
+
+        // Export Routes
+        Route::prefix('export')->name('export.')->group(function () {
+            Route::get('/excel/all_date/{project_id}', [HRController::class, 'exportAllDateRegistrations'])->name('excel.all_date');
+            Route::get('/excel/onebook/{project_id}', [HRController::class, 'exportOnebook'])->name('excel.onebook');
+            Route::get('/excel/dbd/{project_id}', [HRController::class, 'exportDBD'])->name('excel.dbd');
+            Route::get('/excel/date/{date_id}', [HRController::class, 'exportDateRegistrations'])->name('excel.date');
+            Route::get('/pdf/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
+        });
     });
 
     // ========================================================================

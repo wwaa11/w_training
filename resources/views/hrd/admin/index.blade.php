@@ -66,11 +66,11 @@
                                     @elseif($project->project_type === "multiple") bg-green-100 text-green-800
                                     @else bg-purple-100 text-purple-800 @endif inline-flex rounded-full px-2 py-1 text-xs font-semibold">
                                         @if ($project->project_type === "single")
-                                            เดี่ยว
+                                            ลงทะเบียน 1 ครั้ง
                                         @elseif($project->project_type === "multiple")
-                                            หลาย
+                                            ลงทะเบียนได้มากกว่า 1 ครั้ง
                                         @else
-                                            เข้าร่วม
+                                            ไม่ต้องลงทะเบียน
                                         @endif
                                     </span>
                                 </td>
