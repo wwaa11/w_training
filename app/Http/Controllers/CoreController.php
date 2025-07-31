@@ -53,6 +53,13 @@ class CoreController extends Controller
             $data['message'] = 'เข้าสู่ระบบสำเร็จ';
 
             $userData = User::where('userid', $userid)->first();
+            session([
+                'name'       => $userData->name,
+                'position'   => $userData->position,
+                'department' => $userData->department,
+                'division'   => $userData->division,
+                'email'      => $userData->email,
+            ]);
             Auth::login($userData);
 
             return response()->json($data, 200);
@@ -329,27 +336,6 @@ class CoreController extends Controller
         $data = $day . ' ' . $fullmonth . ' ' . $year;
 
         return $data;
-    }
-    public function createProject_DeatBetween(Request $req)
-    {
-        $dates = [];
-        $start = $req->start;
-        $end   = $req->end;
-
-        $startDate = new \DateTime($start);
-        $endDate   = new \DateTime($end . ' +1 Days');
-
-        $interval  = new \DateInterval('P1D'); // 1 day interval
-        $dateRange = new \DatePeriod($startDate, $interval, $endDate);
-
-        foreach ($dateRange as $date) {
-            $dates[] = [
-                'date'  => $date->format('Y-m-d'),
-                'title' => $this->FulldateTH($date->format('Y-m-d')),
-            ];
-        }
-
-        return response()->json(['status' => 'success', 'dates' => $dates]);
     }
     public function AllUserHR()
     {

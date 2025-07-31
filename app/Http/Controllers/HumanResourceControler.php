@@ -27,68 +27,27 @@ class HumanResourceControler extends Controller
     public function adminProjectCreate()
     {
         // die();
-
         $project                          = new Project;
-        $project->project_name            = 'หลักสูตร การอบรมการช่วยชีวิตขั้นพื้นฐานสำหรับบุคลากรทางการแพทย์ (Basic Life Support for Health Care Provider Course)';
+        $project->project_name            = 'หลักสูตร ปฐมนิเทศพนักงานใหม่ ประจำปี 2568';
         $project->project_detail          = '';
         $project->project_active          = true;
         $project->project_delete          = false;
         $project->start_register_datetime = '2025-07-01';
-        $project->last_register_datetime  = '2025-07-23';
-        // $project->save();
+        $project->last_register_datetime  = '2025-08-04';
+        $project->save();
 
         $dateArrays = [
             [
                 'index'          => 1,
-                'date'           => '2025-07-21',
-                'title'          => '21 กรกฎาคม 2568',
-                'max'            => 24,
+                'date'           => '2025-08-04',
+                'title'          => '04 สิงหาคม 2568',
+                'max'            => 999,
                 'location_title' => 'ห้องประชุม',
-                'location'       => 'ศูนย์การเรียนรู้ ชั้น 8 อาคาร A',
+                'location'       => 'ห้องประชุม Training Room ชั้น 8 อาคาร A  ',
                 'times'          => [
                     [
                         'index' => 1,
-                        'title' => '07.30 - 12.00 น.',
-                    ],
-                    [
-                        'index' => 2,
-                        'title' => '12.30 - 17.00 น.',
-                    ],
-                ],
-            ],
-            [
-                'index'          => 1,
-                'date'           => '2025-07-22',
-                'title'          => '22 กรกฎาคม 2568',
-                'max'            => 24,
-                'location_title' => 'ห้องประชุม',
-                'location'       => 'ศูนย์การเรียนรู้ ชั้น 8 อาคาร A',
-                'times'          => [
-                    [
-                        'index' => 1,
-                        'title' => '07.30 - 12.00 น.',
-                    ],
-                    [
-                        'index' => 2,
-                        'title' => '12.30 - 17.00 น.',
-                    ],
-                ],
-            ],
-            [
-                'index'          => 1,
-                'date'           => '2025-07-23',
-                'title'          => '23 กรกฎาคม 2568',
-                'max'            => 24,
-                'location_title' => 'ห้องประชุม',
-                'location'       => 'ศูนย์การเรียนรู้ ชั้น 8 อาคาร A',
-                'times'          => [
-                    [
-                        'index' => 1,
-                        'title' => '07.30 - 12.00 น.',
-                    ],
-                    [
-                        'index' => 2,
-                        'title' => '12.30 - 17.00 น.',
+                        'title' => '08.00 - 17.00 น.',
                     ],
                 ],
             ],
@@ -97,7 +56,6 @@ class HumanResourceControler extends Controller
         foreach ($dateArrays as $detail) {
             $date             = new Slot;
             $date->project_id = $project->id;
-            $date->project_id = 12;
             $date->slot_index = $detail['index'];
             $date->slot_date  = $detail['date'];
             $date->slot_name  = $detail['title'];

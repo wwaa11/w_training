@@ -106,7 +106,7 @@
             dateStart = $('#date_start').val()
             dateEnd = $('#date_end').val()
             if (dateStart != '' && dateEnd != '') {
-                await axios.post('{{ env("APP_URL") }}/get/dateBetween', {
+                await axios.post('{{ env("APP_URL") }}/nurse/admin/dateBetween', {
                     'start': dateStart,
                     'end': dateEnd,
                 }).then((res) => {

@@ -38,8 +38,24 @@ class User extends Authenticatable
         return $this->hasMany(NurseTransaction::class, 'user_id')->where('user_id', auth()->user()->userid);
     }
 
-    public function training_team(): HasOnce
+    public function training_team(): HasMany
     {
         return $this->hasMany(TrainingUser::class, 'user_id')->where('user_id', auth()->user()->userid);
+    }
+
+    // HR System Relationships
+    public function hrAttends(): HasMany
+    {
+        return $this->hasMany(HrAttend::class, 'user_id');
+    }
+
+    public function hrSeats(): HasMany
+    {
+        return $this->hasMany(HrSeat::class, 'user_id');
+    }
+
+    public function hrResults(): HasMany
+    {
+        return $this->hasMany(HrResult::class, 'user_id');
     }
 }

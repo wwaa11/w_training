@@ -225,6 +225,27 @@ class NurseController extends Controller
 
         return $data;
     }
+    public function adminProjectDateBetween(Request $req)
+    {
+        $dates = [];
+        $start = $req->start;
+        $end   = $req->end;
+
+        $startDate = new \DateTime($start);
+        $endDate   = new \DateTime($end . ' +1 Days');
+
+        $interval  = new \DateInterval('P1D'); // 1 day interval
+        $dateRange = new \DatePeriod($startDate, $interval, $endDate);
+
+        foreach ($dateRange as $date) {
+            $dates[] = [
+                'date'  => $date->format('Y-m-d'),
+                'title' => $this->FulldateTH($date->format('Y-m-d')),
+            ];
+        }
+
+        return response()->json(['status' => 'success', 'dates' => $dates]);
+    }
     public function adminProjectStore(Request $request)
     {
         $request->validate([
@@ -569,7 +590,6 @@ class NurseController extends Controller
 
         return response()->json($response, 200);
     }
-
     public function updateLecturerScore(Request $request)
     {
         $request->validate([

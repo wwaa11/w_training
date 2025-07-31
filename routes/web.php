@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CoreController;
+use App\Http\Controllers\HRController;
 use App\Http\Controllers\HumanResourceControler;
 use App\Http\Controllers\NurseController;
 use App\Http\Controllers\TrainingController;
@@ -18,8 +19,6 @@ Route::post('/login', [CoreController::class, 'LoginRequest']);
 Route::post('/logout', [CoreController::class, 'LogoutRequest']);
 
 Route::middleware([pr9Auth::class])->group(function () {
-    // Base Function
-    Route::post('/get/dateBetween', [CoreController::class, 'createProject_DeatBetween']);
 
     Route::get('/', [CoreController::class, 'Index']);
     Route::get('/profile', [CoreController::class, 'Profile']);
@@ -29,6 +28,15 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::post('/profile/updateGender', [CoreController::class, 'UpdateGender']);
 
     // Human Resources
+    Route::get('/hrd', [HRController::class, 'Index'])->name('hrd.index');
+    // User-facing project routes
+    Route::get('/hrd/projects/{id}', [HRController::class, 'projectShow'])->name('hrd.projects.show');
+    Route::post('/hrd/projects/{id}/register', [HRController::class, 'projectRegisterStore'])->name('hrd.projects.register.store');
+    Route::post('/hrd/projects/{id}/attend', [HRController::class, 'projectAttendStore'])->name('hrd.projects.attend.store');
+    Route::post('/hrd/projects/{id}/stamp/{attendId}', [HRController::class, 'projectStampAttendance'])->name('hrd.projects.stamp.store');
+    Route::delete('/hrd/projects/{id}/reselect', [HRController::class, 'projectReselectRegistration'])->name('hrd.projects.reselect');
+    Route::get('/hrd/history', [HRController::class, 'userHistory'])->name('hrd.history');
+
     Route::get('/hr', [HumanResourceControler::class, 'Index']);
     Route::get('/hr/history', [HumanResourceControler::class, 'History']);
     Route::get('/hr/project/{id}', [HumanResourceControler::class, 'ProjectIndex']);
@@ -55,33 +63,49 @@ Route::middleware([pr9Auth::class])->group(function () {
 });
 
 Route::middleware([HrAdmin::class])->group(function () {
-    Route::get('/hr/function', [HumanResourceControler::class, 'addDatetoProject']);
 
+    // HRD
+    Route::get('/hrd/admin', [HRController::class, 'adminIndex'])->name('hrd.admin.index');
+    // Project Create route
+    Route::get('/hrd/admin/projects/create', [HRController::class, 'adminProjectCreate'])->name('hrd.admin.projects.create');
+    Route::post('/hrd/admin/projects', [HRController::class, 'adminProjectStore'])->name('hrd.admin.projects.store');
+    Route::get('/hrd/admin/projects/{id}', [HRController::class, 'adminProjectShow'])->name('hrd.admin.projects.show');
+    Route::get('/hrd/admin/projects/{id}/edit', [HRController::class, 'adminProjectEdit'])->name('hrd.admin.projects.edit');
+    Route::post('/hrd/admin/projects/{id}/update', [HRController::class, 'adminProjectUpdate'])->name('hrd.admin.projects.update');
+    Route::post('/hrd/admin/projects/{id}/delete', [HRController::class, 'adminProjectDelete'])->name('hrd.admin.projects.delete');
+
+    // Registration Management
+    Route::get('/hrd/admin/projects/{id}/registrations', [HRController::class, 'adminProjectRegistrations'])->name('hrd.admin.projects.registrations');
+    Route::post('/hrd/admin/projects/{id}/registrations', [HRController::class, 'adminRegistrationStore'])->name('hrd.admin.registrations.store');
+    Route::put('/hrd/admin/projects/{id}/registrations/{registrationId}', [HRController::class, 'adminRegistrationUpdate'])->name('hrd.admin.registrations.update');
+    Route::delete('/hrd/admin/projects/{id}/registrations/{registrationId}', [HRController::class, 'adminRegistrationDelete'])->name('hrd.admin.registrations.delete');
+
+    // Approval Management
+    Route::post('/hrd/admin/projects/{id}/approve-registration', [HRController::class, 'adminApproveRegistration'])->name('hrd.admin.projects.approve_registration');
+    Route::post('/hrd/admin/projects/{id}/unapprove-registration', [HRController::class, 'adminUnapproveRegistration'])->name('hrd.admin.projects.unapprove_registration');
+    Route::get('/hrd/admin/projects/{id}/approvals', [HRController::class, 'adminProjectApprovals'])->name('hrd.admin.projects.approvals');
+    Route::post('/hrd/admin/projects/{id}/bulk-approve', [HRController::class, 'adminBulkApprove'])->name('hrd.admin.projects.bulk_approve');
+
+    Route::get('/hr/function', [HumanResourceControler::class, 'addDatetoProject']);
     Route::get('/hr/admin/users', [CoreController::class, 'AllUserHR']);
     Route::post('/hr/admin/users/search', [CoreController::class, 'UserSearch']);
     Route::post('/hr/admin/resetpassword', [CoreController::class, 'UserResetPassword']);
-
     Route::get('/hr/admin', [HumanResourceControler::class, 'adminIndex']);
     Route::get('/hr/admin/createDEV', [HumanResourceControler::class, 'adminProjectCreate']);
     Route::get('/hr/admin/project/{id}', [HumanResourceControler::class, 'adminProjectManagement']);
-
     Route::get('/hr/admin/link/{id}', [HumanResourceControler::class, 'adminProjectLink']);
     Route::post('/hr/admin/link/update', [HumanResourceControler::class, 'adminProjectLinkUpdate']);
-
     Route::get('/hr/admin/transactions/{id}', [HumanResourceControler::class, 'adminProjectTransactions']);
     Route::post('/hr/admin/createTransaction', [HumanResourceControler::class, 'adminProjectCreateTransaction']);
     Route::post('/hr/admin/deleteTransaction', [HumanResourceControler::class, 'adminProjectDeleteTransaction']);
-
     Route::get('/hr/admin/approve', [HumanResourceControler::class, 'adminProjectApprove']);
     Route::post('/hr/admin/approveUser', [HumanResourceControler::class, 'adminProjectApproveUser']);
     Route::post('/hr/admin/approveUserArray', [HumanResourceControler::class, 'adminProjectApproveUserArray']);
-
     Route::get('/hr/admin/export/pdf/time/{item_id}', [HumanResourceControler::class, 'PDFTimeExport']);
     Route::get('/hr/admin/export/excel/date/{slot_id}', [HumanResourceControler::class, 'ExcelDateExport']);
     Route::get('/hr/admin/export/excel/all_date/{project_id}', [HumanResourceControler::class, 'ExcelAllDateExport']);
     Route::get('/hr/admin/export/excel/onebook/{project_id}', [HumanResourceControler::class, 'ExcelOneBookExport']);
     Route::get('/hr/admin/export/excel/dbd/{project_id}', [HumanResourceControler::class, 'ExcelDBDExport']);
-
     Route::get('/hr/admin/scores', [HumanResourceControler::class, 'adminScores']);
     Route::post('/hr/admin/importscores', [HumanResourceControler::class, 'ImportScore']);
 
@@ -164,6 +188,7 @@ Route::middleware([NurseAdmin::class])->group(function () {
 
     Route::get('/nurse/admin', [NurseController::class, 'adminProjectIndex'])->name('NurseAdminIndex');
     Route::get('/nurse/admin/project/{project_id}', [NurseController::class, 'adminProjectManagement']);
+    Route::post('/nurse/admin/dateBetween', [NurseController::class, 'adminProjectDateBetween']);
     Route::post('/nurse/admin/deleteProject', [NurseController::class, 'adminProjectDelete']);
 
     Route::get('/nurse/admin/create', [NurseController::class, 'adminProjectCreate'])->name('NurseAdminCreate');
