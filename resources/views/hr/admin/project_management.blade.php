@@ -3,36 +3,36 @@
     <div class="m-auto flex">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="text-2xl font-bold">
-                <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
+                <a class="text-blue-600" href="{{ route("hr.admin.index") }}">Project Management</a>
                 / {{ $project->project_name }}
             </div>
             <hr>
             <div class="flex gap-3 p-3">
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/transactions/{{ $project->id }}">
+                <a class="flex-1" href="{{ route("hr.admin.project.transactions", $project->id) }}">
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-users"></i> รายชื่อผู้ลงทะเบียนทั้งหมด</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/approve?project={{ $project->id }}&approve=false&time=all">
+                <a class="flex-1" href="{{ route("hr.admin.approve.index") }}?project={{ $project->id }}&approve=false&time=all">
                     <div class="cursor-pointer rounded bg-blue-200 p-3 text-center"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/scores?project={{ $project->id }}&userid=null">
+                <a class="flex-1" href="{{ route("hr.admin.scores.index") }}?project={{ $project->id }}&userid=null">
                     <div class="cursor-pointer rounded bg-green-200 p-3 text-center"><i class="fa-solid fa-list-ol"></i> คะแนนสอบ</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/link/{{ $project->id }}">
+                <a class="flex-1" href="{{ route("hr.admin.project.link", $project->id) }}">
                     <div class="cursor-pointer rounded bg-gray-200 p-3 text-center"><i class="fa-solid fa-gear"></i> การจัดการ Url ข้อสอบ</div>
                 </a>
             </div>
             <div class="flex-col">
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/export/excel/all_date/{{ $project->id }}">
+                <a class="flex-1" href="{{ route("hr.admin.export.excel.all_date", $project->id) }}">
                     <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel ดาวน์โหลดข้อมูลผู้ลงทะเบียนทั้งหมด หลักสูตร {{ $project->project_name }}</div>
                 </a>
             </div>
             <div class="flex-col">
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/export/excel/dbd/{{ $project->id }}">
+                <a class="flex-1" href="{{ route("hr.admin.export.excel.dbd", $project->id) }}">
                     <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel แบบฟอร์มกรมพัฒน์ หลักสูตร {{ $project->project_name }}</div>
                 </a>
             </div>
             <div class="flex-col">
-                <a class="flex-1" href="{{ env("APP_URL") }}/hr/admin/export/excel/onebook/{{ $project->id }}">
+                <a class="flex-1" href="{{ route("hr.admin.export.excel.onebook", $project->id) }}">
                     <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel Onebook หลักสูตร {{ $project->project_name }}</div>
                 </a>
             </div>
@@ -43,7 +43,7 @@
                     <thead class="bg-gray-200">
                         <th class="border p-3 text-start">
                             <span>{{ $slot->slot_name }}</span>
-                            <a href="{{ env("APP_URL") }}/hr/admin/export/excel/date/{{ $slot->id }}"><span class="ms-6 text-green-600"><i class="fa-solid fa-file-excel"></i></span></a>
+                            <a href="{{ route("hr.admin.export.excel.date", $slot->id) }}"><span class="ms-6 text-green-600"><i class="fa-solid fa-file-excel"></i></span></a>
                         </th>
                         <th class="w-36 border p-3">จำนวนลงทะเบียน</th>
                     </thead>
@@ -62,7 +62,7 @@
                                             </div>
                                         @endif
                                         <div class="flex-1">{{ $item->item_name }} </div>
-                                        <a class="flex-none text-end text-red-600" href="{{ env("APP_URL") }}/hr/admin/export/pdf/time/{{ $item->id }}">
+                                        <a class="flex-none text-end text-red-600" href="{{ route("hr.admin.export.pdf.time", $item->id) }}">
                                             <i class="fa-regular fa-file-pdf"></i>
                                         </a>
                                     </div>
@@ -111,7 +111,7 @@
                     allowOutsideClick: false,
                     showConfirmButton: false,
                 })
-                axios.post('{{ env("APP_URL") }}/hr/admin/createTransaction', {
+                axios.post('{{ route("hr.admin.project.createTransaction") }}', {
                     'project_id': '{{ $project->id }}',
                     'item_id': id,
                     'user': alert.value

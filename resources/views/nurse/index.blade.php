@@ -21,7 +21,7 @@
             <div class="text-3xl text-[#1a3f34]">รายการที่เปิดลงทะเบียน</div>
             <hr class="border-[#eaf7ab] shadow">
             @foreach ($projects as $project)
-                <a href="{{ env("APP_URL") }}/nurse/project/{{ $project->id }}">
+                <a href="{{ route("nurse.project.show", $project->id) }}">
                     <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
                         <div class="text-2xl">{{ $project->title }}</div>
                         <div class="text-gray-500">
@@ -49,7 +49,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/project/sign', {
+                axios.post('{{ route("nurse.project.sign") }}', {
                         transaction_id: id,
                     })
                     .then((res) => {
@@ -81,7 +81,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/project/delete', {
+                axios.post('{{ route("nurse.project.delete") }}', {
                         project_id: projectId,
                     })
                     .then((res) => {

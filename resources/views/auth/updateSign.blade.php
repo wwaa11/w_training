@@ -2,7 +2,7 @@
 @section("content")
     <div class="flex h-screen flex-col text-gray-600">
         <div class="m-auto flex w-full flex-col rounded-lg bg-[#f0f0f0] p-6 text-center text-lg md:w-1/2 lg:w-2/3">
-            <form id="saveSign" action="{{ env("APP_URL") }}/profile/updateSign" method="POST">
+            <form id="saveSign" action="{{ route("profile.updateSign") }}" method="POST">
                 @csrf
                 <input id="sign" type="hidden" name="sign">
                 <div class="p-3 text-center">

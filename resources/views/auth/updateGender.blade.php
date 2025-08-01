@@ -2,7 +2,7 @@
 @section("content")
     <div class="flex h-screen flex-col text-gray-600">
         <div class="m-auto flex w-full flex-col rounded-lg bg-[#f0f0f0] p-6 text-center text-lg md:w-1/2 lg:w-1/3">
-            <form action="{{ env("APP_URL") }}/profile/updateGender" method="POST">
+            <form action="{{ route("profile.updateGender") }}" method="POST">
                 @csrf
                 <div class="p-3 text-center">
                     <div class="mb-3 text-2xl">กรุณาระบุเพศ</div>

@@ -2,8 +2,8 @@
 @section("content")
     <div class="m-auto flex">
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
-            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
-                / <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+            <div class="text-2xl font-bold"><a class="text-blue-600" href="{{ route("hr.admin.index") }}">Project Management</a>
+                / <a class="text-blue-600" href="{{ route("hr.admin.project.management", $project->id) }}">{{ $project->project_name }}</a>
                 / คะแนนสอบ
             </div>
             <hr>
@@ -180,7 +180,7 @@
                 formData.append("project_id", {{ $project->id }});
                 formData.append("file", alert.value);
 
-                axios.post('{{ env("APP_URL") }}/hr/admin/importscores', formData, {
+                axios.post('{{ route("hr.admin.scores.import") }}', formData, {
                     "Content-Type": "multipart/form-data"
                 }).then((res) => {
                     Swal.fire({
@@ -203,7 +203,7 @@
 
         function searchUserID() {
             user = $('#userid').val();
-            window.location.replace('{{ env("APP_URL") }}/hr/admin/scores?project={{ $project->id }}&project=' + {{ $project->id }} + '&userid=' + user);
+            window.location.replace('{{ route("hr.admin.scores.index") }}?project={{ $project->id }}&project=' + {{ $project->id }} + '&userid=' + user);
         }
     </script>
 @endsection

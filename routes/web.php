@@ -11,9 +11,9 @@ use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
 // Authentication Routes
-Route::get('/login', [CoreController::class, 'Login']);
-Route::post('/login', [CoreController::class, 'LoginRequest']);
-Route::post('/logout', [CoreController::class, 'LogoutRequest']);
+Route::get('/login', [CoreController::class, 'Login'])->name('login');
+Route::post('/login', [CoreController::class, 'LoginRequest'])->name('login.post');
+Route::post('/logout', [CoreController::class, 'LogoutRequest'])->name('logout');
 
 // ============================================================================
 // AUTHENTICATED USER ROUTES
@@ -25,12 +25,12 @@ Route::middleware([pr9Auth::class])->group(function () {
     // CORE USER ROUTES
     // ========================================================================
 
-    Route::get('/', [CoreController::class, 'Index']);
-    Route::get('/profile', [CoreController::class, 'Profile']);
-    Route::post('/profile/changePassword', [CoreController::class, 'UpdateProfile']);
-    Route::post('/profile/updateReferance', [CoreController::class, 'UpdateReferance']);
-    Route::post('/profile/updateSign', [CoreController::class, 'UpdateSign']);
-    Route::post('/profile/updateGender', [CoreController::class, 'UpdateGender']);
+    Route::get('/', [CoreController::class, 'Index'])->name('index');
+    Route::get('/profile', [CoreController::class, 'Profile'])->name('profile.index');
+    Route::post('/profile/changePassword', [CoreController::class, 'UpdateProfile'])->name('profile.changePassword');
+    Route::post('/profile/updateReferance', [CoreController::class, 'UpdateReferance'])->name('profile.updateReferance');
+    Route::post('/profile/updateSign', [CoreController::class, 'UpdateSign'])->name('profile.updateSign');
+    Route::post('/profile/updateGender', [CoreController::class, 'UpdateGender'])->name('profile.updateGender');
 
     // ========================================================================
     // HRD (Human Resource Development) - User Routes

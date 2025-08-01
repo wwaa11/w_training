@@ -259,7 +259,7 @@
 
         function unregisterUser(userId) {
             if (!confirm('Are you sure you want to unregister this user?')) return;
-            fetch("{{ route("training.admin.unregister.user") }}", {
+            fetch("{{ route("training.admin.register.unregister") }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -427,7 +427,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">เวลา</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ลงทะเบียนเมื่อ</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">สถานะ</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">การดำเนินการ</th>
+
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white">
@@ -441,7 +441,7 @@
                                                 @if ($attend->approve_datetime)
                                                     <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                                                         <i class="fas fa-check-circle mr-1"></i>
-                                                        อนุมัติแล้ว
+                                                        Check in
                                                     </span>
                                                     <div class="mt-1 text-xs text-gray-500">
                                                         {{ \Carbon\Carbon::parse($attend->approve_datetime)->format("d/m/Y H:i") }}
@@ -449,23 +449,11 @@
                                                 @else
                                                     <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
                                                         <i class="fas fa-clock mr-1"></i>
-                                                        รออนุมัติ
+                                                        waiting
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td class="whitespace-nowrap px-6 py-4 text-sm">
-                                                @if (!$attend->approve_datetime)
-                                                    <button class="inline-flex items-center rounded-md border border-transparent bg-green-600 px-3 py-1 text-xs font-medium text-white transition-colors duration-200 hover:bg-green-700" onclick="approveRegistration({{ $attend->id }}, '{{ $attend->user->userid ?? "N/A" }}')">
-                                                        <i class="fas fa-check mr-1"></i>
-                                                        อนุมัติ
-                                                    </button>
-                                                @else
-                                                    <button class="inline-flex items-center rounded-md border border-transparent bg-red-600 px-3 py-1 text-xs font-medium text-white transition-colors duration-200 hover:bg-red-700" onclick="unapproveRegistration({{ $attend->id }}, '{{ $attend->user->userid ?? "N/A" }}')">
-                                                        <i class="fas fa-times mr-1"></i>
-                                                        ยกเลิกการอนุมัติ
-                                                    </button>
-                                                @endif
-                                            </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -669,38 +657,6 @@
                     alert('เกิดข้อผิดพลาดในการลบโปรเจกต์ กรุณาลองใหม่อีกครั้ง');
                 });
             hideDeleteModal();
-        }
-
-        function approveRegistration(attendId, userId) {
-            if (confirm(`คุณแน่ใจหรือไม่ที่จะอนุมัติการลงทะเบียนสำหรับผู้ใช้ ${userId}?`)) {
-                axios.post(`{{ route("hrd.admin.projects.approve_registration", $project->id) }}`, {
-                        attend_id: attendId
-                    })
-                    .then(response => {
-                        alert('อนุมัติการลงทะเบียนสำเร็จ!');
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error approving registration:', error);
-                        alert('เกิดข้อผิดพลาดในการอนุมัติ กรุณาลองใหม่อีกครั้ง');
-                    });
-            }
-        }
-
-        function unapproveRegistration(attendId, userId) {
-            if (confirm(`คุณแน่ใจหรือไม่ที่จะยกเลิกการอนุมัติสำหรับผู้ใช้ ${userId}?`)) {
-                axios.post(`{{ route("hrd.admin.projects.unapprove_registration", $project->id) }}`, {
-                        attend_id: attendId
-                    })
-                    .then(response => {
-                        alert('ยกเลิกการอนุมัติสำเร็จ!');
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error unapproving registration:', error);
-                        alert('เกิดข้อผิดพลาดในการยกเลิกการอนุมัติ กรุณาลองใหม่อีกครั้ง');
-                    });
-            }
         }
     </script>
 @endsection

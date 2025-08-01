@@ -6,7 +6,7 @@
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
             <div class="flex text-3xl text-[#1a3f34]">
-                <div class="flex-1"><a class="text-blue-600" href="{{ env("APP_URL") }}/nurse/">รายการลงทะเบียน</a> / {{ $project->title }}</div>
+                <div class="flex-1"><a class="text-blue-600" href="{{ route("nurse.index") }}">รายการลงทะเบียน</a> / {{ $project->title }}</div>
                 <div class="cursor-pointer text-lg" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i> อัพเดตข้อมูล</div>
             </div>
             <hr class="shadow">
@@ -88,7 +88,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/project/create', {
+                axios.post('{{ route("nurse.project.create") }}', {
                         project_id: project_id,
                         time_id: time_id,
                     })
@@ -117,7 +117,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/project/delete', {
+                axios.post('{{ route("nurse.project.delete") }}', {
                         project_id: projectId,
                     })
                     .then((res) => {
@@ -145,7 +145,7 @@
             });
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/project/sign', {
+                axios.post('{{ route("nurse.project.sign") }}', {
                         transaction_id: id,
                     })
                     .then((res) => {

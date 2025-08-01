@@ -5,7 +5,7 @@
             @if ($errors->any())
                 <div class="mb-3 text-lg font-bold text-red-600">{{ $errors->first() }}</div>
             @endif
-            <form id="changePassword" action="{{ env("APP_URL") }}/profile/changePassword" method="POST">
+            <form id="changePassword" action="{{ route("profile.changePassword") }}" method="POST">
                 @csrf
                 <div class="mb-3 text-2xl font-bold text-[#008387]">แก้ไขข้อมูลส่วนตัว</div>
                 <div class="flex flex-row">

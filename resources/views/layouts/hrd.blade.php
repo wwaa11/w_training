@@ -238,7 +238,7 @@
     <div class="h-20"></div>
     <nav class="navbar">
         <div class="navbar-logo">
-            <a href="{{ env("APP_URL") }}/">
+            <a href="{{ route("index") }}">
                 <img class="my-auto aspect-auto max-h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
             <span class="navbar-title hidden lg:block">HRD Division</span>
@@ -259,7 +259,7 @@
                 <div class="department">{{ session("department") }}</div>
             </div>
             <div class="navbar-user-actions">
-                <a href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
+                <a href="{{ route("profile.index") }}">ข้อมูลผู้ใช้งาน</a>
                 <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
             </div>
         </div>
@@ -274,7 +274,7 @@
             {{ Auth::user()->userid }} {{ session("name") }}
             <div class="department">{{ session("department") }}</div>
             <div class="user-actions">
-                <a href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
+                <a href="{{ route("profile.index") }}">ข้อมูลผู้ใช้งาน</a>
                 <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
             </div>
         </div>
@@ -311,8 +311,8 @@
         }
 
         function logout() {
-            axios.post('{{ env("APP_URL") }}/logout').then((res) => {
-                window.location.href = '{{ env("APP_URL") }}/login';
+            axios.post('{{ route("logout") }}').then((res) => {
+                window.location.href = '{{ route("login") }}';
             });
         }
         // Hide mobile menu on resize to desktop

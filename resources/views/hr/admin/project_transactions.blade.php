@@ -3,8 +3,8 @@
     <div>
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="text-2xl font-bold">
-                <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin">Project Management</a>
-                / <a class="text-blue-600" href="{{ env("APP_URL") }}/hr/admin/project/{{ $project->id }}">{{ $project->project_name }}</a>
+                <a class="text-blue-600" href="{{ route("hr.admin.index") }}">Project Management</a>
+                / <a class="text-blue-600" href="{{ route("hr.admin.project.management", $project->id) }}">{{ $project->project_name }}</a>
                 / รายชื่อผู้ลงทะเบียนทั้งหมด
             </div>
             <hr>
@@ -88,7 +88,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/hr/admin/deleteTransaction', {
+                axios.post('{{ route("hr.admin.project.deleteTransaction") }}', {
                     'transaction_id': id
                 }).then((res) => {
                     Swal.fire({

@@ -4,33 +4,33 @@
         <div class="m-auto mt-3 w-full rounded p-3 md:w-3/4">
             <div class="cursor-pointer text-end text-red-600" onclick="deleteProject({{ $project->id }})">ลบการฝึกอบรม</div>
             <div class="text-2xl font-bold">
-                <a class="text-blue-600" href="{{ env("APP_URL") }}/nurse/admin">Project Management</a>
+                <a class="text-blue-600" href="{{ route("nurse.admin.index") }}">Project Management</a>
                 / {{ $project->title }}
             </div>
             <hr>
             <div class="my-3 flex gap-3">
-                <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/approve?project={{ $project->id }}&sign=false&time=all">
+                <a class="flex-1" href="{{ route("nurse.admin.approve.index") }}?project={{ $project->id }}&sign=false&time=all">
                     <div class="cursor-pointer rounded bg-green-600 p-3 text-center text-white"><i class="fa-solid fa-check-double"></i> Approve ผู้ลงทะเบียน</div>
                 </a>
-                <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/transactions/{{ $project->id }}">
+                <a class="flex-1" href="{{ route("nurse.admin.transactions.index", $project->id) }}">
                     <div class="cursor-pointer rounded bg-green-600 p-3 text-center text-white"><i class="fa-solid fa-users"></i> ผู้ลงทะเบียนทั้งหมด</div>
                 </a>
             </div>
             <div class="text-2xl font-bold">Export</div>
             <hr>
-            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/users/{{ $project->id }}">
+            <a class="flex-1" href="{{ route("nurse.admin.export.excel.users", $project->id) }}">
                 <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel รายชื่อผู้ฝึกอบรมทั้งหมด</div>
             </a>
-            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/lectures/{{ $project->id }}">
+            <a class="flex-1" href="{{ route("nurse.admin.export.excel.lectures", $project->id) }}">
                 <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel รายชื่อวิทยากรทั้งหมด</div>
             </a>
-            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/dbd/{{ $project->id }}">
+            <a class="flex-1" href="{{ route("nurse.admin.export.excel.dbd", $project->id) }}">
                 <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel แบบฟอร์มกรมพัฒน์</div>
             </a>
-            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/type/{{ $project->id }}">
+            <a class="flex-1" href="{{ route("nurse.admin.export.excel.type", $project->id) }}">
                 <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel {{ $project->export_type_name }}</div>
             </a>
-            <a class="flex-1" href="{{ env("APP_URL") }}/nurse/admin/export/excel/onebook/{{ $project->id }}">
+            <a class="flex-1" href="{{ route("nurse.admin.export.excel.onebook", $project->id) }}">
                 <div class="cursor-pointer rounded py-3 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> Excel Onebook หลักสูตร {{ $project->title }}</div>
             </a>
             <div class="text-2xl font-bold">วันที่เปิดลงทะเบียน</div>
@@ -40,10 +40,10 @@
                     <thead class="bg-gray-200">
                         <th class="border p-3 text-start" colspan="2">
                             <span>{{ $date->title }}</span>
-                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/users/{{ $date->id }}">
+                            <a href="{{ route("nurse.admin.export.excel.date.users", $date->id) }}">
                                 <span class="ms-6 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> รายชื่อผู้ฝึกอบรม</span>
                             </a>
-                            <a href="{{ env("APP_URL") }}/nurse/admin/export/excel/date/dbd/{{ $date->id }}">
+                            <a href="{{ route("nurse.admin.export.excel.date.dbd", $date->id) }}">
                                 <span class="ms-6 text-green-600 hover:text-green-800"><i class="fa-solid fa-file-excel"></i> แบบฟอร์มกรมพัฒน์</span>
                             </a>
                             <span class="float-end ms-3 cursor-pointer rounded bg-blue-400 p-2" onclick="addlecturer('{{ $date->id }}','{{ $date->title }}')"><i class="fa fa-plus"></i> วิทยากร</span>
@@ -76,7 +76,7 @@
                             <tr>
                                 <td class="border bg-gray-300 p-3">
                                     วิทยากร
-                                    <a class="ms-6 cursor-pointer rounded py-3 text-green-600 hover:text-green-800" href="{{ env("APP_URL") }}/nurse/admin/export/excel/datelecture/{{ $date->id }}">
+                                    <a class="ms-6 cursor-pointer rounded py-3 text-green-600 hover:text-green-800" href="{{ route("nurse.admin.export.excel.datelecture", $date->id) }}">
                                         <i class="fa-solid fa-file-excel"></i> รายชื่อวิทยากร
                                     </a>
                                 </td>
@@ -139,7 +139,7 @@
                     allowOutsideClick: false,
                     showConfirmButton: false,
                 })
-                axios.post('{{ env("APP_URL") }}/nurse/admin/createTransaction', {
+                axios.post('{{ route("nurse.admin.transactions.create") }}', {
                     'project_id': '{{ $project->id }}',
                     'time_id': id,
                     'user': alert.value
@@ -202,7 +202,7 @@
                     allowOutsideClick: false,
                     showConfirmButton: false,
                 })
-                axios.post('{{ env("APP_URL") }}/nurse/admin/addLecture', {
+                axios.post('{{ route("nurse.admin.lecture.add") }}', {
                     'date_id': id,
                     'user': alert.value
                 }).then((res) => {
@@ -243,7 +243,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/admin/deleteLecture', {
+                axios.post('{{ route("nurse.admin.lecture.delete") }}', {
                     'lecture_id': id
                 }).then((res) => {
                     Swal.fire({
@@ -274,7 +274,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/admin/deleteProject', {
+                axios.post('{{ route("nurse.admin.project.delete") }}', {
                     'project_id': id
                 }).then((res) => {
                     Swal.fire({
@@ -284,7 +284,7 @@
                         confirmButtonColor: 'green'
                     }).then(function(isConfirmed) {
                         if (isConfirmed) {
-                            window.location = '{{ env("APP_URL") }}/nurse/admin';
+                            window.location = '{{ route("nurse.admin.index") }}';
                         }
                     })
                 });

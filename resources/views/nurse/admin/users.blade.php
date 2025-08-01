@@ -64,7 +64,7 @@
         function searchUser() {
             var userid = $('#searchInput').val().toLowerCase();
 
-            axios.post('{{ env("APP_URL") }}/nurse/admin/users/search', {
+            axios.post('{{ route("nurse.admin.users.search") }}', {
                 'userid': userid,
             }).then((res) => {
                 html = '';
@@ -99,7 +99,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/admin/resetpassword', {
+                axios.post('{{ route("nurse.admin.users.resetpassword") }}', {
                     'userid': userid,
                 }).then((res) => {
                     Swal.fire({

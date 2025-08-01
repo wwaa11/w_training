@@ -28,12 +28,12 @@
             userid = $('#userid').val()
             password = $('#password').val()
 
-            axios.post('{{ env("APP_URL") }}/login', {
+            axios.post('{{ route("login") }}', {
                 'userid': userid,
                 'password': password,
             }).then((res) => {
                 if (res.data.status == 'success') {
-                    window.location.href = '{{ env("APP_URL") }}/'
+                    window.location.href = '{{ route("index") }}'
                 } else {
                     Swal.fire({
                         title: res.data.message,

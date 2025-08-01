@@ -18,7 +18,7 @@
                     <div class="mb-8">
                         <div class="m-3 flex items-center text-2xl">
                             <div class="flex-1 text-red-600">{{ $key }}</div>
-                            {{-- <a class="ml-2 rounded bg-blue-600 px-4 py-2 text-base font-semibold text-white shadow transition hover:bg-blue-700" href="{{ env("APP_URL") }}/nurse/admin/userscoreexport/{{ $key }}">
+                            {{-- <a class="ml-2 rounded bg-blue-600 px-4 py-2 text-base font-semibold text-white shadow transition hover:bg-blue-700" href="{{ route('nurse.admin.score.users.export', $key) }}">
                                 Export
                             </a> --}}
                             <button class="download-table-btn ml-2 rounded bg-green-600 px-4 py-2 text-base font-semibold text-white shadow transition hover:bg-green-700" data-table-id="table-{{ $loop->index }}">Export</button>
@@ -73,7 +73,7 @@
             })
 
             dept = $('#selectDepartment').find(":selected").val();
-            window.location.replace('{{ env("APP_URL") }}/nurse/admin/userscore?department=' + dept);
+            window.location.replace('{{ route("nurse.admin.score.users") }}?department=' + dept);
         }
         // Excel Export Helper using SheetJS
         function downloadTableAsExcel(tableId, filename) {

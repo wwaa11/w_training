@@ -18,7 +18,7 @@
                 countdownElement.text(`Redirecting in ${countdown} seconds...`);
                 if (countdown <= 0) {
                     clearInterval(interval);
-                    window.location.href = '{{ env("APP_URL") }}/';
+                    window.location.href = '{{ route("index") }}';
                 }
             }, 1000);
         });

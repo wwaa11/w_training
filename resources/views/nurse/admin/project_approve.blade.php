@@ -5,8 +5,8 @@
 @section("content")
     <div class="m-auto w-full p-3 md:w-3/4">
         <div class="text-2xl font-bold">
-            <a class="text-blue-600" href="{{ env("APP_URL") }}/nurse/admin">Training Management</a>
-            / <a class="text-blue-600" href="{{ env("APP_URL") }}/nurse/admin/project/{{ $project->id }}">{{ $project->title }}</a>
+            <a class="text-blue-600" href="{{ route("nurse.admin.index") }}">Training Management</a>
+            / <a class="text-blue-600" href="{{ route("nurse.admin.project.management", $project->id) }}">{{ $project->title }}</a>
             / Approve
         </div>
         <hr>
@@ -92,7 +92,7 @@
 
             type = $('#searchType').find(":selected").val();
             time = $('#searchTime').find(":selected").val();
-            window.location.replace('{{ env("APP_URL") }}/nurse/admin/approve?project={{ $project->id }}&sign=' + type + '&time=' + time);
+            window.location.replace('{{ route("nurse.admin.approve.index") }}?project={{ $project->id }}&sign=' + type + '&time=' + time);
         }
 
         $('#selectall').click(function() {
@@ -155,7 +155,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/admin/approveUser', {
+                axios.post('{{ route("nurse.admin.approve.user") }}', {
                     'id': id,
                 }).then((res) => {
                     Swal.fire({
@@ -184,7 +184,7 @@
             })
 
             if (alert.isConfirmed) {
-                axios.post('{{ env("APP_URL") }}/nurse/admin/approveUserArray', {
+                axios.post('{{ route("nurse.admin.approve.userArray") }}', {
                     'id': arraycheckbox,
                 }).then((res) => {
                     Swal.fire({

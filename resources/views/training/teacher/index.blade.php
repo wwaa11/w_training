@@ -238,7 +238,7 @@
     <div class="h-20"></div>
     <nav class="navbar">
         <div class="navbar-logo">
-            <a href="{{ env("APP_URL") }}/">
+            <a href="{{ route("index") }}">
                 <img class="my-auto aspect-auto max-h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
             <span class="navbar-title hidden lg:block">Trainings </span>
@@ -247,7 +247,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="navbar-links hidden lg:flex">
-            <a href="{{ env("APP_URL") }}/">Approve Check-in</a>
+            <a href="{{ route("index") }}">Approve Check-in</a>
         </div>
         <div class="navbar-user hidden lg:flex">
             <div class="navbar-user-info">
@@ -260,7 +260,7 @@
         </div>
     </nav>
     <div class="mobile-menu fade-in" id="mobileMenu">
-        <a href="{{ env("APP_URL") }}/">Approve Check-in</a>
+        <a href="{{ route("index") }}">Approve Check-in</a>
         <div class="user-block">
             {{ session("name") }}
             <div class="department">{{ session("department") }}</div>
@@ -461,8 +461,8 @@
         }
 
         function logout() {
-            axios.post('{{ env("APP_URL") }}/logout').then((res) => {
-                window.location.href = '{{ env("APP_URL") }}/login';
+            axios.post('{{ route("logout") }}').then((res) => {
+                window.location.href = '{{ route("login") }}';
             });
         }
         // Hide mobile menu on resize to desktop

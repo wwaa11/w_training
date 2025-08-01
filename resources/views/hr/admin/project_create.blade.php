@@ -2,7 +2,7 @@
 @section("content")
     <div class="m-auto w-full md:w-3/4">
         <div class="m-3">
-            <form id="form" action="{{ env("APP_URL") }}/admin/createProject" method="POST">
+            <form id="form" action="{{ route("hr.admin.create") }}" method="POST">
                 @csrf
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-1">
                     <div class="flex flex-col rounded bg-white p-3" id="Project_Detail">
@@ -162,7 +162,7 @@
             dateEnd = $('#date_end').val()
             seat = $('#date_seat').val()
             if (dateStart != '' && dateEnd != '') {
-                await axios.post('{{ env("APP_URL") }}/admin/addDate', {
+                await axios.post('{{ route("hr.admin.function") }}', {
                     'start': dateStart,
                     'end': dateEnd,
                 }).then((res) => {

@@ -238,7 +238,7 @@
     <div class="h-20"></div>
     <nav class="navbar">
         <div class="navbar-logo">
-            <a href="{{ env("APP_URL") }}/">
+            <a href="{{ route("index") }}">
                 <img class="my-auto aspect-auto max-h-16" src="{{ url("images/Side Logo.png") }}" alt="">
             </a>
             <span class="navbar-title hidden lg:block">Trainings </span>
@@ -247,11 +247,11 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="navbar-links hidden lg:flex">
-            <a href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
-            <a href="{{ env("APP_URL") }}/training">Schedule</a>
-            <a href="{{ env("APP_URL") }}/training/history">History</a>
+            <a href="{{ route("index") }}">เลือกแผนกการลงทะเบียน</a>
+            <a href="{{ route("training.index") }}">Schedule</a>
+            <a href="{{ route("training.history") }}">History</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
-                <a href="{{ env("APP_URL") }}/training/admin">Management</a>
+                <a href="{{ route("training.admin.index") }}">Management</a>
             @endif
         </div>
         <div class="navbar-user hidden lg:flex">
@@ -260,23 +260,23 @@
                 <div class="department">{{ session("department") }}</div>
             </div>
             <div class="navbar-user-actions">
-                <a href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
+                <a href="{{ route("profile.index") }}">ข้อมูลผู้ใช้งาน</a>
                 <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
             </div>
         </div>
     </nav>
     <div class="mobile-menu fade-in" id="mobileMenu">
-        <a href="{{ env("APP_URL") }}/">เลือกแผนกการลงทะเบียน</a>
-        <a href="{{ env("APP_URL") }}/training">Schedule</a>
-        <a href="{{ env("APP_URL") }}/training/history">History</a>
+        <a href="{{ route("index") }}">เลือกแผนกการลงทะเบียน</a>
+        <a href="{{ route("training.index") }}">Schedule</a>
+        <a href="{{ route("training.history") }}">History</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
-            <a href="{{ env("APP_URL") }}/training/admin">Management</a>
+            <a href="{{ route("training.admin.index") }}">Management</a>
         @endif
         <div class="user-block">
             {{ Auth::user()->userid }} {{ session("name") }}
             <div class="department">{{ session("department") }}</div>
             <div class="user-actions">
-                <a href="{{ env("APP_URL") }}/profile">ข้อมูลผู้ใช้งาน</a>
+                <a href="{{ route("profile.index") }}">ข้อมูลผู้ใช้งาน</a>
                 <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
             </div>
         </div>
@@ -313,8 +313,8 @@
         }
 
         function logout() {
-            axios.post('{{ env("APP_URL") }}/logout').then((res) => {
-                window.location.href = '{{ env("APP_URL") }}/login';
+            axios.post('{{ route("logout") }}').then((res) => {
+                window.location.href = '{{ route("login") }}';
             });
         }
         // Hide mobile menu on resize to desktop
