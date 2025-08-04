@@ -2076,10 +2076,9 @@ class HRController extends Controller
         try {
             $request->validate([
                 'time_id'     => 'required|integer|exists:hr_times,id',
-                'user_id'     => 'required|integer|exists:users,userid',
+                'user_id'     => 'required|integer|exists:users,id',
                 'seat_number' => 'required|integer|min:1',
             ]);
-
             $project = HrProject::findOrFail($projectId);
             $time    = HrTime::findOrFail($request->time_id);
 
@@ -2109,9 +2108,16 @@ class HRController extends Controller
                 return response()->json(['error' => 'Seat number ' . $request->seat_number . ' is already assigned to another user.'], 400);
             }
 
+            // Find user by ID (since user_id from frontend is the User model's id)
+            $user = User::find($request->user_id);
+
+            if (! $user) {
+                return response()->json(['error' => 'User not found.'], 404);
+            }
+
             // Check if user already has a seat in this time slot
             $existingUserSeat = HrSeat::where('time_id', $request->time_id)
-                ->where('user_id', $request->user_id)
+                ->where('user_id', $user->id)
                 ->where('seat_delete', false)
                 ->first();
 
@@ -2125,7 +2131,7 @@ class HRController extends Controller
                 // Create new seat assignment
                 HrSeat::create([
                     'time_id'     => $request->time_id,
-                    'user_id'     => $request->user_id,
+                    'user_id'     => $user->id,
                     'department'  => $registration->user->department ?? 'Unknown',
                     'seat_number' => $request->seat_number,
                     'seat_delete' => false,
@@ -2155,8 +2161,15 @@ class HRController extends Controller
                 'user_id' => 'required|integer',
             ]);
 
+            // Find user by ID (since user_id from frontend is the User model's id)
+            $user = User::find($request->user_id);
+
+            if (! $user) {
+                return response()->json(['error' => 'User not found.'], 404);
+            }
+
             $seat = HrSeat::where('time_id', $request->time_id)
-                ->where('user_id', $request->user_id)
+                ->where('user_id', $user->id)
                 ->where('seat_delete', false)
                 ->first();
 
@@ -2459,7 +2472,7 @@ class HRController extends Controller
         $cleanedCount = 0;
 
         foreach ($times as $time) {
-            // Get duplicate seats for this time
+            // Clean up exact duplicates (same user_id, department, seat_number)
             $duplicates = HrSeat::where('time_id', $time->id)
                 ->select('user_id', 'department', 'seat_number')
                 ->selectRaw('COUNT(*) as count')
@@ -2480,11 +2493,51 @@ class HRController extends Controller
 
                 $cleanedCount += $seatsToDelete;
             }
+
+            // Clean up seat number conflicts (same seat number assigned to different users)
+            $seatConflicts = HrSeat::where('time_id', $time->id)
+                ->select('seat_number')
+                ->selectRaw('COUNT(*) as count')
+                ->groupBy('seat_number')
+                ->having('count', '>', 1)
+                ->get();
+
+            foreach ($seatConflicts as $conflict) {
+                // Keep the first assignment, delete the rest
+                $seatsToDelete = HrSeat::where('time_id', $time->id)
+                    ->where('seat_number', $conflict->seat_number)
+                    ->orderBy('created_at', 'desc')
+                    ->skip(1)
+                    ->take($conflict->count - 1)
+                    ->delete();
+
+                $cleanedCount += $seatsToDelete;
+            }
+
+            // Clean up user conflicts (same user assigned to multiple seats)
+            $userConflicts = HrSeat::where('time_id', $time->id)
+                ->select('user_id')
+                ->selectRaw('COUNT(*) as count')
+                ->groupBy('user_id')
+                ->having('count', '>', 1)
+                ->get();
+
+            foreach ($userConflicts as $conflict) {
+                // Keep the first assignment, delete the rest
+                $seatsToDelete = HrSeat::where('time_id', $time->id)
+                    ->where('user_id', $conflict->user_id)
+                    ->orderBy('created_at', 'desc')
+                    ->skip(1)
+                    ->take($conflict->count - 1)
+                    ->delete();
+
+                $cleanedCount += $seatsToDelete;
+            }
         }
 
         return response()->json([
             'success'       => true,
-            'message'       => "Cleaned up {$cleanedCount} duplicate seats",
+            'message'       => "Cleaned up {$cleanedCount} duplicate/conflicting seats",
             'cleaned_count' => $cleanedCount,
         ]);
     }

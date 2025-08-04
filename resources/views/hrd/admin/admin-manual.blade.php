@@ -1,39 +1,39 @@
 @extends("layouts.hrd")
 
 @section("content")
-    <div class="container mx-auto px-4">
-        <div class="rounded-lg bg-white p-6 shadow-lg">
-            <div class="mb-6 flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-gray-800">คู่มือการใช้งานระบบ HRD สำหรับผู้ดูแลระบบ</h1>
-                <a class="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.index") }}">
-                    <i class="fas fa-arrow-left"></i>
-                    กลับไปหน้าหลัก
+    <div class="container mx-auto px-3 pb-16">
+        <div class="rounded-xl bg-white p-4 shadow-lg sm:p-6">
+            <div class="mb-4 flex items-center justify-between sm:mb-6">
+                <h1 class="text-xl font-bold text-gray-800 sm:text-2xl lg:text-3xl">คู่มือการใช้งานระบบ HRD สำหรับผู้ดูแลระบบ</h1>
+                <a class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 font-semibold text-white transition duration-200 hover:bg-blue-700 sm:gap-2 sm:px-6 sm:py-3" href="{{ route("hrd.admin.index") }}">
+                    <i class="fas fa-arrow-left text-sm sm:text-base"></i>
+                    <span class="text-xs sm:text-sm">กลับไปหน้าหลัก</span>
                 </a>
             </div>
 
             <!-- Quick Reference Card -->
-            <div class="mb-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
-                <h2 class="mb-4 text-xl font-semibold">📋 Quick Reference</h2>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div class="rounded-lg bg-white/20 p-4 backdrop-blur-sm">
-                        <h3 class="mb-2 font-semibold">🚀 การเริ่มต้น</h3>
-                        <ul class="space-y-1 text-sm">
+            <div class="mb-6 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white sm:mb-8 sm:p-6">
+                <h2 class="mb-3 text-lg font-semibold sm:mb-4 sm:text-xl">📋 Quick Reference</h2>
+                <div class="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+                    <div class="rounded-lg bg-white/20 p-3 backdrop-blur-sm sm:p-4">
+                        <h3 class="mb-1.5 text-sm font-semibold sm:mb-2 sm:text-base">🚀 การเริ่มต้น</h3>
+                        <ul class="space-y-1 text-xs sm:text-sm">
                             <li>• สร้างโปรเจกต์ใหม่</li>
                             <li>• กำหนดวันที่และเวลา</li>
                             <li>• เปิดให้ลงทะเบียน</li>
                         </ul>
                     </div>
-                    <div class="rounded-lg bg-white/20 p-4 backdrop-blur-sm">
-                        <h3 class="mb-2 font-semibold">👥 การจัดการ</h3>
-                        <ul class="space-y-1 text-sm">
+                    <div class="rounded-lg bg-white/20 p-3 backdrop-blur-sm sm:p-4">
+                        <h3 class="mb-1.5 text-sm font-semibold sm:mb-2 sm:text-base">👥 การจัดการ</h3>
+                        <ul class="space-y-1 text-xs sm:text-sm">
                             <li>• อนุมัติการลงทะเบียน</li>
                             <li>• จัดที่นั่งอัตโนมัติ</li>
-                            <li>• ติดตามการเข้าร่วม</li>
+                            <li>• จัดการผลการประเมิน</li>
                         </ul>
                     </div>
-                    <div class="rounded-lg bg-white/20 p-4 backdrop-blur-sm">
-                        <h3 class="mb-2 font-semibold">📊 การรายงาน</h3>
-                        <ul class="space-y-1 text-sm">
+                    <div class="rounded-lg bg-white/20 p-3 backdrop-blur-sm sm:p-4">
+                        <h3 class="mb-1.5 text-sm font-semibold sm:mb-2 sm:text-base">📊 การรายงาน</h3>
+                        <ul class="space-y-1 text-xs sm:text-sm">
                             <li>• ส่งออก DBD Report</li>
                             <li>• สร้าง Onebook</li>
                             <li>• ดูสถิติการเข้าร่วม</li>
@@ -43,69 +43,71 @@
             </div>
 
             <!-- Table of Contents -->
-            <div class="mb-8 rounded-lg bg-gray-50 p-6">
-                <h2 class="mb-4 text-xl font-semibold text-gray-800">สารบัญ</h2>
-                <ul class="space-y-2 text-blue-600">
-                    <li><a class="hover:underline" href="#overview">1. ภาพรวมระบบ</a></li>
-                    <li><a class="hover:underline" href="#project-types">2. ประเภทโปรเจกต์</a></li>
-                    <li><a class="hover:underline" href="#project-management">3. การจัดการโปรเจกต์</a></li>
-                    <li><a class="hover:underline" href="#registration-management">4. การจัดการการลงทะเบียน</a></li>
-                    <li><a class="hover:underline" href="#approval-system">5. ระบบการอนุมัติ</a></li>
-                    <li><a class="hover:underline" href="#seat-management">6. การจัดการที่นั่ง</a></li>
-                    <li><a class="hover:underline" href="#export-features">7. การส่งออกข้อมูล</a></li>
-                    <li><a class="hover:underline" href="#user-management">8. การจัดการผู้ใช้</a></li>
-                    <li><a class="hover:underline" href="#troubleshooting">9. การแก้ไขปัญหา</a></li>
+            <div class="mb-6 rounded-lg bg-gray-50 p-4 sm:mb-8 sm:p-6">
+                <h2 class="mb-3 text-lg font-semibold text-gray-800 sm:mb-4 sm:text-xl">สารบัญ</h2>
+                <ul class="space-y-1.5 text-blue-600 sm:space-y-2">
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#overview">1. ภาพรวมระบบ</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#project-types">2. ประเภทโปรเจกต์</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#project-management">3. การจัดการโปรเจกต์</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#registration-management">4. การจัดการการลงทะเบียน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#approval-system">5. ระบบการอนุมัติ</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#seat-management">6. การจัดการที่นั่ง</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#result-management">7. การจัดการผลการประเมิน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#export-features">8. การส่งออกข้อมูล</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#user-management">9. การจัดการผู้ใช้</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#troubleshooting">10. การแก้ไขปัญหา</a></li>
                 </ul>
             </div>
 
             <!-- 1. ภาพรวมระบบ -->
-            <section class="mb-8" id="overview">
-                <h2 class="mb-4 text-2xl font-bold text-gray-800">1. ภาพรวมระบบ</h2>
-                <div class="rounded-lg bg-blue-50 p-6">
-                    <p class="mb-4 text-gray-700">
+            <section class="mb-6 sm:mb-8" id="overview">
+                <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">1. ภาพรวมระบบ</h2>
+                <div class="rounded-lg bg-blue-50 p-4 sm:p-6">
+                    <p class="mb-3 text-sm text-gray-700 sm:mb-4 sm:text-base">
                         ระบบ HRD (Human Resource Development) เป็นระบบจัดการการฝึกอบรมและพัฒนาบุคลากร
                         ที่ช่วยให้ผู้ดูแลระบบสามารถจัดการโปรเจกต์การฝึกอบรม การลงทะเบียน การอนุมัติ และการติดตามผลได้อย่างมีประสิทธิภาพ
+                        ระบบได้รับการออกแบบให้ใช้งานง่ายทั้งบนคอมพิวเตอร์และมือถือ
                     </p>
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div class="rounded-lg bg-white p-4 shadow">
-                            <h3 class="mb-2 font-semibold text-blue-600">การจัดการโปรเจกต์</h3>
-                            <p class="text-sm text-gray-600">สร้าง แก้ไข และลบโปรเจกต์การฝึกอบรม</p>
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+                        <div class="rounded-lg bg-white p-3 shadow sm:p-4">
+                            <h3 class="mb-1.5 text-sm font-semibold text-blue-600 sm:mb-2 sm:text-base">การจัดการโปรเจกต์</h3>
+                            <p class="text-xs text-gray-600 sm:text-sm">สร้าง แก้ไข และลบโปรเจกต์การฝึกอบรม</p>
                         </div>
-                        <div class="rounded-lg bg-white p-4 shadow">
-                            <h3 class="mb-2 font-semibold text-green-600">การลงทะเบียน</h3>
-                            <p class="text-sm text-gray-600">จัดการการลงทะเบียนของผู้เข้าร่วม</p>
+                        <div class="rounded-lg bg-white p-3 shadow sm:p-4">
+                            <h3 class="mb-1.5 text-sm font-semibold text-green-600 sm:mb-2 sm:text-base">การลงทะเบียน</h3>
+                            <p class="text-xs text-gray-600 sm:text-sm">จัดการการลงทะเบียนของผู้เข้าร่วม</p>
                         </div>
-                        <div class="rounded-lg bg-white p-4 shadow">
-                            <h3 class="mb-2 font-semibold text-purple-600">การรายงาน</h3>
-                            <p class="text-sm text-gray-600">ส่งออกข้อมูลและรายงานต่างๆ</p>
+                        <div class="rounded-lg bg-white p-3 shadow sm:p-4">
+                            <h3 class="mb-1.5 text-sm font-semibold text-purple-600 sm:mb-2 sm:text-base">การรายงานและประเมิน</h3>
+                            <p class="text-xs text-gray-600 sm:text-sm">ส่งออกข้อมูลและจัดการผลการประเมิน</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- 2. ประเภทโปรเจกต์ -->
-            <section class="mb-8" id="project-types">
-                <h2 class="mb-4 text-2xl font-bold text-gray-800">2. ประเภทโปรเจกต์</h2>
-                <div class="space-y-4">
-                    <div class="rounded-lg border border-gray-200 p-6">
-                        <h3 class="mb-3 text-lg font-semibold text-blue-600">Single Registration (ลงทะเบียน 1 ครั้ง)</h3>
-                        <ul class="ml-6 list-disc space-y-2 text-gray-700">
+            <section class="mb-6 sm:mb-8" id="project-types">
+                <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">2. ประเภทโปรเจกต์</h2>
+                <div class="space-y-3 sm:space-y-4">
+                    <div class="rounded-lg border border-gray-200 p-4 sm:p-6">
+                        <h3 class="mb-2 text-base font-semibold text-blue-600 sm:mb-3 sm:text-lg">Single Registration (ลงทะเบียน 1 ครั้ง)</h3>
+                        <ul class="ml-4 list-disc space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
                             <li>ผู้ใช้สามารถลงทะเบียนได้เพียง 1 ครั้งต่อโปรเจกต์</li>
                             <li>เหมาะสำหรับกิจกรรมที่ต้องการจำกัดจำนวนผู้เข้าร่วม</li>
                             <li>ระบบจะตรวจสอบการลงทะเบียนซ้ำอัตโนมัติ</li>
                         </ul>
                     </div>
-                    <div class="rounded-lg border border-gray-200 p-6">
-                        <h3 class="mb-3 text-lg font-semibold text-green-600">Multiple Registration (ลงทะเบียนได้มากกว่า 1 ครั้ง)</h3>
-                        <ul class="ml-6 list-disc space-y-2 text-gray-700">
+                    <div class="rounded-lg border border-gray-200 p-4 sm:p-6">
+                        <h3 class="mb-2 text-base font-semibold text-green-600 sm:mb-3 sm:text-lg">Multiple Registration (ลงทะเบียนได้มากกว่า 1 ครั้ง)</h3>
+                        <ul class="ml-4 list-disc space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
                             <li>ผู้ใช้สามารถลงทะเบียนได้หลายครั้งในโปรเจกต์เดียวกัน</li>
                             <li>เหมาะสำหรับกิจกรรมที่จัดหลายรอบหรือหลายวัน</li>
                             <li>สามารถเลือกช่วงเวลาและวันที่ที่ต้องการได้</li>
                         </ul>
                     </div>
-                    <div class="rounded-lg border border-gray-200 p-6">
-                        <h3 class="mb-3 text-lg font-semibold text-purple-600">No Registration (ไม่ต้องลงทะเบียน)</h3>
-                        <ul class="ml-6 list-disc space-y-2 text-gray-700">
+                    <div class="rounded-lg border border-gray-200 p-4 sm:p-6">
+                        <h3 class="mb-2 text-base font-semibold text-purple-600 sm:mb-3 sm:text-lg">No Registration (ไม่ต้องลงทะเบียน)</h3>
+                        <ul class="ml-4 list-disc space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
                             <li>ผู้ใช้ไม่ต้องลงทะเบียนล่วงหน้า</li>
                             <li>สามารถเข้าร่วมได้โดยตรงในวันงาน</li>
                             <li>เหมาะสำหรับกิจกรรมเปิดกว้างหรือการประชุมทั่วไป</li>
@@ -316,9 +318,73 @@
                 </div>
             </section>
 
-            <!-- 7. การส่งออกข้อมูล -->
+            <!-- 7. การจัดการผลการประเมิน -->
+            <section class="mb-6 sm:mb-8" id="result-management">
+                <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">7. การจัดการผลการประเมิน</h2>
+
+                <div class="mb-4 sm:mb-6">
+                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การสร้างหัวข้อการประเมิน</h3>
+                    <div class="rounded-lg bg-gray-50 p-3 sm:p-4">
+                        <ol class="ml-4 list-decimal space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
+                            <li>ไปที่หน้า "การจัดการผลการประเมิน" ของโปรเจกต์</li>
+                            <li>คลิกปุ่ม "สร้างหัวข้อการประเมิน"</li>
+                            <li>กรอกชื่อหัวข้อการประเมิน (เช่น ความรู้ความเข้าใจ, ทักษะการปฏิบัติ)</li>
+                            <li>กำหนดน้ำหนักหรือคะแนนเต็มของแต่ละหัวข้อ</li>
+                            <li>คลิก "บันทึก" เพื่อสร้างหัวข้อ</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="mb-4 sm:mb-6">
+                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การบันทึกผลการประเมิน</h3>
+                    <div class="rounded-lg bg-gray-50 p-3 sm:p-4">
+                        <ol class="ml-4 list-decimal space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
+                            <li>เลือกผู้เข้าร่วมที่ต้องการบันทึกผลการประเมิน</li>
+                            <li>กรอกคะแนนในแต่ละหัวข้อการประเมิน</li>
+                            <li>เพิ่มหมายเหตุหรือข้อเสนอแนะ (ถ้ามี)</li>
+                            <li>คลิก "บันทึกผลการประเมิน"</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="mb-4 sm:mb-6">
+                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การแก้ไขผลการประเมิน</h3>
+                    <div class="rounded-lg bg-gray-50 p-3 sm:p-4">
+                        <ol class="ml-4 list-decimal space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
+                            <li>ค้นหาผลการประเมินที่ต้องการแก้ไข</li>
+                            <li>คลิกปุ่ม "แก้ไข" ข้างผลการประเมิน</li>
+                            <li>แก้ไขคะแนนหรือหมายเหตุตามต้องการ</li>
+                            <li>คลิก "อัปเดต" เพื่อบันทึกการเปลี่ยนแปลง</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="rounded-lg bg-purple-50 p-3 sm:p-4">
+                    <h3 class="mb-2 text-sm font-semibold text-purple-800 sm:text-base">คุณสมบัติของระบบผลการประเมิน</h3>
+                    <div class="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-2">
+                        <div class="rounded-lg bg-white p-2.5 sm:p-3">
+                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การประเมินหลายหัวข้อ</h4>
+                            <p class="text-xs text-gray-600 sm:text-sm">รองรับการประเมินหลายหัวข้อต่อกิจกรรม</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-2.5 sm:p-3">
+                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การคำนวณอัตโนมัติ</h4>
+                            <p class="text-xs text-gray-600 sm:text-sm">คำนวณคะแนนรวมและเปอร์เซ็นต์อัตโนมัติ</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-2.5 sm:p-3">
+                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การส่งออกผลการประเมิน</h4>
+                            <p class="text-xs text-gray-600 sm:text-sm">ส่งออกผลการประเมินในรูปแบบ Excel</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-2.5 sm:p-3">
+                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การติดตามประวัติ</h4>
+                            <p class="text-xs text-gray-600 sm:text-sm">ติดตามประวัติการประเมินของผู้เข้าร่วม</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. การส่งออกข้อมูล -->
             <section class="mb-8" id="export-features">
-                <h2 class="mb-4 text-2xl font-bold text-gray-800">7. การส่งออกข้อมูล</h2>
+                <h2 class="mb-4 text-2xl font-bold text-gray-800">8. การส่งออกข้อมูล</h2>
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div class="rounded-lg border border-gray-200 p-6">
@@ -363,9 +429,9 @@
                 </div>
             </section>
 
-            <!-- 8. การจัดการผู้ใช้ -->
+            <!-- 9. การจัดการผู้ใช้ -->
             <section class="mb-8" id="user-management">
-                <h2 class="mb-4 text-2xl font-bold text-gray-800">8. การจัดการผู้ใช้</h2>
+                <h2 class="mb-4 text-2xl font-bold text-gray-800">9. การจัดการผู้ใช้</h2>
 
                 <div class="rounded-lg bg-gray-50 p-6">
                     <h3 class="mb-3 text-lg font-semibold text-gray-700">การค้นหาผู้ใช้</h3>
@@ -386,9 +452,32 @@
                 </div>
             </section>
 
-            <!-- 9. การแก้ไขปัญหา -->
-            <section class="mb-8" id="troubleshooting">
-                <h2 class="mb-4 text-2xl font-bold text-gray-800">9. การแก้ไขปัญหา</h2>
+            <!-- 10. การใช้งานบนมือถือ -->
+            <section class="mb-8" id="mobile-admin">
+                <h2 class="mb-4 text-2xl font-bold text-gray-800">10. การใช้งานบนมือถือ</h2>
+
+                <div class="rounded-lg bg-gray-50 p-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การเข้าสู่ระบบบนมือถือ</h3>
+                    <ul class="ml-6 list-disc space-y-2 text-gray-700">
+                        <li>เข้าสู่ระบบ HRD ผ่านแอปพลิเคชันบนมือถือ</li>
+                        <li>ตรวจสอบข้อมูลผู้ใช้และสิทธิ์</li>
+                        <li>ดูรายการโปรเจกต์และการลงทะเบียน</li>
+                    </ul>
+                </div>
+
+                <div class="mt-6 rounded-lg bg-gray-50 p-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การจัดการผลการประเมินบนมือถือ</h3>
+                    <ul class="ml-6 list-disc space-y-2 text-gray-700">
+                        <li>ดูรายการผลการประเมินทั้งหมด</li>
+                        <li>สร้างผลการประเมินใหม่</li>
+                        <li>แก้ไขผลการประเมินที่มีอยู่</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 10. การแก้ไขปัญหา -->
+            <section class="mb-6 sm:mb-8" id="troubleshooting">
+                <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">10. การแก้ไขปัญหา</h2>
 
                 <div class="space-y-6">
                     <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-6">
@@ -445,10 +534,10 @@
             </section>
 
             <!-- Back to top button -->
-            <div class="mt-8 text-center">
-                <a class="inline-flex items-center gap-2 rounded-lg bg-gray-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-gray-700" href="#overview">
-                    <i class="fas fa-arrow-up"></i>
-                    กลับขึ้นด้านบน
+            <div class="mt-6 text-center sm:mt-8">
+                <a class="inline-flex items-center gap-1.5 rounded-lg bg-gray-600 px-4 py-2 font-semibold text-white transition duration-200 hover:bg-gray-700 sm:gap-2 sm:px-6 sm:py-3" href="#overview">
+                    <i class="fas fa-arrow-up text-sm sm:text-base"></i>
+                    <span class="text-xs sm:text-sm">กลับขึ้นด้านบน</span>
                 </a>
             </div>
         </div>

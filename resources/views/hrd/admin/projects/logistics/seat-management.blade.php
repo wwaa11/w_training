@@ -21,6 +21,9 @@
                     <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl" onclick="triggerSeatAssignment()">
                         <i class="fas fa-cogs mr-2"></i> จัดที่นั่งอัตโนมัติ
                     </button>
+                    <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl" onclick="cleanupDuplicateSeats()">
+                        <i class="fas fa-broom mr-2"></i> ล้างข้อมูลซ้ำ
+                    </button>
                     <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-purple-600 hover:to-purple-700 hover:shadow-xl" onclick="exportSeatData()">
                         <i class="fas fa-download mr-2"></i> ส่งออกข้อมูล
                     </button>
@@ -281,21 +284,21 @@
                             <div class="rounded-lg bg-gray-50 p-4 max-h-64 overflow-y-auto">
                                 ${seats.length > 0 ? 
                                     seats.map(seat => `
-                                                <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-green-500">
-                                                    <div class="flex items-center">
-                                                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                                                            <span class="text-sm font-bold text-green-600">${seat.seat_number}</span>
+                                                        <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-green-500">
+                                                            <div class="flex items-center">
+                                                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                                                    <span class="text-sm font-bold text-green-600">${seat.seat_number}</span>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="font-medium text-gray-900">${seat.user_name}</span>
+                                                                    <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${seat.department}</span>
+                                                                </div>
+                                                            </div>
+                                                            <button onclick="removeSeat(${session.time_id}, ${seat.user_id})" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
                                                         </div>
-                                                        <div>
-                                                            <span class="font-medium text-gray-900">${seat.user_name}</span>
-                                                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${seat.department}</span>
-                                                        </div>
-                                                    </div>
-                                                    <button onclick="removeSeat(${session.time_id}, ${seat.user_id})" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            `).join('') : 
+                                                    `).join('') : 
                                     '<div class="text-center py-8 text-gray-500"><i class="fas fa-chair text-3xl mb-2"></i><p>ยังไม่มีที่นั่งที่จัด</p></div>'
                                 }
                             </div>
@@ -310,21 +313,21 @@
                             <div class="rounded-lg bg-gray-50 p-4 max-h-64 overflow-y-auto">
                                 ${unassignedCount > 0 ? 
                                     registrations.filter(r => !r.seat_number).map(reg => `
-                                                <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-yellow-500">
-                                                    <div class="flex items-center">
-                                                        <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
-                                                            <i class="fas fa-user text-yellow-600 text-sm"></i>
+                                                        <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-yellow-500">
+                                                            <div class="flex items-center">
+                                                                <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                                                    <i class="fas fa-user text-yellow-600 text-sm"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="font-medium text-gray-900">${reg.user_name}</span>
+                                                                    <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">${reg.department}</span>
+                                                                </div>
+                                                            </div>
+                                                            <button onclick="assignSeat(${session.time_id}, ${reg.user_id})" class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
                                                         </div>
-                                                        <div>
-                                                            <span class="font-medium text-gray-900">${reg.user_name}</span>
-                                                            <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">${reg.department}</span>
-                                                        </div>
-                                                    </div>
-                                                    <button onclick="assignSeat(${session.time_id}, ${reg.user_id})" class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50">
-                                                        <i class="fas fa-plus"></i>
-                                                    </button>
-                                                </div>
-                                            `).join('') : 
+                                                    `).join('') : 
                                     '<div class="text-center py-8 text-gray-500"><i class="fas fa-check-circle text-3xl mb-2"></i><p>ไม่มีผู้ใช้ที่รอจัดที่นั่ง</p></div>'
                                 }
                             </div>
@@ -379,6 +382,27 @@
                     .catch(error => {
                         console.error('Error triggering seat assignment:', error);
                         showError('เกิดข้อผิดพลาดในการเริ่มการจัดที่นั่ง กรุณาลองใหม่อีกครั้ง');
+                    })
+                    .finally(() => {
+                        hideLoading();
+                    });
+            }
+        }
+
+        function cleanupDuplicateSeats() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะล้างข้อมูลที่นั่งที่ซ้ำกันสำหรับโปรเจกต์นี้?')) {
+                showLoading();
+
+                axios.post(`{{ route("hrd.admin.seats.cleanup", $project->id) }}`)
+                    .then(response => {
+                        showSuccess(`ล้างข้อมูลซ้ำสำเร็จ! (${response.data.cleaned_count} รายการ)`);
+                        setTimeout(() => {
+                            loadSeatData();
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        console.error('Error cleaning up duplicate seats:', error);
+                        showError('เกิดข้อผิดพลาดในการล้างข้อมูลซ้ำ กรุณาลองใหม่อีกครั้ง');
                     })
                     .finally(() => {
                         hideLoading();

@@ -1,47 +1,47 @@
 @extends("layouts.hrd")
 
 @section("content")
-    <div class="container mx-auto px-4 pb-20">
+    <div class="container mx-auto px-3 pb-16">
         <!-- Breadcrumb -->
-        <nav class="mb-4">
-            <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <nav class="mb-3">
+            <ol class="flex items-center space-x-1.5 text-xs text-gray-500 sm:space-x-2 sm:text-sm">
                 <li><a class="hover:text-blue-600" href="{{ route("hrd.index") }}">โปรแกรม HRD</a></li>
                 <li><i class="fas fa-chevron-right text-xs"></i></li>
-                <li class="text-gray-900">{{ $project->project_name }}</li>
+                <li class="truncate text-gray-900">{{ $project->project_name }}</li>
             </ol>
         </nav>
 
         @if (session("success"))
-            <div class="mb-4 rounded-lg border border-green-400 bg-green-100 px-4 py-3 text-green-700">
+            <div class="mb-3 rounded-lg border border-green-400 bg-green-100 px-3 py-2 text-green-700 sm:px-4 sm:py-3">
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span class="text-sm">{{ session("success") }}</span>
+                    <i class="fas fa-check-circle mr-2 text-sm"></i>
+                    <span class="text-xs sm:text-sm">{{ session("success") }}</span>
                 </div>
             </div>
         @endif
 
         @if (session("error"))
-            <div class="mb-4 rounded-lg border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+            <div class="mb-3 rounded-lg border border-red-400 bg-red-100 px-3 py-2 text-red-700 sm:px-4 sm:py-3">
                 <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span class="text-sm">{{ session("error") }}</span>
+                    <i class="fas fa-exclamation-circle mr-2 text-sm"></i>
+                    <span class="text-xs sm:text-sm">{{ session("error") }}</span>
                 </div>
             </div>
         @endif
 
         @if (session("info"))
-            <div class="mb-4 rounded-lg border border-blue-400 bg-blue-100 px-4 py-3 text-blue-700">
+            <div class="mb-3 rounded-lg border border-blue-400 bg-blue-100 px-3 py-2 text-blue-700 sm:px-4 sm:py-3">
                 <div class="flex items-center">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <span class="text-sm">{{ session("info") }}</span>
+                    <i class="fas fa-info-circle mr-2 text-sm"></i>
+                    <span class="text-xs sm:text-sm">{{ session("info") }}</span>
                 </div>
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="mb-4 rounded-lg border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-                <h4 class="font-bold">กรุณาแก้ไขข้อผิดพลาดต่อไปนี้:</h4>
-                <ul class="mt-2 list-inside list-disc text-sm">
+            <div class="mb-3 rounded-lg border border-red-400 bg-red-100 px-3 py-2 text-red-700 sm:px-4 sm:py-3">
+                <h4 class="text-sm font-bold">กรุณาแก้ไขข้อผิดพลาดต่อไปนี้:</h4>
+                <ul class="mt-2 list-inside list-disc text-xs sm:text-sm">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -49,48 +49,48 @@
             </div>
         @endif
 
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-6">
             <!-- Check-in Section for All Project Types -->
             @if ($availableCheckIns->count() > 0)
-                <div class="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4 shadow-sm sm:p-6">
-                    <div class="mb-4 flex items-center">
-                        <i class="fas fa-clock mr-3 text-2xl text-blue-600"></i>
+                <div class="rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 p-3 shadow-sm sm:p-6">
+                    <div class="mb-3 flex items-center sm:mb-4">
+                        <i class="fas fa-clock mr-2 text-xl text-blue-600 sm:mr-3 sm:text-2xl"></i>
                         <div>
-                            <h2 class="text-xl font-bold text-blue-900 sm:text-2xl">เช็คอินตอนนี้</h2>
-                            <p class="text-sm text-blue-700 sm:text-base">คุณสามารถเช็คอินสำหรับเซสชันต่อไปนี้ได้ตอนนี้:</p>
+                            <h2 class="text-lg font-bold text-blue-900 sm:text-xl lg:text-2xl">เช็คอินตอนนี้</h2>
+                            <p class="text-xs text-blue-700 sm:text-sm lg:text-base">คุณสามารถเช็คอินสำหรับเซสชันต่อไปนี้ได้ตอนนี้:</p>
                         </div>
                     </div>
 
-                    <div class="space-y-3">
+                    <div class="space-y-2 sm:space-y-3">
                         @foreach ($availableCheckIns as $checkIn)
-                            <div class="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
-                                <div class="mb-3">
-                                    <h3 class="font-semibold text-gray-900">{{ $project->project_name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ $checkIn["date"]->date_title }}</p>
-                                    <p class="text-sm text-gray-500">{{ $checkIn["time"]->time_title }}</p>
-                                    <p class="text-xs text-blue-600">
+                            <div class="rounded-lg border border-blue-200 bg-white p-3 shadow-sm sm:p-4">
+                                <div class="mb-2 sm:mb-3">
+                                    <h3 class="text-sm font-semibold text-gray-900 sm:text-base">{{ $project->project_name }}</h3>
+                                    <p class="text-xs text-gray-600 sm:text-sm">{{ $checkIn["date"]->date_title }}</p>
+                                    <p class="text-xs text-gray-500 sm:text-sm">{{ $checkIn["time"]->time_title }}</p>
+                                    <p class="text-xs text-blue-600 sm:text-sm">
                                         <i class="fas fa-clock mr-1"></i>
                                         {{ \Carbon\Carbon::parse($checkIn["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($checkIn["time"]->time_end)->format("H:i") }}
                                     </p>
                                     @if ($project->project_seat_assign && $checkIn["userSeat"])
-                                        <div class="mt-3 transform animate-pulse">
-                                            <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 shadow-lg">
-                                                <i class="fas fa-chair mr-3 text-lg text-white"></i>
+                                        <div class="mt-2 transform animate-pulse sm:mt-3">
+                                            <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-1.5 shadow-lg sm:px-4 sm:py-2">
+                                                <i class="fas fa-chair mr-2 text-sm text-white sm:text-lg"></i>
                                                 <div class="text-center">
                                                     <div class="text-xs font-medium text-purple-100">ที่นั่งของคุณ</div>
-                                                    <div class="text-xl font-bold text-white">{{ $checkIn["userSeat"]->seat_number }}</div>
+                                                    <div class="text-lg font-bold text-white sm:text-xl">{{ $checkIn["userSeat"]->seat_number }}</div>
                                                 </div>
                                             </div>
                                         </div>
                                     @endif
 
                                     @if ($project->project_group_assign && $checkIn["userGroup"])
-                                        <div class="mt-3 transform animate-pulse">
-                                            <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-2 shadow-lg">
-                                                <i class="fas fa-users mr-3 text-lg text-white"></i>
+                                        <div class="mt-2 transform animate-pulse sm:mt-3">
+                                            <div class="inline-flex items-center rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 px-3 py-1.5 shadow-lg sm:px-4 sm:py-2">
+                                                <i class="fas fa-users mr-2 text-sm text-white sm:text-lg"></i>
                                                 <div class="text-center">
                                                     <div class="text-xs font-medium text-indigo-100">กลุ่มของคุณ</div>
-                                                    <div class="text-xl font-bold text-white">{{ $checkIn["userGroup"]->group }}</div>
+                                                    <div class="text-lg font-bold text-white sm:text-xl">{{ $checkIn["userGroup"]->group }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -101,20 +101,20 @@
                                     <form class="attendance-form-top" action="{{ route("hrd.projects.attend.store", $project->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="time_id" value="{{ $checkIn["time"]->id }}">
-                                        <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                        <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-2.5 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:scale-95 sm:px-6 sm:py-3" type="submit">
                                             <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
-                                            <i class="fas fa-user-check mr-3 text-lg"></i>
-                                            <span class="text-base font-semibold">เช็คอินตอนนี้</span>
+                                            <i class="fas fa-user-check mr-2 text-sm sm:text-lg"></i>
+                                            <span class="text-sm font-semibold sm:text-base">เช็คอินตอนนี้</span>
                                             <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                         </button>
                                     </form>
                                 @else
                                     <form class="stamp-form-top" action="{{ route("hrd.projects.stamp.store", [$project->id, $checkIn["userRegistration"]->id]) }}" method="POST">
                                         @csrf
-                                        <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:scale-95" type="submit">
+                                        <button class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-2.5 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:scale-95 sm:px-6 sm:py-3" type="submit">
                                             <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
-                                            <i class="fas fa-stamp mr-3 text-lg"></i>
-                                            <span class="text-base font-semibold">เช็คอินตอนนี้</span>
+                                            <i class="fas fa-stamp mr-2 text-sm sm:text-lg"></i>
+                                            <span class="text-sm font-semibold sm:text-base">เช็คอินตอนนี้</span>
                                             <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
                                         </button>
                                     </form>
@@ -363,16 +363,7 @@
                                                             @endif
 
                                                             <!-- Action Buttons -->
-                                                            @if ($hasAttended)
-                                                                <div class="mt-2 text-xs font-medium text-blue-600">
-                                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                                    @if ($project->project_type === "attendance")
-                                                                        เข้าร่วมแล้ว: {{ $attendanceRecord->attend_datetime->format("d M Y, H:i") }}
-                                                                    @else
-                                                                        เข้าร่วมแล้ว: {{ $registrationData["userRegistrations"]->where("time_id", $time->id)->first()->attend_datetime->format("d M Y, H:i") }}
-                                                                    @endif
-                                                                </div>
-                                                            @elseif($userRegistration)
+                                                            @if ($userRegistration && !$hasAttended)
                                                                 <div class="mt-2 text-xs font-medium text-green-600">
                                                                     <i class="fas fa-user-check mr-1"></i>
                                                                     คุณลงทะเบียนสำหรับเซสชันนี้แล้ว

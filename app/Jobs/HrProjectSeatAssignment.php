@@ -107,7 +107,12 @@ class HrProjectSeatAssignment implements ShouldQueue
             $assignedSeat = $this->assignSeatToUser($time, $registration, $userDepartment, $currentSeats);
 
             if ($assignedSeat) {
-                $currentSeats->put($assignedSeat, $assignedSeat);
+                // Add the newly assigned seat to the current seats collection
+                $newSeat              = new \stdClass();
+                $newSeat->seat_number = $assignedSeat;
+                $newSeat->department  = $userDepartment;
+                $newSeat->user_id     = $registration->user_id;
+                $currentSeats->put($assignedSeat, $newSeat);
             }
         }
     }
@@ -218,18 +223,31 @@ class HrProjectSeatAssignment implements ShouldQueue
      */
     private function createSeatAssignment(HrTime $time, HrAttend $registration, string $userDepartment, int $seatNumber): void
     {
-        // Check if seat assignment already exists
+        // Check if seat assignment already exists for this seat number
         $existingSeat = HrSeat::where('time_id', $time->id)
             ->where('seat_number', $seatNumber)
             ->where('seat_delete', false)
             ->first();
 
         if ($existingSeat) {
-            // Update existing seat assignment
-            $existingSeat->update([
-                'user_id'    => $registration->user_id,
-                'department' => $userDepartment,
+            // Log warning and skip - don't overwrite existing seat assignments
+            Log::warning("Seat number {$seatNumber} is already assigned to user {$existingSeat->user_id} in time slot {$time->id}. Skipping assignment for user {$registration->user_id}.");
+            return;
+        }
+
+        // Check if user already has a seat assignment for this time slot
+        $existingUserSeat = HrSeat::where('time_id', $time->id)
+            ->where('user_id', $registration->user_id)
+            ->where('seat_delete', false)
+            ->first();
+
+        if ($existingUserSeat) {
+            // Update existing user's seat assignment
+            $existingUserSeat->update([
+                'seat_number' => $seatNumber,
+                'department'  => $userDepartment,
             ]);
+            Log::info("Updated seat assignment for user {$registration->user_id} from seat {$existingUserSeat->seat_number} to seat {$seatNumber} in time slot {$time->id}");
         } else {
             // Create new seat assignment
             HrSeat::create([
@@ -239,6 +257,7 @@ class HrProjectSeatAssignment implements ShouldQueue
                 'seat_number' => $seatNumber,
                 'seat_delete' => false,
             ]);
+            Log::info("Created new seat assignment: user {$registration->user_id} assigned to seat {$seatNumber} in time slot {$time->id}");
         }
     }
 }
