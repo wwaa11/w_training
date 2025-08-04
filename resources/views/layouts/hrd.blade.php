@@ -249,6 +249,7 @@
         <div class="navbar-links hidden lg:flex">
             <a href="{{ route("hrd.index") }}">รายการที่เปิดลงทะเบียน</a>
             <a href="{{ route("hrd.history") }}">ประวัติการเข้าร่วม</a>
+            <a href="{{ route("hrd.user-guide") }}">คู่มือการใช้งาน</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
                 <a href="{{ route("hrd.admin.index") }}">Admin Panel</a>
             @endif
@@ -267,6 +268,7 @@
     <div class="mobile-menu fade-in" id="mobileMenu">
         <a href="{{ route("hrd.index") }}">รายการที่เปิดลงทะเบียน</a>
         <a href="{{ route("hrd.history") }}">ประวัติการเข้าร่วม</a>
+        <a href="{{ route("hrd.user-guide") }}">คู่มือการใช้งาน</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "hr")
             <a href="{{ route("hrd.admin.index") }}">Admin Panel</a>
         @endif

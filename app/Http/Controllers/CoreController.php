@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Jobs\HrAssignSeat;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -13,24 +12,7 @@ class CoreController extends Controller
 {
     public function TEST_FUNCTION()
     {
-        // $array = ['tom', 'neill', 'gary'];
 
-        // foreach ($array as $name) {
-        //     $user             = new User();
-        //     $user->userid     = $name;
-        //     $user->password   = Hash::make($name);
-        //     $user->name       = $name;
-        //     $user->position   = 'English Teacher';
-        //     $user->department = '-';
-        //     $user->division   = '-';
-        //     $user->role       = 'teacher_english';
-        //     $user->save();
-        // }
-    }
-    public function DispatchServices()
-    {
-        HrAssignSeat::dispatch();
-        // HrDeleteTransaction::dispatch();
     }
 
     // Auth
@@ -214,7 +196,33 @@ class CoreController extends Controller
                 }
                 $attendances = $query->get();
 
-                return view($view, compact('attendances', 'filterAdmin'));
+                // Fetch English names from STAFF database
+                $userIds      = $attendances->pluck('user_id')->unique()->toArray();
+                $englishNames = [];
+
+                if (! empty($userIds)) {
+                    $staffUsers = DB::connection('STAFF')
+                        ->table('users')
+                        ->join('departments', 'users.department', 'departments.id')
+                        ->select(
+                            'users.userid',
+                            'users.name_EN',
+                            'users.position_EN',
+                            'departments.department_EN',
+                        )
+                        ->whereIn('users.userid', $userIds)
+                        ->get();
+
+                    foreach ($staffUsers as $staffUser) {
+                        $englishNames[$staffUser->userid] = [
+                            'name_EN'       => $staffUser->name_EN,
+                            'position_EN'   => $staffUser->position_EN,
+                            'department_EN' => $staffUser->department_EN,
+                        ];
+                    }
+                }
+
+                return view($view, compact('attendances', 'filterAdmin', 'englishNames'));
             default:
                 $view = 'index';
                 break;

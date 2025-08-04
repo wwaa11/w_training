@@ -39,6 +39,7 @@ Route::middleware([pr9Auth::class])->group(function () {
     Route::prefix('hrd')->name('hrd.')->group(function () {
         Route::get('/', [HRController::class, 'Index'])->name('index');
         Route::get('/history', [HRController::class, 'userHistory'])->name('history');
+        Route::get('/user-guide', [HRController::class, 'userGuide'])->name('user-guide');
 
         // Project Routes
         Route::prefix('projects/{id}')->name('projects.')->group(function () {
@@ -141,6 +142,24 @@ Route::middleware([HrAdmin::class])->group(function () {
                     Route::delete('/remove', [HRController::class, 'removeManualSeat'])->name('remove');
                     Route::delete('/clear', [HRController::class, 'clearTimeSeats'])->name('clear');
                 });
+
+                // Group Management
+                Route::prefix('groups')->name('groups.')->group(function () {
+                    Route::get('/', [HRController::class, 'adminProjectGroups'])->name('index');
+                    Route::post('/', [HRController::class, 'adminGroupStore'])->name('store');
+                    Route::put('/{groupId}', [HRController::class, 'adminGroupUpdate'])->name('update');
+                    Route::delete('/{groupId}', [HRController::class, 'adminGroupDelete'])->name('delete');
+                    Route::post('/import', [HRController::class, 'adminGroupImport'])->name('import');
+                    Route::get('/template', [HRController::class, 'adminGroupTemplate'])->name('template');
+                });
+
+                // Result Management
+                Route::prefix('results')->name('results.')->group(function () {
+                    Route::get('/', [HRController::class, 'adminProjectResults'])->name('index');
+                    Route::post('/import', [HRController::class, 'adminProjectResultsImport'])->name('import');
+                    Route::get('/template', [HRController::class, 'adminProjectResultsTemplate'])->name('template');
+                    Route::post('/clear', [HRController::class, 'adminProjectResultsClear'])->name('clear');
+                });
             });
         });
 
@@ -158,6 +177,14 @@ Route::middleware([HrAdmin::class])->group(function () {
             Route::get('/excel/dbd/{project_id}', [HRController::class, 'exportDBD'])->name('excel.dbd');
             Route::get('/excel/date/{date_id}', [HRController::class, 'exportDateRegistrations'])->name('excel.date');
             Route::get('/pdf/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
+        });
+
+        // User Management Routes
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [HRController::class, 'adminUsers'])->name('index');
+            Route::get('/{userId}/attendances', [HRController::class, 'adminUserAttendances'])->name('attendances');
+            Route::post('/search', [HRController::class, 'adminUserSearch'])->name('search');
+            Route::post('/resetpassword', [HRController::class, 'adminUserResetPassword'])->name('resetpassword');
         });
     });
 

@@ -294,7 +294,8 @@
             <table class="min-w-full rounded-lg border border-gray-200 bg-white">
                 <thead class="bg-blue-100">
                     <tr>
-                        <th class="px-4 py-2 text-left text-gray-700">UserID</th>
+                        <th class="px-4 py-2 text-left text-gray-700">UserID/Name</th>
+                        <th class="px-4 py-2 text-left text-gray-700">Position/Department</th>
                         <th class="px-4 py-2 text-left text-gray-700">DATE</th>
                         <th class="px-4 py-2 text-left text-gray-700">Check-in Time</th>
                         <th class="px-4 py-2 text-left text-gray-700">Group</th>
@@ -311,7 +312,7 @@
                     @endphp
                     @if ($attendances->isEmpty())
                         <tr class="py-8 text-center text-gray-500">
-                            <td colspan="9">Not found check-in record.</td>
+                            <td colspan="10">Not found check-in record.</td>
                         </tr>
                     @else
                         @foreach ($attendances as $attend)
@@ -320,7 +321,22 @@
                                     $attend_array[] = $attend->id;
                                 @endphp
                                 <tr class="border-t border-gray-100 hover:bg-blue-50" id="row-{{ $attend->id }}">
-                                    <td class="px-4 py-2">{{ $attend->user_id }}</td>
+                                    <td class="px-4 py-2">
+                                        {{ $attend->user_id }}
+                                        @if (isset($englishNames[$attend->user_id]))
+                                            <br><span class="text-sm text-gray-600">{{ $englishNames[$attend->user_id]["name_EN"] }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        @if (isset($englishNames[$attend->user_id]))
+                                            <div class="text-sm">
+                                                <div class="font-medium">{{ $englishNames[$attend->user_id]["position_EN"] }}</div>
+                                                <div class="text-gray-600">{{ $englishNames[$attend->user_id]["department_EN"] }}</div>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-2">{{ $attend->date_name }}</td>
                                     <td class="px-4 py-2">{{ date("H:i", strtotime($attend->user_date)) }}</td>
                                     <td class="px-4 py-2">

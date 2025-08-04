@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('project_start_register');
             $table->dateTime('project_end_register');
             $table->boolean('project_register_today')->default(true);
+            $table->boolean('project_group_assign')->default(false);
             $table->boolean('project_active')->default(true);
             $table->boolean('project_delete')->default(false);
             $table->timestamps();
@@ -105,7 +106,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('project_id')->constrained('hr_projects');
             $table->foreignId('attend_id')->constrained('hr_attends');
-            $table->foreignId('user_id')->constrained('users');
+            $table->string('user_id');
             $table->string('result_1')->nullable();
             $table->string('result_2')->nullable();
             $table->string('result_3')->nullable();
@@ -119,6 +120,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('hr_groups', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('project_id')->constrained('hr_projects');
+            $table->foreignId('user_id')->constrained('users');
+            $table->string('group');
+            $table->dateTime('active_datetime')->nullable();
+            $table->timestamps();
+        });
+
     }
 
     /**
@@ -126,6 +136,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('hr_groups');
         Schema::dropIfExists('hr_results');
         Schema::dropIfExists('hr_result_headers');
         Schema::dropIfExists('hr_seats');

@@ -53,7 +53,10 @@ class HrAttend extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withDefault([
+            'name'   => 'User Not Found',
+            'userid' => 'N/A',
+        ]);
     }
 
     public function result()
@@ -66,6 +69,12 @@ class HrAttend extends Model
         return $this->hasOne(HrSeat::class, 'user_id', 'user_id')
             ->where('time_id', $this->time_id)
             ->where('seat_delete', false);
+    }
+
+    public function group()
+    {
+        return $this->hasOne(HrGroup::class, 'user_id', 'user_id')
+            ->where('project_id', $this->project_id);
     }
 
     // Scopes
@@ -93,5 +102,16 @@ class HrAttend extends Model
                 ->where('seat_delete', false)
                 ->update(['seat_delete' => true]);
         }
+    }
+
+    /**
+     * Get user display name with fallback
+     */
+    public function getUserDisplayNameAttribute()
+    {
+        if ($this->user) {
+            return $this->user->name ?? $this->user->userid ?? 'N/A';
+        }
+        return 'User Not Found';
     }
 }

@@ -41,10 +41,20 @@
                             <i class="fas fa-check-circle mr-2"></i>
                             จัดการการอนุมัติ
                         </a>
+                        <a class="inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-purple-700" href="{{ route("hrd.admin.projects.results.index", $project->id) }}">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            จัดการผลการประเมิน
+                        </a>
                         @if ($project->project_seat_assign)
                             <a class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700" href="{{ route("hrd.admin.projects.seat.management", $project->id) }}">
                                 <i class="fas fa-cogs mr-2"></i>
                                 จัดการที่นั่ง
+                            </a>
+                        @endif
+                        @if ($project->project_group_assign)
+                            <a class="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-teal-700" href="{{ route("hrd.admin.projects.groups.index", $project->id) }}">
+                                <i class="fas fa-users mr-2"></i>
+                                จัดการกลุ่ม
                             </a>
                         @endif
                         <a class="inline-flex items-center rounded-lg bg-yellow-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-yellow-700" href="{{ route("hrd.admin.projects.edit", $project->id) }}">
@@ -131,6 +141,26 @@
                                     <span class="{{ $project->project_register_today ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
                                         <i class="fas fa-{{ $project->project_register_today ? "check-circle" : "times-circle" }} mr-1"></i>
                                         {{ $project->project_register_today ? "เปิด" : "ปิด" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="{{ $project->project_group_assign ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50" }} rounded-lg border-2 p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="{{ $project->project_group_assign ? "bg-green-100" : "bg-red-100" }} flex h-10 w-10 items-center justify-center rounded-full">
+                                            <i class="fas fa-{{ $project->project_group_assign ? "users text-green-600" : "times text-red-600" }} text-lg"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="{{ $project->project_group_assign ? "text-green-900" : "text-red-900" }} font-medium">การจัดกลุ่ม</p>
+                                            <p class="{{ $project->project_group_assign ? "text-green-700" : "text-red-700" }} text-sm">
+                                                {{ $project->project_group_assign ? "เปิดใช้งาน" : "ปิดใช้งาน" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="{{ $project->project_group_assign ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+                                        <i class="fas fa-{{ $project->project_group_assign ? "check-circle" : "times-circle" }} mr-1"></i>
+                                        {{ $project->project_group_assign ? "เปิด" : "ปิด" }}
                                     </span>
                                 </div>
                             </div>
@@ -433,7 +463,9 @@
                                 <tbody class="divide-y divide-gray-200 bg-white">
                                     @foreach ($project->attends->where("attend_delete", false)->take(10) as $attend)
                                         <tr class="hover:bg-gray-50">
-                                            <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ $attend->user->userid ?? "N/A" }}</td>
+                                            <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                                                {{ $attend->user_display_name }}
+                                            </td>
                                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attend->date->date_title ?? "N/A" }}</td>
                                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attend->time->time_title ?? "N/A" }}</td>
                                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ \Carbon\Carbon::parse($attend->created_at)->format("d/m/Y H:i") }}</td>

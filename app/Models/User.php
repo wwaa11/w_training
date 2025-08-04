@@ -9,7 +9,11 @@ class User extends Authenticatable
     protected $fillable = [
         'userid',
         'password',
+        'name',
+        'position',
         'department',
+        'division',
+        'last_update',
     ];
 
     protected $hidden = [
@@ -47,16 +51,21 @@ class User extends Authenticatable
     // HR System Relationships
     public function hrAttends(): HasMany
     {
-        return $this->hasMany(HrAttend::class, 'user_id');
+        return $this->hasMany(HrAttend::class, 'user_id', 'userid');
     }
 
     public function hrSeats(): HasMany
     {
-        return $this->hasMany(HrSeat::class, 'user_id');
+        return $this->hasMany(HrSeat::class, 'user_id', 'userid');
     }
 
     public function hrResults(): HasMany
     {
-        return $this->hasMany(HrResult::class, 'user_id');
+        return $this->hasMany(HrResult::class, 'user_id', 'userid');
+    }
+
+    public function hrGroups(): HasMany
+    {
+        return $this->hasMany(HrGroup::class, 'user_id', 'userid');
     }
 }

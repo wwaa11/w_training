@@ -26,28 +26,28 @@ class HumanResourceControler extends Controller
     // Dev Function
     public function adminProjectCreate()
     {
-        // die();
+        die();
         $project                          = new Project;
-        $project->project_name            = 'หลักสูตร ปฐมนิเทศพนักงานใหม่ ประจำปี 2568';
+        $project->project_name            = 'หลักสูตร"การฝึกอบรมเพื่อสร้างความตระหนักรู้ด้านความปลอดภัย (Cybersecurity Awareness Training) ปี 2568';
         $project->project_detail          = '';
         $project->project_active          = true;
         $project->project_delete          = false;
-        $project->start_register_datetime = '2025-07-01';
-        $project->last_register_datetime  = '2025-08-04';
+        $project->start_register_datetime = '2025-08-01';
+        $project->last_register_datetime  = '2025-08-20';
         $project->save();
 
         $dateArrays = [
             [
                 'index'          => 1,
-                'date'           => '2025-08-04',
-                'title'          => '04 สิงหาคม 2568',
+                'date'           => '2025-08-20',
+                'title'          => '20 สิงหาคม 2568',
                 'max'            => 999,
-                'location_title' => 'ห้องประชุม',
-                'location'       => 'ห้องประชุม Training Room ชั้น 8 อาคาร A  ',
+                'location_title' => '-',
+                'location'       => '-',
                 'times'          => [
                     [
                         'index' => 1,
-                        'title' => '08.00 - 17.00 น.',
+                        'title' => '13.30 - 17.00 น.',
                     ],
                 ],
             ],

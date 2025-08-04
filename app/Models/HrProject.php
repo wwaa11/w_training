@@ -13,6 +13,7 @@ class HrProject extends Model
         'project_name',
         'project_detail',
         'project_seat_assign',
+        'project_group_assign',
         'project_start_register',
         'project_end_register',
         'project_register_today',
@@ -24,6 +25,7 @@ class HrProject extends Model
         'project_start_register' => 'datetime',
         'project_end_register'   => 'datetime',
         'project_seat_assign'    => 'boolean',
+        'project_group_assign'   => 'boolean',
         'project_register_today' => 'boolean',
         'project_active'         => 'boolean',
         'project_delete'         => 'boolean',
@@ -58,6 +60,11 @@ class HrProject extends Model
     public function results()
     {
         return $this->hasMany(HrResult::class, 'project_id');
+    }
+
+    public function groups()
+    {
+        return $this->hasMany(HrGroup::class, 'project_id');
     }
 
     // Scopes

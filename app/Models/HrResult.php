@@ -37,7 +37,13 @@ class HrResult extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function group()
+    {
+        return $this->hasOne(HrGroup::class, 'user_id', 'user_id')
+            ->where('project_id', $this->project_id);
     }
 
     // Helper methods
@@ -64,4 +70,4 @@ class HrResult extends Model
             ])
             ->toArray();
     }
-}
+};

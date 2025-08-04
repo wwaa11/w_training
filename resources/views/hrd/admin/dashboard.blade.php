@@ -6,9 +6,10 @@
             <div class="mb-6 flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-gray-800">การจัดการโปรเจกต์ HRD</h1>
                 <div class="flex items-center gap-3">
-                    <a class="flex items-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-green-700" href="{{ route("hrd.admin.documentation") }}">
-                        <i class="fas fa-book"></i>
-                        คู่มือการใช้งาน
+
+                    <a class="flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-purple-700" href="{{ route("hrd.admin.users.index") }}">
+                        <i class="fas fa-users"></i>
+                        จัดการผู้ใช้
                     </a>
                     <a class="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.projects.create") }}">
                         <i class="fas fa-plus"></i>
