@@ -680,15 +680,123 @@
         }
 
         function deleteProject() {
+            // Show loading state with SweetAlert
+            Swal.fire({
+                title: 'กำลังลบโปรเจกต์...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Show loading state on button
+            const deleteBtn = document.querySelector('#deleteModal button[onclick="deleteProject()"]');
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังลบ...';
+            deleteBtn.disabled = true;
+
             axios.post(`{{ route("hrd.admin.projects.delete", $project->id) }}`)
                 .then(response => {
-                    window.location.href = '{{ route("hrd.admin.index") }}';
+                    // Close loading SweetAlert first
+                    Swal.close();
+
+                    // Handle successful deletion
+                    if (response.data && response.data.success) {
+                        // Show success message with SweetAlert
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: response.data.message || 'Project deleted successfully',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: '#3085d6'
+                        }).then((result) => {
+                            // Redirect to admin index
+                            window.location.href = response.data.redirect_url || '{{ route("hrd.admin.index") }}';
+                        });
+                    } else {
+                        // Handle unexpected response
+                        const errorMsg = response.data && response.data.message ? response.data.message : 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: errorMsg,
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
                 })
                 .catch(error => {
                     console.error('Error deleting project:', error);
-                    alert('เกิดข้อผิดพลาดในการลบโปรเจกต์ กรุณาลองใหม่อีกครั้ง');
+
+                    // Close loading SweetAlert first
+                    Swal.close();
+
+                    // Get detailed error information
+                    let errorMessage = 'เกิดข้อผิดพลาดในการลบโปรเจกต์';
+
+                    if (error.response) {
+                        // Server responded with error status
+                        const status = error.response.status;
+                        const data = error.response.data;
+
+                        switch (status) {
+                            case 403:
+                                errorMessage = 'ไม่มีสิทธิ์ในการลบโปรเจกต์นี้\nคุณไม่มีสิทธิ์ในการลบโปรเจกต์นี้ กรุณาติดต่อผู้ดูแลระบบ';
+                                break;
+                            case 404:
+                                errorMessage = 'ไม่พบโปรเจกต์ที่ต้องการลบ\n' + (data.message || 'โปรเจกต์นี้อาจถูกลบไปแล้วหรือไม่พบในระบบ');
+                                break;
+                            case 422:
+                                errorMessage = 'ไม่สามารถลบโปรเจกต์ได้\n' + (data.message || 'ไม่สามารถลบโปรเจกต์ได้ กรุณาตรวจสอบรายละเอียด');
+                                break;
+                            case 500:
+                                errorMessage = 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์\n' + (data.message || 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในภายหลัง');
+                                break;
+                            default:
+                                errorMessage = `เกิดข้อผิดพลาด (รหัส: ${status})\n` + (data.message || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ');
+                        }
+
+                        // Show additional details if available
+                        if (data.errors) {
+                            errorMessage += '\n\nรายละเอียดเพิ่มเติม:\n';
+                            Object.keys(data.errors).forEach(key => {
+                                const errorValue = data.errors[key];
+                                if (Array.isArray(errorValue)) {
+                                    errorMessage += `- ${key}: ${errorValue.join(', ')}\n`;
+                                } else if (typeof errorValue === 'string') {
+                                    errorMessage += `- ${key}: ${errorValue}\n`;
+                                } else {
+                                    errorMessage += `- ${key}: ${JSON.stringify(errorValue)}\n`;
+                                }
+                            });
+                        }
+                    } else if (error.request) {
+                        // Network error
+                        errorMessage = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง';
+                    } else {
+                        // Other error
+                        errorMessage = 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ\n' + (error.message || 'เกิดข้อผิดพลาดที่ไม่สามารถระบุได้');
+                    }
+
+                    // Show error with SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        html: errorMessage.replace(/\n/g, '<br>'),
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#d33',
+                        width: '600px'
+                    });
+                })
+                .finally(() => {
+                    // Reset button state
+                    deleteBtn.innerHTML = originalText;
+                    deleteBtn.disabled = false;
+                    hideDeleteModal();
                 });
-            hideDeleteModal();
         }
     </script>
 @endsection

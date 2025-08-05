@@ -15,16 +15,21 @@ use App\Models\HrResult;
 use App\Models\HrSeat;
 use App\Models\HrTime;
 use App\Models\User;
+use App\Traits\HrLoggingTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
-// Added HrSeat model
-
 class HRController extends Controller
 {
+    use HrLoggingTrait;
+
+    // ========================================================================
+    // PUBLIC USER INTERFACE METHODS
+    // ========================================================================
+
     /**
      * Display the main HRD index page with available projects
      */
@@ -59,6 +64,10 @@ class HRController extends Controller
 
         return view('hrd.dashboard', compact('projects', 'projectsWithStates', 'ongoingProjects'));
     }
+
+    // ========================================================================
+    // PRIVATE HELPER METHODS - USER INTERFACE
+    // ========================================================================
 
     /**
      * Get ongoing projects that user can check in for
@@ -589,6 +598,10 @@ class HRController extends Controller
         return $timeSlotStates;
     }
 
+    // ========================================================================
+    // USER REGISTRATION & ATTENDANCE ACTIONS
+    // ========================================================================
+
     public function projectRegisterStore(Request $request, $id)
     {
         $project = HrProject::with(['dates.times'])->findOrFail($id);
@@ -697,6 +710,12 @@ class HRController extends Controller
 
             DB::commit();
 
+            // Log user registration
+            $this->logUserRegistration($project, auth()->user(), $request->time_ids, [
+                'session_count'       => count($request->time_ids),
+                'registration_method' => 'user_self_registration',
+            ]);
+
             $sessionCount = count($request->time_ids);
             $message      = $sessionCount === 1
             ? 'Successfully registered for the session!'
@@ -707,6 +726,14 @@ class HRController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
+            // Log error
+            $this->logHrError($e, 'project_registration', [
+                'project_id' => $id,
+                'user_id'    => auth()->id(),
+                'time_ids'   => $request->time_ids,
+            ]);
+
             return back()->withErrors(['error' => 'Failed to register: ' . $e->getMessage()]);
         }
     }
@@ -781,9 +808,22 @@ class HRController extends Controller
                 \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
             }
 
+            // Log attendance recording
+            $this->logUserAttendance($project, auth()->user(), $time, 'attendance_checkin', [
+                'attendance_id'     => $attendance->id,
+                'attendance_method' => 'user_self_checkin',
+            ]);
+
             return redirect()->route('hrd.projects.show', $id)->with('success', 'Attendance recorded successfully!');
 
         } catch (\Exception $e) {
+            // Log error
+            $this->logHrError($e, 'attendance_recording', [
+                'project_id' => $id,
+                'user_id'    => auth()->id(),
+                'time_id'    => $request->time_id,
+            ]);
+
             return redirect()->back()->with('error', 'Failed to record attendance: ' . $e->getMessage());
         }
     }
@@ -837,9 +877,22 @@ class HRController extends Controller
                 'attend_datetime' => now(),
             ]);
 
+            // Log stamp attendance
+            $this->logUserAttendance($attendance->project, $attendance->user, $attendance->time, 'stamp_checkin', [
+                'attendance_id'     => $attendance->id,
+                'attendance_method' => 'user_self_stamp',
+            ]);
+
             return redirect()->route('hrd.projects.show', $id)->with('success', 'Check-in successful! Attendance recorded.');
 
         } catch (\Exception $e) {
+            // Log error
+            $this->logHrError($e, 'stamp_attendance', [
+                'project_id' => $id,
+                'attend_id'  => $attendId,
+                'user_id'    => auth()->id(),
+            ]);
+
             return redirect()->back()->with('error', 'Failed to record check-in: ' . $e->getMessage());
         }
     }
@@ -880,6 +933,13 @@ class HRController extends Controller
                         ->with('error', 'ไม่สามารถล้างการลงทะเบียนในวันเดียวกันได้');
                 }
             }
+
+            // Log reselection operation
+            $this->logBulkOperation('USER_RESELECTION', $project, $userRegistrations->count(), [
+                'user_id'   => $userId,
+                'user_name' => auth()->user()->name,
+                'reason'    => 'user_requested_reselection',
+            ]);
 
             // Soft delete all user registrations for this project and remove seat assignments
             $userRegistrations->each(function ($registration) {
@@ -932,6 +992,12 @@ class HRController extends Controller
                         ->with('error', 'ไม่สามารถยกเลิกการลงทะเบียนในวันเดียวกันได้');
                 }
             }
+
+            // Log user unregistration
+            $this->logUserUnregistration($project, auth()->user(), $registration, [
+                'unregistration_reason' => 'user_requested',
+                'registration_date'     => $registration->created_at,
+            ]);
 
             // Soft delete the registration
             $registration->update(['attend_delete' => true]);
@@ -1038,6 +1104,10 @@ class HRController extends Controller
         ];
     }
 
+    // ========================================================================
+    // ADMIN DASHBOARD & CORE PROJECT MANAGEMENT
+    // ========================================================================
+
     /**
      * Display admin index page with all projects
      */
@@ -1110,14 +1180,6 @@ class HRController extends Controller
         DB::beginTransaction();
 
         try {
-            // Debug logging
-            \Log::info('Project Group Assign Debug', [
-                'raw_value'     => $request->input('project_group_assign'),
-                'boolean_value' => $request->boolean('project_group_assign'),
-                'has_value'     => $request->has('project_group_assign'),
-                'all_inputs'    => $request->all(),
-            ]);
-
             // Create project
             $project = HrProject::create([
                 'project_type'           => $request->project_type,
@@ -1169,6 +1231,16 @@ class HRController extends Controller
 
             DB::commit();
 
+            // Log project creation
+            $this->logProjectCreated($project, [
+                'created_by_admin' => true,
+                'dates_count'      => count($request->dates),
+                'total_times'      => collect($request->dates)->sum(function ($date) {
+                    return count($date['times']);
+                }),
+                'links_count'      => $request->has('links') ? count($request->links) : 0,
+            ]);
+
             return redirect()->route('hrd.admin.projects.show', $project->id)
                 ->with('success', 'Project created successfully!');
 
@@ -1215,6 +1287,10 @@ class HRController extends Controller
 
         return view('hrd.admin.projects.core.edit-project', compact('project', 'editData'));
     }
+
+    // ========================================================================
+    // PRIVATE HELPER METHODS - ADMIN FUNCTIONS
+    // ========================================================================
 
     private function formatProjectDataForEdit($project)
     {
@@ -1311,14 +1387,6 @@ class HRController extends Controller
         DB::beginTransaction();
 
         try {
-            // Debug logging
-            \Log::info('Project Group Assign Update Debug', [
-                'raw_value'     => $request->input('project_group_assign'),
-                'boolean_value' => $request->boolean('project_group_assign'),
-                'has_value'     => $request->has('project_group_assign'),
-                'all_inputs'    => $request->all(),
-            ]);
-
             // Update project basic information
             $project->update([
                 'project_type'           => $request->project_type,
@@ -1488,6 +1556,16 @@ class HRController extends Controller
 
             DB::commit();
 
+            // Log project update
+            $this->logProjectUpdated($project, [
+                'updated_by_admin' => true,
+                'dates_updated'    => count($request->dates),
+                'total_times'      => collect($request->dates)->sum(function ($date) {
+                    return count($date['times']);
+                }),
+                'links_updated'    => $request->has('links') ? count($request->links) : 0,
+            ]);
+
             return redirect()->route('hrd.admin.projects.show', $project->id)
                 ->with('success', 'Project updated successfully!');
 
@@ -1500,67 +1578,128 @@ class HRController extends Controller
 
     public function adminProjectDelete(Request $request, $id)
     {
+        $project = HrProject::with([
+            'dates.times.seats',
+            'attends',
+            'results',
+            'resultHeader',
+            'links',
+        ])->findOrFail($id);
+
+        // Start transaction to ensure data consistency
+        DB::beginTransaction();
+
+        // Store project data for logging before deletion
+        $projectData = [
+            'id'            => $project->id,
+            'name'          => $project->project_name,
+            'type'          => $project->project_type,
+            'dates_count'   => $project->dates->count(),
+            'attends_count' => $project->attends->count(),
+            'results_count' => $project->results->count(),
+            'links_count'   => $project->links->count(),
+        ];
+
+        // Force delete all related data to avoid foreign key constraint violations
+        // Use forceDelete() to bypass soft deletes and foreign key constraints
+
         try {
-            $project = HrProject::findOrFail($id);
+            // Delete in correct order based on foreign key constraints from migration
 
-            // Start transaction to ensure data consistency
-            DB::beginTransaction();
+            // 1. Delete results first (they reference attends)
+            $project->results()->forceDelete();
 
-            try {
-                // Delete all related data in proper order
-
-                // 1. Delete results (evaluation data)
-                $project->results()->delete();
-
-                // 2. Delete result headers
-                if ($project->resultHeader) {
-                    $project->resultHeader->delete();
-                }
-
-                // 3. Delete seat assignments
-                HrSeat::whereIn('time_id', function ($query) use ($project) {
-                    $query->select('id')
-                        ->from('hr_times')
-                        ->whereIn('date_id', function ($subQuery) use ($project) {
-                            $subQuery->select('id')
-                                ->from('hr_dates')
-                                ->where('project_id', $project->id);
-                        });
-                })->delete();
-
-                // 4. Delete attendance records
-                $project->attends()->delete();
-
-                // 5. Delete time slots
-                HrTime::whereIn('date_id', function ($query) use ($project) {
-                    $query->select('id')
-                        ->from('hr_dates')
-                        ->where('project_id', $project->id);
-                })->delete();
-
-                // 6. Delete dates
-                $project->dates()->delete();
-
-                // 7. Delete links
-                $project->links()->delete();
-
-                // 8. Finally, delete the project itself
-                $project->delete();
-
-                DB::commit();
-
-                return redirect()->route('hrd.admin.dashboard')
-                    ->with('success', 'Project and all related data deleted successfully.');
-
-            } catch (\Exception $e) {
-                DB::rollback();
-                throw $e;
+            // 2. Delete result headers (they reference project)
+            if ($project->resultHeader) {
+                $project->resultHeader->forceDelete();
             }
 
+            // 3. Delete attendance records (they reference project, dates, times)
+            $project->attends()->forceDelete();
+
+            // 4. Delete seat assignments (they reference times)
+            $timeIds = $project->dates->pluck('times')->flatten()->pluck('id');
+            if ($timeIds->isNotEmpty()) {
+                HrSeat::whereIn('time_id', $timeIds)->forceDelete();
+            }
+
+            // 5. Delete time slots (they reference dates)
+            $dateIds = $project->dates->pluck('id');
+            if ($dateIds->isNotEmpty()) {
+                HrTime::whereIn('date_id', $dateIds)->forceDelete();
+            }
+
+            // 6. Delete dates (they reference project)
+            $project->dates()->forceDelete();
+
+            // 7. Delete links (they reference project)
+            $project->links()->forceDelete();
+
+            // 8. Delete groups (they reference project)
+            $project->groups()->forceDelete();
+
+            // 9. Finally, delete the project itself
+            $project->forceDelete();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete project: ' . $e->getMessage());
+            // If forceDelete fails due to foreign key constraints, use raw SQL approach
+            $projectId = $project->id;
+
+            // Delete all related data using raw SQL to bypass foreign key constraints
+            // Order based on foreign key dependencies from migration schema
+
+            // 1. Delete results first (they reference attends)
+            DB::statement("DELETE FROM hr_results WHERE project_id = ?", [$projectId]);
+
+            // 2. Delete result headers (they reference project)
+            DB::statement("DELETE FROM hr_result_headers WHERE project_id = ?", [$projectId]);
+
+            // 3. Delete attendance records (they reference project, dates, times)
+            DB::statement("DELETE FROM hr_attends WHERE project_id = ?", [$projectId]);
+
+            // 4. Delete seat assignments (they reference times)
+            DB::statement("DELETE FROM hr_seats WHERE time_id IN (SELECT id FROM hr_times WHERE date_id IN (SELECT id FROM hr_dates WHERE project_id = ?))", [$projectId]);
+
+            // 5. Delete time slots (they reference dates)
+            DB::statement("DELETE FROM hr_times WHERE date_id IN (SELECT id FROM hr_dates WHERE project_id = ?)", [$projectId]);
+
+            // 6. Delete dates (they reference project)
+            DB::statement("DELETE FROM hr_dates WHERE project_id = ?", [$projectId]);
+
+            // 7. Delete links (they reference project)
+            DB::statement("DELETE FROM hr_links WHERE project_id = ?", [$projectId]);
+
+            // 8. Delete groups (they reference project)
+            DB::statement("DELETE FROM hr_groups WHERE project_id = ?", [$projectId]);
+
+            // 9. Finally, delete the project itself
+            DB::statement("DELETE FROM hr_projects WHERE id = ?", [$projectId]);
         }
+
+        // Log project deletion after successful deletion
+        $this->logProjectDeleted($projectData, [
+            'deleted_by_admin' => true,
+            'deletion_reason'  => 'admin_request',
+        ]);
+
+        DB::commit();
+
+        // Return JSON response for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'message'      => 'Project and all related data deleted successfully.',
+                'redirect_url' => route('hrd.admin.index'),
+            ], 200);
+        }
+
+        // Return redirect for regular form submissions
+        return redirect()->route('hrd.admin.index')
+            ->with('success', 'Project and all related data deleted successfully.');
     }
+
+    // ========================================================================
+    // ADMIN REGISTRATION MANAGEMENT
+    // ========================================================================
 
     public function adminProjectRegistrations($id)
     {
@@ -1571,12 +1710,42 @@ class HRController extends Controller
             'attends.time',
         ])->findOrFail($id);
 
-        // Get active registrations only
-        $registrations = $project->attends()
+        // Start with base query for active registrations
+        $query = $project->attends()
             ->where('attend_delete', false)
-            ->with(['user', 'date', 'time'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->with(['user', 'date', 'time']);
+
+        // Apply search filter for userid
+        if (request('search_userid')) {
+            $searchUserid = request('search_userid');
+            $query->whereHas('user', function ($userQuery) use ($searchUserid) {
+                $userQuery->where('userid', 'LIKE', '%' . $searchUserid . '%');
+            });
+        }
+
+        // Apply attendance status filter
+        if (request('filter_attend')) {
+            if (request('filter_attend') === 'attended') {
+                $query->whereNotNull('attend_datetime');
+            } elseif (request('filter_attend') === 'not_attended') {
+                $query->whereNull('attend_datetime');
+            }
+        }
+
+        // Apply approval status filter
+        if (request('filter_approve')) {
+            if (request('filter_approve') === 'approved') {
+                $query->whereNotNull('approve_datetime');
+            } elseif (request('filter_approve') === 'not_approved') {
+                $query->whereNull('approve_datetime');
+            }
+        }
+
+        // Get paginated results
+        $registrations = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        // Preserve search parameters in pagination links
+        $registrations->appends(request()->query());
 
         return view('hrd.admin.projects.participants.registration-management', compact('project', 'registrations'));
     }
@@ -1587,9 +1756,12 @@ class HRController extends Controller
     public function adminRegistrationStore(Request $request, $projectId)
     {
         $request->validate([
-            'user_id'         => 'required|exists:users,userid',
-            'time_id'         => 'required|exists:hr_times,id',
-            'attend_datetime' => 'nullable',
+            'user_id'                => 'required|exists:users,userid',
+            'time_id'                => 'required|exists:hr_times,id',
+            'attend_datetime'        => 'nullable',
+            'attend_datetime_value'  => 'nullable|date_format:Y-m-d\TH:i',
+            'approve_datetime'       => 'nullable',
+            'approve_datetime_value' => 'nullable|date_format:Y-m-d\TH:i',
         ]);
 
         try {
@@ -1622,19 +1794,39 @@ class HRController extends Controller
                 }
             }
 
+            // Prepare datetime values
+            $attendDatetime  = null;
+            $approveDatetime = null;
+
+            if ($request->attend_datetime && $request->attend_datetime_value) {
+                $attendDatetime = $request->attend_datetime_value;
+            }
+
+            if ($request->approve_datetime && $request->approve_datetime_value) {
+                $approveDatetime = $request->approve_datetime_value;
+            }
+
             // Create registration
             $attendance = $project->attends()->create([
-                'date_id'         => $date->id,
-                'time_id'         => $request->time_id,
-                'user_id'         => $user->id,
-                'attend_datetime' => $request->attend_datetime ? now() : null,
-                'attend_delete'   => false,
+                'date_id'          => $date->id,
+                'time_id'          => $request->time_id,
+                'user_id'          => $user->id,
+                'attend_datetime'  => $attendDatetime,
+                'approve_datetime' => $approveDatetime,
+                'attend_delete'    => false,
             ]);
 
             // Dispatch seat assignment job if project has seat assignment enabled
             if ($project->project_seat_assign) {
                 \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
             }
+
+            // Log admin registration creation
+            $this->logUserRegistration($project, $user, [$request->time_id], [
+                'created_by_admin'    => true,
+                'attendance_datetime' => $attendDatetime,
+                'approval_datetime'   => $approveDatetime,
+            ]);
 
             return redirect()->back()->with('success', 'Registration created successfully.');
         } catch (\Exception $e) {
@@ -1648,8 +1840,11 @@ class HRController extends Controller
     public function adminRegistrationUpdate(Request $request, $projectId, $registrationId)
     {
         $request->validate([
-            'time_id'         => 'required|exists:hr_times,id',
-            'attend_datetime' => 'nullable',
+            'time_id'                => 'required|exists:hr_times,id',
+            'attend_datetime'        => 'nullable',
+            'attend_datetime_value'  => 'nullable|date_format:Y-m-d\TH:i',
+            'approve_datetime'       => 'nullable',
+            'approve_datetime_value' => 'nullable|date_format:Y-m-d\TH:i',
         ]);
 
         try {
@@ -1678,10 +1873,32 @@ class HRController extends Controller
                 }
             }
 
+            // Prepare datetime values
+            $attendDatetime  = null;
+            $approveDatetime = null;
+
+            if ($request->attend_datetime && $request->attend_datetime_value) {
+                $attendDatetime = $request->attend_datetime_value;
+            }
+
+            if ($request->approve_datetime && $request->approve_datetime_value) {
+                $approveDatetime = $request->approve_datetime_value;
+            }
+
             $registration->update([
-                'time_id'         => $request->time_id,
-                'date_id'         => $time->date_id,
-                'attend_datetime' => $request->attend_datetime ? now() : null,
+                'time_id'          => $request->time_id,
+                'date_id'          => $time->date_id,
+                'attend_datetime'  => $attendDatetime,
+                'approve_datetime' => $approveDatetime,
+            ]);
+
+            // Log admin registration update
+            $this->logAdminAction('REGISTRATION_UPDATED', 'registration', $registration->id, [
+                'user_id'             => $registration->user_id,
+                'user_name'           => $registration->user->name,
+                'time_id'             => $request->time_id,
+                'attendance_datetime' => $attendDatetime,
+                'approval_datetime'   => $approveDatetime,
             ]);
 
             return redirect()->back()->with('success', 'Registration updated successfully.');
@@ -1698,6 +1915,12 @@ class HRController extends Controller
         try {
             $registration = HrAttend::findOrFail($registrationId);
             $project      = HrProject::findOrFail($projectId);
+
+            // Log admin registration deletion
+            $this->logUserUnregistration($registration->project, $registration->user, $registration, [
+                'deleted_by_admin' => true,
+                'deletion_reason'  => 'admin_request',
+            ]);
 
             $registration->update(['attend_delete' => true]);
             $registration->removeSeatAssignment();
@@ -1729,6 +1952,11 @@ class HRController extends Controller
                 'approve_datetime' => now(),
             ]);
 
+            // Log registration approval
+            $this->logRegistrationApproval($registration, 'approved', [
+                'approved_by_admin' => true,
+            ]);
+
             return response()->json(['success' => 'Registration approved successfully.']);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to approve registration: ' . $e->getMessage()], 500);
@@ -1754,6 +1982,11 @@ class HRController extends Controller
 
             $registration->update([
                 'approve_datetime' => null,
+            ]);
+
+            // Log registration unapproval
+            $this->logRegistrationApproval($registration, 'unapproved', [
+                'unapproved_by_admin' => true,
             ]);
 
             return response()->json(['success' => 'Registration unapproved successfully.']);
@@ -1890,6 +2123,13 @@ class HRController extends Controller
                 $registration->update(['approve_datetime' => now()]);
             });
 
+            // Log bulk approval operation
+            $this->logBulkOperation('BULK_APPROVAL', $project, $updatedCount, [
+                'filter_date'    => $request->filter_date,
+                'filter_time_id' => $request->filter_time_id,
+                'specific_ids'   => ! empty($request->attend_ids),
+            ]);
+
             return response()->json([
                 'success' => "Successfully approved {$updatedCount} registration(s).",
                 'count'   => $updatedCount,
@@ -1899,6 +2139,10 @@ class HRController extends Controller
             return response()->json(['error' => 'Failed to bulk approve: ' . $e->getMessage()], 500);
         }
     }
+
+    // ========================================================================
+    // SEAT MANAGEMENT & ASSIGNMENT
+    // ========================================================================
 
     /**
      * Trigger seat assignment for all projects
@@ -1921,6 +2165,12 @@ class HRController extends Controller
 
             // Dispatch the bulk assignment job for the specific project
             \App\Jobs\HrProjectSeatAssignment::dispatch($project->id);
+
+            // Log seat assignment trigger
+            $this->logBulkOperation('SEAT_ASSIGNMENT_TRIGGER', $project, 0, [
+                'triggered_by_admin' => true,
+                'job_queued'         => true,
+            ]);
 
             $message = "Seat assignment triggered successfully for project: {$project->project_name}. The bulk assignment job has been queued.";
 
@@ -2147,7 +2397,10 @@ class HRController extends Controller
                         'seat_delete' => false,
                     ]);
 
-                    \Log::info("Seat {$assignedSeat} assigned to user {$user->id} in time slot {$request->time_id}");
+                    // Log manual seat assignment
+                    $this->logSeatAssignment($time, $user, $assignedSeat, 'manual', [
+                        'assigned_by_admin' => true,
+                    ]);
 
                     return response()->json([
                         'success'     => true,
@@ -2169,6 +2422,10 @@ class HRController extends Controller
             return response()->json(['error' => 'Failed to assign seat: ' . $e->getMessage()], 500);
         }
     }
+
+    // ========================================================================
+    // PRIVATE HELPER METHODS - SEAT MANAGEMENT
+    // ========================================================================
 
     /**
      * Check if a seat is available
@@ -2226,6 +2483,12 @@ class HRController extends Controller
                 return response()->json(['error' => 'ไม่พบการจัดที่นั่งที่ระบุ'], 404);
             }
 
+            // Log seat removal
+            $time = HrTime::find($request->time_id);
+            $this->logSeatRemoval($time, $user, $seat->seat_number, [
+                'removed_by_admin' => true,
+            ]);
+
             $seat->update(['seat_delete' => true]);
 
             return response()->json(['success' => 'ลบการจัดที่นั่งสำเร็จ']);
@@ -2258,6 +2521,12 @@ class HRController extends Controller
                 ->where('seat_delete', false)
                 ->update(['seat_delete' => true]);
 
+            // Log bulk seat clearing
+            $this->logBulkOperation('CLEAR_SEATS', $project, $deletedCount, [
+                'time_id'    => $request->time_id,
+                'time_title' => $time->time_title,
+            ]);
+
             return response()->json([
                 'success'       => true,
                 'message'       => "ล้างที่นั่งทั้งหมดสำเร็จ ({$deletedCount} รายการ)",
@@ -2286,6 +2555,9 @@ class HRController extends Controller
             ->where('attend_delete', false)
             ->get();
 
+        // Log export operation
+        $this->logExportOperation($project, 'all_date_registrations', 'excel');
+
         return Excel::download(new AllDateExport($projectId), 'AllDateExport_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx');
     }
 
@@ -2296,6 +2568,9 @@ class HRController extends Controller
     {
         $project = HrProject::findOrFail($projectId);
 
+        // Log export operation
+        $this->logExportOperation($project, 'dbd_format', 'excel');
+
         return Excel::download(new DBDExport($projectId), 'DBDExport_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx');
     }
 
@@ -2305,6 +2580,9 @@ class HRController extends Controller
     public function exportOnebook($projectId)
     {
         $project = HrProject::findOrFail($projectId);
+
+        // Log export operation
+        $this->logExportOperation($project, 'onebook_format', 'excel');
 
         return Excel::download(new OnebookExport($projectId), 'OnebookExport_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx');
     }
@@ -2322,6 +2600,12 @@ class HRController extends Controller
             ->where('attend_delete', false)
             ->get();
 
+        // Log export operation
+        $this->logExportOperation($date->project, 'date_specific_registrations', 'excel', [
+            'date_id'    => $dateId,
+            'date_title' => $date->date_title,
+        ]);
+
         return Excel::download(new DateExport($dateId), 'DateExport_' . $date->date_title . '_' . date('Y-m-d') . '.xlsx');
     }
 
@@ -2337,6 +2621,13 @@ class HRController extends Controller
             ->where('time_id', $timeId)
             ->where('attend_delete', false)
             ->get();
+
+        // Log export operation
+        $this->logExportOperation($time->date->project, 'time_specific_attendance', 'pdf', [
+            'time_id'             => $timeId,
+            'time_title'          => $time->time_title,
+            'registrations_count' => $registrations->count(),
+        ]);
 
         $pdf = Pdf::loadView('hrd.admin.export.attendance-pdf', compact('time', 'registrations'));
 
@@ -2379,6 +2670,10 @@ class HRController extends Controller
         ];
     }
 
+    // ========================================================================
+    // ADMIN RESULTS MANAGEMENT
+    // ========================================================================
+
     /**
      * Show result management page for a project
      */
@@ -2410,11 +2705,24 @@ class HRController extends Controller
         ]);
 
         try {
+            $project = HrProject::findOrFail($id);
+
             Excel::import(new HrResultsImport($id), $request->file('excel_file'));
+
+            // Log successful import
+            $this->logImportOperation($project, 'results', 0, 0, [], [
+                'file_name' => $request->file('excel_file')->getClientOriginalName(),
+            ]);
 
             return redirect()->route('hrd.admin.projects.results.index', $id)
                 ->with('success', 'Results imported successfully!');
         } catch (\Exception $e) {
+            // Log import error
+            $project = HrProject::findOrFail($id);
+            $this->logImportOperation($project, 'results', 0, 0, [$e->getMessage()], [
+                'file_name' => $request->file('excel_file')->getClientOriginalName(),
+            ]);
+
             return redirect()->route('hrd.admin.projects.results.index', $id)
                 ->with('error', 'Error importing results: ' . $e->getMessage());
         }
@@ -2443,6 +2751,13 @@ class HRController extends Controller
         // Delete all results for this project
         HrResult::where('project_id', $id)->delete();
 
+        // Log results clearing
+        $this->logBulkOperation('CLEAR_RESULTS', $project, $project->results->count(), [
+            'cleared_by_admin' => true,
+            'results_count'    => $project->results->count(),
+            'header_deleted'   => $project->resultHeader ? true : false,
+        ]);
+
         // Delete result header
         if ($project->resultHeader) {
             $project->resultHeader->delete();
@@ -2451,6 +2766,10 @@ class HRController extends Controller
         return redirect()->route('hrd.admin.projects.results.index', $id)
             ->with('success', 'All results cleared successfully!');
     }
+
+    // ========================================================================
+    // ADMIN USER MANAGEMENT
+    // ========================================================================
 
     /**
      * Show all users for admin management
@@ -2503,8 +2822,19 @@ class HRController extends Controller
         $user = User::findOrFail($request->user_id);
         $user->update(['password' => bcrypt('123456')]);
 
+        // Log password reset
+        $this->logAdminAction('PASSWORD_RESET', 'user', $user->id, [
+            'user_name'      => $user->name,
+            'userid'         => $user->userid,
+            'reset_by_admin' => true,
+        ]);
+
         return redirect()->back()->with('success', 'Password reset successfully for ' . $user->name);
     }
+
+    // ========================================================================
+    // UTILITY FUNCTIONS & GROUP MANAGEMENT
+    // ========================================================================
 
     /**
      * Cleanup duplicate seats for a project
@@ -2584,6 +2914,12 @@ class HRController extends Controller
             }
         }
 
+        // Log cleanup operation
+        $this->logBulkOperation('CLEANUP_DUPLICATE_SEATS', $project, $cleanedCount, [
+            'cleanup_type'  => 'duplicate_and_conflicting_seats',
+            'cleaned_count' => $cleanedCount,
+        ]);
+
         return response()->json([
             'success'       => true,
             'message'       => "Cleaned up {$cleanedCount} duplicate/conflicting seats",
@@ -2654,6 +2990,12 @@ class HRController extends Controller
             'group'      => $request->group,
         ]);
 
+        // Log group assignment
+        $project = HrProject::findOrFail($projectId);
+        $this->logGroupAssignment($project, $user, $request->group, 'assigned', [
+            'assigned_by_admin' => true,
+        ]);
+
         return redirect()->back()->with('success', 'จัดกลุ่มผู้ใช้ ' . $user->name . ' (รหัส: ' . $request->user_id . ') เข้ากลุ่ม ' . $request->group . ' เรียบร้อยแล้ว');
     }
 
@@ -2674,6 +3016,14 @@ class HRController extends Controller
             'group' => $request->group,
         ]);
 
+        // Log group update
+        $project = HrProject::findOrFail($projectId);
+        $user    = User::find($group->user_id);
+        $this->logGroupAssignment($project, $user, $request->group, 'updated', [
+            'updated_by_admin' => true,
+            'old_group'        => $group->getOriginal('group'),
+        ]);
+
         return redirect()->back()->with('success', 'อัปเดตการจัดกลุ่มเรียบร้อยแล้ว');
     }
 
@@ -2685,6 +3035,13 @@ class HRController extends Controller
         $group = HrGroup::where('project_id', $projectId)
             ->where('id', $groupId)
             ->firstOrFail();
+
+        // Log group deletion
+        $project = HrProject::findOrFail($projectId);
+        $user    = User::find($group->user_id);
+        $this->logGroupAssignment($project, $user, $group->group, 'deleted', [
+            'deleted_by_admin' => true,
+        ]);
 
         $group->delete();
 
@@ -2701,9 +3058,21 @@ class HRController extends Controller
         ]);
 
         try {
+            $project = HrProject::findOrFail($projectId);
+
             Excel::import(new \App\Imports\HrGroupsImport($projectId), $request->file('import_file'));
 
             $importResults = session('import_results', []);
+
+            // Log import operation
+            $this->logImportOperation($project, 'groups',
+                $importResults['imported'] ?? 0,
+                $importResults['skipped'] ?? 0,
+                $importResults['errors'] ?? [],
+                [
+                    'file_name' => $request->file('import_file')->getClientOriginalName(),
+                ]
+            );
 
             $message = "นำเข้าข้อมูลเสร็จสิ้น ";
             $message .= "นำเข้า: {$importResults['imported']} รายการ, ";
@@ -2719,6 +3088,12 @@ class HRController extends Controller
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
+            // Log import error
+            $project = HrProject::findOrFail($projectId);
+            $this->logImportOperation($project, 'groups', 0, 0, [$e->getMessage()], [
+                'file_name' => $request->file('import_file')->getClientOriginalName(),
+            ]);
+
             return redirect()->back()->with('error', 'การนำเข้าล้มเหลว: ' . $e->getMessage());
         }
     }

@@ -60,6 +60,13 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'hr_actions'     => [
+            'driver'               => 'single',
+            'path'                 => storage_path('logs/HR_Log_' . date('Y-m') . '.log'),
+            'level'                => env('LOG_LEVEL', 'info'),
+            'replace_placeholders' => true,
+        ],
+
         'nurse_delete'   => [
             'driver'               => 'daily',
             'path'                 => storage_path('logs/nurse_delete_transaction.log'),
