@@ -247,6 +247,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="navbar-links hidden lg:flex">
+            <a href="{{ route("index") }}">หน้าหลัก</a>
             <a href="{{ route("hrd.index") }}">รายการที่เปิดลงทะเบียน</a>
             <a href="{{ route("hrd.history") }}">ประวัติการเข้าร่วม</a>
             <a href="{{ route("hrd.user-guide") }}">คู่มือการใช้งาน</a>

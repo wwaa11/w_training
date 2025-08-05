@@ -2800,14 +2800,18 @@ class HRController extends Controller
      */
     public function adminUserSearch(Request $request)
     {
-        $query = $request->input('query');
-        $users = User::where('name', 'like', "%{$query}%")
-            ->orWhere('user_id', 'like', "%{$query}%")
-            ->orWhere('email', 'like', "%{$query}%")
-            ->orderBy('name')
-            ->paginate(20);
+        $userid = $request->input('userid');
 
-        return view('hrd.admin.user-management', compact('users', 'query'));
+        $users = User::where('userid', 'like', "%{$userid}%")
+            ->orWhere('name', 'like', "%{$userid}%")
+            ->orWhere('position', 'like', "%{$userid}%")
+            ->orWhere('department', 'like', "%{$userid}%")
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $users,
+        ]);
     }
 
     /**
@@ -2816,11 +2820,11 @@ class HRController extends Controller
     public function adminUserResetPassword(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,userid',
+            'userid' => 'required|exists:users,userid',
         ]);
 
-        $user = User::findOrFail($request->user_id);
-        $user->update(['password' => bcrypt('123456')]);
+        $user = User::where('userid', $request->userid)->firstOrFail();
+        $user->update(['password' => bcrypt($request->userid)]);
 
         // Log password reset
         $this->logAdminAction('PASSWORD_RESET', 'user', $user->id, [
@@ -2829,7 +2833,9 @@ class HRController extends Controller
             'reset_by_admin' => true,
         ]);
 
-        return redirect()->back()->with('success', 'Password reset successfully for ' . $user->name);
+        return response()->json([
+            'message' => 'Password reset successfully for ' . $user->name,
+        ]);
     }
 
     // ========================================================================
