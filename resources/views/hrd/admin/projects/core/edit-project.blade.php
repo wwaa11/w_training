@@ -65,7 +65,26 @@
                             </div>
                         </div>
 
-                        <!-- Special Settings -->
+                        <!-- Project Active Status - Prominent Position -->
+                        <div class="mt-8 border-t border-gray-200 pt-6">
+                            <div class="mb-6 flex items-center">
+                                <div class="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-600">
+                                    <i class="fas fa-toggle-on text-lg text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-800">สถานะโปรเจกต์</h3>
+                            </div>
+                            <div class="rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6">
+                                <label class="flex cursor-pointer items-center">
+                                    <input class="h-6 w-6 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500" type="checkbox" name="project_active" value="1" {{ old("project_active", $project->project_active) ? "checked" : "" }}>
+                                    <div class="ml-4">
+                                        <span class="text-lg font-bold text-green-800">โปรเจกต์ใช้งาน</span>
+                                        <p class="mt-1 text-sm text-green-600">เปิดใช้งานโปรเจกต์นี้เพื่อให้ผู้ใช้สามารถเข้าถึงและลงทะเบียนได้</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Other Special Settings -->
                         <div class="mt-8 border-t border-gray-200 pt-6">
                             <div class="mb-4 flex items-center">
                                 <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-purple-600">
@@ -81,10 +100,6 @@
                                 <label class="flex cursor-pointer items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100">
                                     <input class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" type="checkbox" name="project_register_today" value="1" {{ old("project_register_today", $project->project_register_today) ? "checked" : "" }}>
                                     <span class="ml-3 text-sm font-medium text-gray-700">อนุญาตให้ลงทะเบียนวันเดียวกัน</span>
-                                </label>
-                                <label class="flex cursor-pointer items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100">
-                                    <input class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" type="checkbox" name="project_active" value="1" {{ old("project_active", $project->project_active) ? "checked" : "" }}>
-                                    <span class="ml-3 text-sm font-medium text-gray-700">โปรเจกต์ใช้งาน</span>
                                 </label>
                                 <label class="flex cursor-pointer items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100">
                                     <input class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" type="checkbox" name="project_group_assign" value="1" {{ old("project_group_assign", $project->project_group_assign) ? "checked" : "" }}>

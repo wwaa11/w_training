@@ -560,13 +560,6 @@
                                                 </div>
                                             </div>
                                         @endif
-                                        <div>
-                                            <label class="text-sm font-medium text-gray-700">การลงทะเบียนปัจจุบัน</label>
-                                            <div class="mt-1 text-sm text-gray-900">
-                                                <i class="fas fa-users mr-1 text-blue-500"></i>
-                                                {{ $project->activeAttends->count() }} คน
-                                            </div>
-                                        </div>
                                         @if ($project->project_seat_assign)
                                             <div>
                                                 <div class="flex items-center text-sm text-blue-600">

@@ -1114,8 +1114,8 @@ class HRController extends Controller
     public function adminIndex()
     {
         $projects = HrProject::with(['dates', 'attends'])
-            ->active()
             ->orderBy('created_at', 'desc')
+            ->where('project_delete', false)
             ->paginate(10);
 
         return view('hrd.admin.dashboard', compact('projects'));
@@ -1615,22 +1615,22 @@ class HRController extends Controller
             }
 
             // 3. Delete attendance records (they reference project, dates, times)
-            $project->attends()->forceDelete();
+            $project->attends()->delete();
 
             // 4. Delete seat assignments (they reference times)
             $timeIds = $project->dates->pluck('times')->flatten()->pluck('id');
             if ($timeIds->isNotEmpty()) {
-                HrSeat::whereIn('time_id', $timeIds)->forceDelete();
+                HrSeat::whereIn('time_id', $timeIds)->delete();
             }
 
             // 5. Delete time slots (they reference dates)
             $dateIds = $project->dates->pluck('id');
             if ($dateIds->isNotEmpty()) {
-                HrTime::whereIn('date_id', $dateIds)->forceDelete();
+                HrTime::whereIn('date_id', $dateIds)->delete();
             }
 
             // 6. Delete dates (they reference project)
-            $project->dates()->forceDelete();
+            $project->dates()->delete();
 
             // 7. Delete links (they reference project)
             $project->links()->forceDelete();
@@ -1639,7 +1639,7 @@ class HRController extends Controller
             $project->groups()->forceDelete();
 
             // 9. Finally, delete the project itself
-            $project->forceDelete();
+            $project->delete();
         } catch (\Exception $e) {
             // If forceDelete fails due to foreign key constraints, use raw SQL approach
             $projectId = $project->id;
@@ -1648,31 +1648,31 @@ class HRController extends Controller
             // Order based on foreign key dependencies from migration schema
 
             // 1. Delete results first (they reference attends)
-            DB::statement("DELETE FROM hr_results WHERE project_id = ?", [$projectId]);
+            // DB::statement("DELETE FROM hr_results WHERE project_id = ?", [$projectId]);
 
-            // 2. Delete result headers (they reference project)
-            DB::statement("DELETE FROM hr_result_headers WHERE project_id = ?", [$projectId]);
+            // // 2. Delete result headers (they reference project)
+            // DB::statement("DELETE FROM hr_result_headers WHERE project_id = ?", [$projectId]);
 
-            // 3. Delete attendance records (they reference project, dates, times)
-            DB::statement("DELETE FROM hr_attends WHERE project_id = ?", [$projectId]);
+            // // 3. Delete attendance records (they reference project, dates, times)
+            // DB::statement("DELETE FROM hr_attends WHERE project_id = ?", [$projectId]);
 
-            // 4. Delete seat assignments (they reference times)
-            DB::statement("DELETE FROM hr_seats WHERE time_id IN (SELECT id FROM hr_times WHERE date_id IN (SELECT id FROM hr_dates WHERE project_id = ?))", [$projectId]);
+            // // 4. Delete seat assignments (they reference times)
+            // DB::statement("DELETE FROM hr_seats WHERE time_id IN (SELECT id FROM hr_times WHERE date_id IN (SELECT id FROM hr_dates WHERE project_id = ?))", [$projectId]);
 
-            // 5. Delete time slots (they reference dates)
-            DB::statement("DELETE FROM hr_times WHERE date_id IN (SELECT id FROM hr_dates WHERE project_id = ?)", [$projectId]);
+            // // 5. Delete time slots (they reference dates)
+            // DB::statement("DELETE FROM hr_times WHERE date_id IN (SELECT id FROM hr_dates WHERE project_id = ?)", [$projectId]);
 
-            // 6. Delete dates (they reference project)
-            DB::statement("DELETE FROM hr_dates WHERE project_id = ?", [$projectId]);
+            // // 6. Delete dates (they reference project)
+            // DB::statement("DELETE FROM hr_dates WHERE project_id = ?", [$projectId]);
 
-            // 7. Delete links (they reference project)
-            DB::statement("DELETE FROM hr_links WHERE project_id = ?", [$projectId]);
+            // // 7. Delete links (they reference project)
+            // DB::statement("DELETE FROM hr_links WHERE project_id = ?", [$projectId]);
 
-            // 8. Delete groups (they reference project)
-            DB::statement("DELETE FROM hr_groups WHERE project_id = ?", [$projectId]);
+            // // 8. Delete groups (they reference project)
+            // DB::statement("DELETE FROM hr_groups WHERE project_id = ?", [$projectId]);
 
-            // 9. Finally, delete the project itself
-            DB::statement("DELETE FROM hr_projects WHERE id = ?", [$projectId]);
+            // // 9. Finally, delete the project itself
+            // DB::statement("DELETE FROM hr_projects WHERE id = ?", [$projectId]);
         }
 
         // Log project deletion after successful deletion
