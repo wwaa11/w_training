@@ -35,6 +35,31 @@ class CoreController extends Controller
             $data['message'] = 'เข้าสู่ระบบสำเร็จ';
 
             $userData = User::where('userid', $userid)->first();
+            if ($userData == null) {
+                $response = Http::withHeaders(['token' => env('API_KEY')])
+                    ->timeout(30) // Add timeout to prevent hanging requests
+                    ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                        'userid' => $req->userid,
+                    ]);
+                if ($response->successful()) {
+                    $responseData = $response->json();
+                    if ($responseData['status'] == 1) {
+                        $userData              = new User();
+                        $userData->userid      = $userid;
+                        $userData->password    = Hash::make($userid);
+                        $userData->hn          = $responseData['user']['HN'];
+                        $userData->gender      = $responseData['user']['gender'];
+                        $userData->refNo       = $responseData['user']['refID'];
+                        $userData->passport    = $responseData['user']['passport'];
+                        $userData->name        = $responseData['user']['name'];
+                        $userData->position    = $responseData['user']['position'];
+                        $userData->department  = $responseData['user']['department'];
+                        $userData->division    = $responseData['user']['division'];
+                        $userData->last_update = date('Y-m-d H:i:s');
+                        $userData->save();
+                    }
+                }
+            }
             session([
                 'name'       => $userData->name,
                 'position'   => $userData->position,

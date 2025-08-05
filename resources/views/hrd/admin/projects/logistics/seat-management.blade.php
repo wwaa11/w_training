@@ -21,9 +21,6 @@
                     <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl" onclick="triggerSeatAssignment()">
                         <i class="fas fa-cogs mr-2"></i> จัดที่นั่งอัตโนมัติ
                     </button>
-                    <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl" onclick="cleanupDuplicateSeats()">
-                        <i class="fas fa-broom mr-2"></i> ล้างข้อมูลซ้ำ
-                    </button>
                     <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-purple-600 hover:to-purple-700 hover:shadow-xl" onclick="exportSeatData()">
                         <i class="fas fa-download mr-2"></i> ส่งออกข้อมูล
                     </button>
@@ -131,44 +128,47 @@
                 </div>
             </div>
 
+            <!-- Waiting Screen -->
+            <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50" id="waitingScreen">
+                <div class="mx-4 w-full max-w-md rounded-lg bg-white p-8 shadow-2xl">
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-cogs fa-spin text-4xl text-blue-600"></i>
+                        </div>
+                        <h3 class="mb-2 text-lg font-semibold text-gray-800">กำลังจัดที่นั่งอัตโนมัติ</h3>
+                        <p class="mb-4 text-gray-600">กรุณารอสักครู่ ระบบกำลังประมวลผลการจัดที่นั่งให้กับผู้เข้าร่วมทั้งหมด</p>
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="h-2 w-2 animate-bounce rounded-full bg-blue-600"></div>
+                            <div class="h-2 w-2 animate-bounce rounded-full bg-blue-600" style="animation-delay: 0.1s;"></div>
+                            <div class="h-2 w-2 animate-bounce rounded-full bg-blue-600" style="animation-delay: 0.2s;"></div>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p>ขั้นตอนที่กำลังดำเนินการ:</p>
+                            <ul class="mt-2 space-y-1 text-left">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-2 text-green-500"></i>
+                                    <span>ตรวจสอบข้อมูลการลงทะเบียน</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>
+                                    <span>จัดที่นั่งตามลำดับ</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-clock mr-2 text-gray-400"></i>
+                                    <span>อัปเดตฐานข้อมูล</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Seat Management Content -->
             <div class="space-y-6" id="seatContent">
                 <!-- Date and Time Sections -->
                 <div id="dateTimeSections"></div>
             </div>
 
-            <!-- Manual Seat Assignment Modal -->
-            <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50" id="manualSeatModal">
-                <div class="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-                    <div class="mb-4 flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-gray-800">จัดที่นั่งด้วยตนเอง</h3>
-                        <button class="text-gray-500 hover:text-gray-700" onclick="closeManualSeatModal()">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">เลือกผู้ใช้:</label>
-                        <select class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" id="userSelect">
-                            <option value="">เลือกผู้ใช้...</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">หมายเลขที่นั่ง:</label>
-                        <input class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" id="seatNumberInput" type="number" min="1" placeholder="ระบุหมายเลขที่นั่ง">
-                    </div>
-
-                    <div class="flex justify-end space-x-2">
-                        <button class="rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-600" onclick="closeManualSeatModal()">
-                            ยกเลิก
-                        </button>
-                        <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700" onclick="assignManualSeat()">
-                            <i class="fas fa-chair mr-2"></i> จัดที่นั่ง
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 @endsection
@@ -211,6 +211,14 @@
             }, 5000);
         }
 
+        function showWaitingScreen() {
+            document.getElementById('waitingScreen').classList.remove('hidden');
+        }
+
+        function hideWaitingScreen() {
+            document.getElementById('waitingScreen').classList.add('hidden');
+        }
+
         function loadSeatData() {
             showLoading();
 
@@ -245,7 +253,7 @@
             }
 
             data.seat_data.forEach(session => {
-                const seats = Array.isArray(session.seats) ? session.seats : [];
+                const seats = Array.isArray(session.seats) ? session.seats.sort((a, b) => parseInt(a.seat_number) - parseInt(b.seat_number)) : [];
                 const registrations = Array.isArray(session.registrations) ? session.registrations : [];
                 const unassignedCount = registrations.filter(r => !r.seat_number).length;
 
@@ -265,9 +273,6 @@
                             </p>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="openManualSeatModal(${session.time_id})" class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-3 py-2 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700">
-                                <i class="fas fa-plus mr-1"></i>จัดที่นั่งด้วยตนเอง
-                            </button>
                             <button onclick="clearSeats(${session.time_id})" class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 text-white shadow-lg transition-all duration-300 hover:from-red-600 hover:to-red-700">
                                 <i class="fas fa-trash mr-1"></i>ล้างที่นั่ง
                             </button>
@@ -284,21 +289,21 @@
                             <div class="rounded-lg bg-gray-50 p-4 max-h-64 overflow-y-auto">
                                 ${seats.length > 0 ? 
                                     seats.map(seat => `
-                                                        <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-green-500">
-                                                            <div class="flex items-center">
-                                                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                                                                    <span class="text-sm font-bold text-green-600">${seat.seat_number}</span>
-                                                                </div>
-                                                                <div>
-                                                                    <span class="font-medium text-gray-900">${seat.user_name}</span>
-                                                                    <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${seat.department}</span>
-                                                                </div>
-                                                            </div>
-                                                            <button onclick="removeSeat(${session.time_id}, ${seat.user_id})" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50">
-                                                                <i class="fas fa-times"></i>
-                                                            </button>
-                                                        </div>
-                                                    `).join('') : 
+                                                                                                                                                <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-green-500">
+                                                                                                                                                    <div class="flex items-center">
+                                                                                                                                                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                                                                                                                                            <span class="text-sm font-bold text-green-600">${seat.seat_number}</span>
+                                                                                                                                                        </div>
+                                                                                                                                                        <div>
+                                                                                                                                                            <span class="font-medium text-gray-900">${seat.user_name}</span>
+                                                                                                                                                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${seat.department}</span>
+                                                                                                                                                        </div>
+                                                                                                                                                    </div>
+                                                                                                                                                    <button onclick="removeSeat(${session.time_id}, ${seat.user_id})" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50">
+                                                                                                                                                        <i class="fas fa-times"></i>
+                                                                                                                                                    </button>
+                                                                                                                                                </div>
+                                                                                                                                            `).join('') : 
                                     '<div class="text-center py-8 text-gray-500"><i class="fas fa-chair text-3xl mb-2"></i><p>ยังไม่มีที่นั่งที่จัด</p></div>'
                                 }
                             </div>
@@ -313,21 +318,21 @@
                             <div class="rounded-lg bg-gray-50 p-4 max-h-64 overflow-y-auto">
                                 ${unassignedCount > 0 ? 
                                     registrations.filter(r => !r.seat_number).map(reg => `
-                                                        <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-yellow-500">
-                                                            <div class="flex items-center">
-                                                                <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
-                                                                    <i class="fas fa-user text-yellow-600 text-sm"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <span class="font-medium text-gray-900">${reg.user_name}</span>
-                                                                    <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">${reg.department}</span>
-                                                                </div>
-                                                            </div>
-                                                            <button onclick="assignSeat(${session.time_id}, ${reg.user_id})" class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50">
-                                                                <i class="fas fa-plus"></i>
-                                                            </button>
-                                                        </div>
-                                                    `).join('') : 
+                                                                                                                                                <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-yellow-500">
+                                                                                                                                                    <div class="flex items-center">
+                                                                                                                                                        <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                                                                                                                                            <i class="fas fa-user text-yellow-600 text-sm"></i>
+                                                                                                                                                        </div>
+                                                                                                                                                        <div>
+                                                                                                                                                            <span class="font-medium text-gray-900">${reg.user_name}</span>
+                                                                                                                                                            <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">${reg.department}</span>
+                                                                                                                                                        </div>
+                                                                                                                                                    </div>
+                                                                                                                                                    <button onclick="assignSeat(${session.time_id}, ${reg.user_id})" class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50">
+                                                                                                                                                        <i class="fas fa-plus"></i>
+                                                                                                                                                    </button>
+                                                                                                                                                </div>
+                                                                                                                                            `).join('') : 
                                     '<div class="text-center py-8 text-gray-500"><i class="fas fa-check-circle text-3xl mb-2"></i><p>ไม่มีผู้ใช้ที่รอจัดที่นั่ง</p></div>'
                                 }
                             </div>
@@ -370,45 +375,44 @@
 
         function triggerSeatAssignment() {
             if (confirm('คุณแน่ใจหรือไม่ที่จะเริ่มการจัดที่นั่งอัตโนมัติสำหรับโปรเจกต์นี้?')) {
-                showLoading();
+                // Disable the button to prevent multiple clicks
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังประมวลผล...';
 
-                axios.post('{{ route("hrd.admin.seats.trigger_assignment") }}')
+                showLoading();
+                showWaitingScreen();
+
+                axios.post('{{ route("hrd.admin.seats.trigger_assignment") }}', {
+                        project_id: {{ $project->id }}
+                    })
                     .then(response => {
                         showSuccess('เริ่มการจัดที่นั่งอัตโนมัติสำเร็จ!');
+
+                        // Wait for 5 seconds before refreshing data
                         setTimeout(() => {
                             loadSeatData();
-                        }, 2000);
+                            hideLoading();
+                            hideWaitingScreen();
+                            // Re-enable the button
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                        }, 5000);
                     })
                     .catch(error => {
                         console.error('Error triggering seat assignment:', error);
                         showError('เกิดข้อผิดพลาดในการเริ่มการจัดที่นั่ง กรุณาลองใหม่อีกครั้ง');
-                    })
-                    .finally(() => {
                         hideLoading();
+                        hideWaitingScreen();
+                        // Re-enable the button
+                        button.disabled = false;
+                        button.innerHTML = originalText;
                     });
             }
         }
 
-        function cleanupDuplicateSeats() {
-            if (confirm('คุณแน่ใจหรือไม่ที่จะล้างข้อมูลที่นั่งที่ซ้ำกันสำหรับโปรเจกต์นี้?')) {
-                showLoading();
 
-                axios.post(`{{ route("hrd.admin.seats.cleanup", $project->id) }}`)
-                    .then(response => {
-                        showSuccess(`ล้างข้อมูลซ้ำสำเร็จ! (${response.data.cleaned_count} รายการ)`);
-                        setTimeout(() => {
-                            loadSeatData();
-                        }, 1000);
-                    })
-                    .catch(error => {
-                        console.error('Error cleaning up duplicate seats:', error);
-                        showError('เกิดข้อผิดพลาดในการล้างข้อมูลซ้ำ กรุณาลองใหม่อีกครั้ง');
-                    })
-                    .finally(() => {
-                        hideLoading();
-                    });
-            }
-        }
 
         function exportSeatData() {
             if (!currentSeatData) {
@@ -436,81 +440,19 @@
             showSuccess('ส่งออกข้อมูลสำเร็จ');
         }
 
-        function openManualSeatModal(timeId) {
-            currentTimeId = timeId;
-            const session = currentSeatData.seat_data.find(s => s.time_id === timeId);
 
-            if (!session) return;
-
-            const registrations = Array.isArray(session.registrations) ? session.registrations : [];
-            const userSelect = document.getElementById('userSelect');
-            userSelect.innerHTML = '<option value="">เลือกผู้ใช้...</option>';
-
-            registrations.filter(r => !r.seat_number).forEach(reg => {
-                const option = document.createElement('option');
-                option.value = reg.user_id;
-                option.textContent = `${reg.user_name} (${reg.department})`;
-                userSelect.appendChild(option);
-            });
-
-            document.getElementById('manualSeatModal').classList.remove('hidden');
-        }
-
-        function closeManualSeatModal() {
-            document.getElementById('manualSeatModal').classList.add('hidden');
-            document.getElementById('userSelect').value = '';
-            document.getElementById('seatNumberInput').value = '';
-        }
-
-        function assignManualSeat() {
-            const userId = document.getElementById('userSelect').value;
-            const seatNumber = document.getElementById('seatNumberInput').value;
-
-            if (!userId || !seatNumber) {
-                showError('กรุณาเลือกผู้ใช้และหมายเลขที่นั่ง');
-                return;
-            }
-
-            axios.post(`{{ route("hrd.admin.projects.seat.assign", $project->id) }}`, {
-                    time_id: currentTimeId,
-                    user_id: userId,
-                    seat_number: seatNumber
-                })
-                .then(response => {
-                    showSuccess('จัดที่นั่งสำเร็จ!');
-                    closeManualSeatModal();
-                    loadSeatData();
-                })
-                .catch(error => {
-                    console.error('Error assigning seat:', error);
-                    const message = error.response?.data?.error || 'เกิดข้อผิดพลาดในการจัดที่นั่ง';
-                    showError(message);
-                });
-        }
 
         function assignSeat(timeId, userId) {
             if (confirm('คุณแน่ใจหรือไม่ที่จะจัดที่นั่งให้ผู้ใช้นี้?')) {
-                const session = currentSeatData.seat_data.find(s => s.time_id === timeId);
-                if (!session) return;
+                console.log('Assigning seat for time:', timeId, 'user:', userId);
 
-                const seats = Array.isArray(session.seats) ? session.seats : [];
-                let nextSeatNumber = 1;
-                const usedSeats = seats.map(s => s.seat_number).sort((a, b) => a - b);
-
-                for (let seat of usedSeats) {
-                    if (seat === nextSeatNumber) {
-                        nextSeatNumber++;
-                    } else {
-                        break;
-                    }
-                }
-
+                // Send only time_id and user_id, let backend calculate the seat number
                 axios.post(`{{ route("hrd.admin.projects.seat.assign", $project->id) }}`, {
                         time_id: timeId,
-                        user_id: userId,
-                        seat_number: nextSeatNumber
+                        user_id: userId
                     })
                     .then(response => {
+                        console.log('Seat assignment response:', response.data);
                         showSuccess('จัดที่นั่งสำเร็จ!');
                         loadSeatData();
                     })

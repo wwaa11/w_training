@@ -17,12 +17,14 @@ class HrProjectSeatAssignment implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected $projectId;
+
     /**
      * Create a new job instance.
      */
-    public function __construct()
+    public function __construct($projectId = null)
     {
-        //
+        $this->projectId = $projectId;
     }
 
     /**
@@ -30,19 +32,27 @@ class HrProjectSeatAssignment implements ShouldQueue
      */
     public function handle(): void
     {
+        Log::error("Start Job");
         try {
-            // Get all active projects with seat assignment enabled
-            $projects = HrProject::where('project_seat_assign', true)
-                ->where('project_active', true)
-                ->where('project_delete', false)
-                ->with(['dates.times'])
-                ->get();
+            if ($this->projectId) {
+                // Get project by ID
+                $project = HrProject::with(['dates.times.attends'])->find($this->projectId);
 
-            foreach ($projects as $project) {
-                $this->processProjectSeats($project);
+                if ($project) {
+                    $project->dates->each(function ($date) {
+                        $date->times->each(function ($time) {
+                            $time->attends->each(function ($attendance) {
+                                if ($attendance->seat_id == null) {
+                                    $this->assignSeatForAttendance($attendance->id);
+                                }
+                            });
+                        });
+                    });
+                    Log::error("HR Project Seat Assignment Job completed for project: {$project->project_name}");
+                } else {
+                    Log::warning("Project with ID {$this->projectId} not found");
+                }
             }
-
-            Log::info('HR Project Seat Assignment Job completed successfully');
 
         } catch (\Exception $e) {
             Log::error('HR Project Seat Assignment Job Error: ' . $e->getMessage(), [
@@ -54,38 +64,77 @@ class HrProjectSeatAssignment implements ShouldQueue
     }
 
     /**
-     * Process seat assignment for a specific project
+     * Assign seat for a specific attendance record
      */
-    private function processProjectSeats(HrProject $project): void
+    private function assignSeatForAttendance($attendId): void
     {
-        foreach ($project->dates as $date) {
-            foreach ($date->times as $time) {
-                $this->processTimeSlotSeats($time);
+        try {
+            $attendance = HrAttend::with(['project', 'time', 'user'])->find($attendId);
+
+            if (! $attendance) {
+                Log::warning("Attendance record not found: {$attendId}");
+                return;
             }
+
+            // Check if project has seat assignment enabled
+            if (! $attendance->project || ! $attendance->project->project_seat_assign) {
+                return;
+            }
+
+            // Check if attendance is not deleted
+            if ($attendance->attend_delete) {
+                return;
+            }
+
+            // Check if seat is already assigned
+            $existingSeat = HrSeat::where('time_id', $attendance->time_id)
+                ->where('user_id', $attendance->user_id)
+                ->where('seat_delete', false)
+                ->first();
+
+            if ($existingSeat) {
+                Log::info("Seat already assigned for user {$attendance->user_id} in time slot {$attendance->time_id}");
+                return;
+            }
+
+            // Get user department
+            $userDepartment = $this->getUserDepartment($attendance->user_id);
+            if (! $userDepartment) {
+                Log::warning("No department found for user {$attendance->user_id}");
+                return;
+            }
+
+            // Assign seat
+            $this->assignSeatToUser($attendance, $userDepartment);
+
+        } catch (\Exception $e) {
+            Log::error('Error assigning seat for attendance: ' . $e->getMessage(), [
+                'attend_id' => $attendId,
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine(),
+            ]);
         }
     }
 
     /**
-     * Process seat assignment for a specific time slot
+     * Get user department
      */
-    private function processTimeSlotSeats(HrTime $time): void
+    private function getUserDepartment($userId): ?string
     {
-        // Skip if time slot is deleted or inactive
-        if ($time->time_delete || ! $time->time_active) {
-            return;
+        $user = User::find($userId);
+        if (! $user) {
+            return null;
         }
 
-        // Get all registrations for this time slot that don't have seats assigned
-        $unassignedRegistrations = HrAttend::where('time_id', $time->id)
-            ->where('attend_delete', false)
-            ->whereDoesntHave('seat') // Check if no seat assignment exists
-            ->with(['user'])
-            ->orderBy('created_at', 'asc')
-            ->get();
+        return $user->department ?? 'Unknown';
+    }
 
-        if ($unassignedRegistrations->isEmpty()) {
-            return;
-        }
+    /**
+     * Assign seat to user based on department separation rules
+     */
+    private function assignSeatToUser(HrAttend $attendance, string $userDepartment): void
+    {
+        $time = $attendance->time;
 
         // Get current seat assignments for this time slot
         $currentSeats = HrSeat::where('time_id', $time->id)
@@ -93,64 +142,11 @@ class HrProjectSeatAssignment implements ShouldQueue
             ->get()
             ->keyBy('seat_number');
 
-        // Get user department information
-        $userDepartments = $this->getUserDepartments($unassignedRegistrations->pluck('user_id'));
-
-        foreach ($unassignedRegistrations as $registration) {
-            $userDepartment = $userDepartments[$registration->user_id] ?? null;
-
-            if (! $userDepartment) {
-                Log::warning("No department found for user {$registration->user_id}");
-                continue;
-            }
-
-            $assignedSeat = $this->assignSeatToUser($time, $registration, $userDepartment, $currentSeats);
-
-            if ($assignedSeat) {
-                // Add the newly assigned seat to the current seats collection
-                $newSeat              = new \stdClass();
-                $newSeat->seat_number = $assignedSeat;
-                $newSeat->department  = $userDepartment;
-                $newSeat->user_id     = $registration->user_id;
-                $currentSeats->put($assignedSeat, $newSeat);
-            }
-        }
-    }
-
-    /**
-     * Get department information for users
-     */
-    private function getUserDepartments($userIds): array
-    {
-        $departments = [];
-
-        $users = User::whereIn('id', $userIds)->get();
-
-        foreach ($users as $user) {
-            $department = $user->department ?? null;
-
-            if ($department) {
-                $departments[$user->id] = $department;
-            } else {
-                // If no department found, use a default or log warning
-                Log::warning("No department found for user {$user->id} ({$user->userid})");
-                $departments[$user->id] = 'Unknown';
-            }
-        }
-
-        return $departments;
-    }
-
-    /**
-     * Assign a seat to a user based on department separation rules
-     */
-    private function assignSeatToUser(HrTime $time, HrAttend $registration, string $userDepartment, $currentSeats): ?int
-    {
-        // If time_limit is false, assign without limit
+        // Determine max seats
         if (! $time->time_limit) {
             $maxSeats = 999999; // Very high number for unlimited
         } else {
-            $maxSeats = $time->time_max ?? 100; // Use time_max if time_limit is true
+            $maxSeats = $time->time_max ?? 100;
         }
 
         $assignedSeat = null;
@@ -175,18 +171,17 @@ class HrProjectSeatAssignment implements ShouldQueue
             }
         }
 
-        // Assign the seat if found
+        // Create seat assignment if found
         if ($assignedSeat) {
-            $this->createSeatAssignment($time, $registration, $userDepartment, $assignedSeat);
+            $this->createSeatAssignment($time, $attendance, $userDepartment, $assignedSeat);
+            Log::info("Seat {$assignedSeat} assigned to user {$attendance->user_id} in time slot {$time->id}");
         } else {
             if ($time->time_limit) {
-                Log::info("No seat available for user {$registration->user_id} in time slot {$time->id} - time slot is full (limit: {$time->time_max})");
+                Log::warning("No seat available for user {$attendance->user_id} in time slot {$time->id} - time slot is full (limit: {$time->time_max})");
             } else {
-                Log::info("No seat available for user {$registration->user_id} in time slot {$time->id} - unexpected (unlimited mode)");
+                Log::warning("No seat available for user {$attendance->user_id} in time slot {$time->id} - unexpected (unlimited mode)");
             }
         }
-
-        return $assignedSeat;
     }
 
     /**
@@ -221,7 +216,7 @@ class HrProjectSeatAssignment implements ShouldQueue
     /**
      * Create a seat assignment record
      */
-    private function createSeatAssignment(HrTime $time, HrAttend $registration, string $userDepartment, int $seatNumber): void
+    private function createSeatAssignment(HrTime $time, HrAttend $attendance, string $userDepartment, int $seatNumber): void
     {
         // Check if seat assignment already exists for this seat number
         $existingSeat = HrSeat::where('time_id', $time->id)
@@ -231,13 +226,13 @@ class HrProjectSeatAssignment implements ShouldQueue
 
         if ($existingSeat) {
             // Log warning and skip - don't overwrite existing seat assignments
-            Log::warning("Seat number {$seatNumber} is already assigned to user {$existingSeat->user_id} in time slot {$time->id}. Skipping assignment for user {$registration->user_id}.");
+            Log::warning("Seat number {$seatNumber} is already assigned to user {$existingSeat->user_id} in time slot {$time->id}. Skipping assignment for user {$attendance->user_id}.");
             return;
         }
 
         // Check if user already has a seat assignment for this time slot
         $existingUserSeat = HrSeat::where('time_id', $time->id)
-            ->where('user_id', $registration->user_id)
+            ->where('user_id', $attendance->user_id)
             ->where('seat_delete', false)
             ->first();
 
@@ -247,17 +242,17 @@ class HrProjectSeatAssignment implements ShouldQueue
                 'seat_number' => $seatNumber,
                 'department'  => $userDepartment,
             ]);
-            Log::info("Updated seat assignment for user {$registration->user_id} from seat {$existingUserSeat->seat_number} to seat {$seatNumber} in time slot {$time->id}");
+            Log::info("Updated seat assignment for user {$attendance->user_id} from seat {$existingUserSeat->seat_number} to seat {$seatNumber} in time slot {$time->id}");
         } else {
             // Create new seat assignment
             HrSeat::create([
                 'time_id'     => $time->id,
-                'user_id'     => $registration->user_id,
+                'user_id'     => $attendance->user_id,
                 'department'  => $userDepartment,
                 'seat_number' => $seatNumber,
                 'seat_delete' => false,
             ]);
-            Log::info("Created new seat assignment: user {$registration->user_id} assigned to seat {$seatNumber} in time slot {$time->id}");
+            Log::info("Created new seat assignment: user {$attendance->user_id} assigned to seat {$seatNumber} in time slot {$time->id}");
         }
     }
 }

@@ -1903,58 +1903,31 @@ class HRController extends Controller
     /**
      * Trigger seat assignment for all projects
      */
-    public function triggerSeatAssignment()
+    public function triggerSeatAssignment(Request $request)
     {
         try {
-            // Get all projects with seat assignment enabled
-            $projects = HrProject::where('project_seat_assign', true)
-                ->where('project_active', true)
-                ->where('project_delete', false)
-                ->get();
+            $request->validate([
+                'project_id' => 'required|integer|exists:hr_projects,id',
+            ]);
 
-            $processedCount = 0;
-            $errors         = [];
+            $project = HrProject::findOrFail($request->project_id);
 
-            foreach ($projects as $project) {
-                try {
-                    // Get all unassigned registrations for this project
-                    $unassignedRegistrations = HrAttend::where('project_id', $project->id)
-                        ->where('attend_delete', false)
-                        ->whereDoesntHave('seat', function ($query) {
-                            $query->where('seat_delete', false);
-                        })
-                        ->get();
-
-                    foreach ($unassignedRegistrations as $registration) {
-                        // Dispatch the new event-driven job for each registration
-                        \App\Jobs\HrAssignSeatForAttendance::dispatch($registration->id);
-                        $processedCount++;
-                    }
-                } catch (\Exception $e) {
-                    $errors[] = "Project {$project->project_name}: " . $e->getMessage();
-                }
+            // Check if project has seat assignment enabled
+            if (! $project->project_seat_assign) {
+                return response()->json([
+                    'error' => 'Seat assignment is not enabled for this project.',
+                ], 400);
             }
 
-            // Also dispatch the bulk assignment job for any remaining cases
-            \App\Jobs\HrProjectSeatAssignment::dispatch();
+            // Dispatch the bulk assignment job for the specific project
+            \App\Jobs\HrProjectSeatAssignment::dispatch($project->id);
 
-            $message = "Seat assignment triggered successfully. ";
-            if ($processedCount > 0) {
-                $message .= "Processed {$processedCount} registrations across " . $projects->count() . " projects.";
-            } else {
-                $message .= "No unassigned registrations found.";
-            }
-
-            if (! empty($errors)) {
-                $message .= " Some errors occurred: " . implode('; ', $errors);
-            }
+            $message = "Seat assignment triggered successfully for project: {$project->project_name}. The bulk assignment job has been queued.";
 
             return response()->json([
-                'success'         => true,
-                'message'         => $message,
-                'processed_count' => $processedCount,
-                'projects_count'  => $projects->count(),
-                'errors'          => $errors,
+                'success'      => true,
+                'message'      => $message,
+                'project_name' => $project->project_name,
             ]);
 
         } catch (\Exception $e) {
@@ -2075,9 +2048,8 @@ class HRController extends Controller
     {
         try {
             $request->validate([
-                'time_id'     => 'required|integer|exists:hr_times,id',
-                'user_id'     => 'required|integer|exists:users,id',
-                'seat_number' => 'required|integer|min:1',
+                'time_id' => 'required|integer|exists:hr_times,id',
+                'user_id' => 'required|integer|exists:users,id',
             ]);
             $project = HrProject::findOrFail($projectId);
             $time    = HrTime::findOrFail($request->time_id);
@@ -2098,16 +2070,6 @@ class HRController extends Controller
                 return response()->json(['error' => 'User is not registered for this time slot.'], 400);
             }
 
-            // Check if seat is already taken
-            $existingSeat = HrSeat::where('time_id', $request->time_id)
-                ->where('seat_number', $request->seat_number)
-                ->where('seat_delete', false)
-                ->first();
-
-            if ($existingSeat) {
-                return response()->json(['error' => 'Seat number ' . $request->seat_number . ' is already assigned to another user.'], 400);
-            }
-
             // Find user by ID (since user_id from frontend is the User model's id)
             $user = User::find($request->user_id);
 
@@ -2115,39 +2077,126 @@ class HRController extends Controller
                 return response()->json(['error' => 'User not found.'], 404);
             }
 
-            // Check if user already has a seat in this time slot
-            $existingUserSeat = HrSeat::where('time_id', $request->time_id)
-                ->where('user_id', $user->id)
-                ->where('seat_delete', false)
-                ->first();
+            // Use database transaction to prevent race conditions
+            return \DB::transaction(function () use ($request, $user, $registration, $time) {
+                // Check if user already has a seat in this time slot
+                $existingUserSeat = HrSeat::where('time_id', $request->time_id)
+                    ->where('user_id', $user->id)
+                    ->where('seat_delete', false)
+                    ->first();
 
-            if ($existingUserSeat) {
-                // Update existing seat assignment
-                $existingUserSeat->update([
-                    'seat_number' => $request->seat_number,
-                    'department'  => $registration->user->department ?? 'Unknown',
-                ]);
-            } else {
-                // Create new seat assignment
-                HrSeat::create([
-                    'time_id'     => $request->time_id,
-                    'user_id'     => $user->id,
-                    'department'  => $registration->user->department ?? 'Unknown',
-                    'seat_number' => $request->seat_number,
-                    'seat_delete' => false,
-                ]);
-            }
+                if ($existingUserSeat) {
+                    return response()->json(['error' => 'User already has a seat assigned for this time slot.'], 400);
+                }
 
-            return response()->json([
-                'success'     => true,
-                'message'     => 'Seat assigned successfully.',
-                'seat_number' => $request->seat_number,
-                'user_name'   => $registration->user->name,
-            ]);
+                $userDepartment = $registration->user->department ?? 'Unknown';
+
+                // Get current seat assignments for this time slot
+                $currentSeats = HrSeat::where('time_id', $request->time_id)
+                    ->where('seat_delete', false)
+                    ->get()
+                    ->keyBy('seat_number');
+
+                // Determine max seats
+                if (! $time->time_limit) {
+                    $maxSeats = 999999; // Very high number for unlimited
+                } else {
+                    $maxSeats = $time->time_max ?? 100;
+                }
+
+                $assignedSeat = null;
+
+                // First, try to find a seat that doesn't have adjacent users from the same department
+                for ($seatNumber = 1; $seatNumber <= $maxSeats; $seatNumber++) {
+                    if ($this->isSeatAvailable($seatNumber, $currentSeats) &&
+                        $this->isSeatSuitableForDepartment($seatNumber, $userDepartment, $currentSeats)) {
+
+                        $assignedSeat = $seatNumber;
+                        break;
+                    }
+                }
+
+                // If no suitable seat found, try to find any available seat within the limit
+                if (! $assignedSeat) {
+                    for ($seatNumber = 1; $seatNumber <= $maxSeats; $seatNumber++) {
+                        if ($this->isSeatAvailable($seatNumber, $currentSeats)) {
+                            $assignedSeat = $seatNumber;
+                            break;
+                        }
+                    }
+                }
+
+                // Create seat assignment if found
+                if ($assignedSeat) {
+                    // Check if seat assignment already exists for this seat number
+                    $existingSeat = HrSeat::where('time_id', $request->time_id)
+                        ->where('seat_number', $assignedSeat)
+                        ->where('seat_delete', false)
+                        ->first();
+
+                    if ($existingSeat) {
+                        return response()->json(['error' => "Seat number {$assignedSeat} is already assigned to another user."], 400);
+                    }
+
+                    // Create new seat assignment
+                    HrSeat::create([
+                        'time_id'     => $request->time_id,
+                        'user_id'     => $user->id,
+                        'department'  => $userDepartment,
+                        'seat_number' => $assignedSeat,
+                        'seat_delete' => false,
+                    ]);
+
+                    \Log::info("Seat {$assignedSeat} assigned to user {$user->id} in time slot {$request->time_id}");
+
+                    return response()->json([
+                        'success'     => true,
+                        'message'     => 'Seat assigned successfully.',
+                        'seat_number' => $assignedSeat,
+                        'user_name'   => $registration->user->name,
+                        'department'  => $userDepartment,
+                    ]);
+                } else {
+                    if ($time->time_limit) {
+                        return response()->json(['error' => "No seat available - time slot is full (limit: {$time->time_max})"], 400);
+                    } else {
+                        return response()->json(['error' => 'No seat available - unexpected error'], 400);
+                    }
+                }
+            });
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to assign seat: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Check if a seat is available
+     */
+    private function isSeatAvailable(int $seatNumber, $currentSeats): bool
+    {
+        return ! $currentSeats->has($seatNumber);
+    }
+
+    /**
+     * Check if a seat is suitable for a department (no adjacent same department)
+     */
+    private function isSeatSuitableForDepartment(int $seatNumber, string $userDepartment, $currentSeats): bool
+    {
+        // Check adjacent seats (left and right)
+        $leftSeat  = $currentSeats->get($seatNumber - 1);
+        $rightSeat = $currentSeats->get($seatNumber + 1);
+
+        // If adjacent seats exist and have the same department, this seat is not suitable
+        if ($leftSeat && $leftSeat->department === $userDepartment) {
+            return false;
+        }
+
+        if ($rightSeat && $rightSeat->department === $userDepartment) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
