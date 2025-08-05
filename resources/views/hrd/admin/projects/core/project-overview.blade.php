@@ -5,62 +5,30 @@
         <!-- Header Section -->
         <div class="border-b border-gray-200 bg-white shadow-lg">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <a class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors duration-200 hover:bg-blue-200" href="{{ route("hrd.admin.index") }}">
-                            <i class="fas fa-arrow-left text-lg"></i>
-                        </a>
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">{{ $project->project_name }}</h1>
-                            <div class="mt-2 flex items-center space-x-3">
-                                <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
-                                @elseif($project->project_type === "multiple") bg-green-100 text-green-800
-                                @else bg-purple-100 text-purple-800 @endif inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
-                                    <i class="fas fa-{{ $project->project_type === "single" ? "user" : ($project->project_type === "multiple" ? "users" : "calendar") }} mr-2"></i>
-                                    @if ($project->project_type === "single")
-                                        ลงทะเบียน 1 ครั้ง
-                                    @elseif($project->project_type === "multiple")
-                                        ลงทะเบียนได้มากกว่า 1 ครั้ง
-                                    @else
-                                        ไม่ต้องลงทะเบียน
-                                    @endif
-                                </span>
-                                <span class="{{ $project->project_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
-                                    <i class="fas fa-{{ $project->project_active ? "check-circle" : "times-circle" }} mr-2"></i>
-                                    {{ $project->project_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
-                                </span>
-                            </div>
+                <div class="flex items-center space-x-4">
+                    <a class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors duration-200 hover:bg-blue-200" href="{{ route("hrd.admin.index") }}">
+                        <i class="fas fa-arrow-left text-lg"></i>
+                    </a>
+                    <div class="flex-1">
+                        <h1 class="break-words font-bold text-gray-900" id="projectName" style="font-size: 1.875rem;">{{ $project->project_name }}</h1>
+                        <div class="mt-2 flex items-center space-x-3">
+                            <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
+                            @elseif($project->project_type === "multiple") bg-green-100 text-green-800
+                            @else bg-purple-100 text-purple-800 @endif inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
+                                <i class="fas fa-{{ $project->project_type === "single" ? "user" : ($project->project_type === "multiple" ? "users" : "calendar") }} mr-2"></i>
+                                @if ($project->project_type === "single")
+                                    ลงทะเบียน 1 ครั้ง
+                                @elseif($project->project_type === "multiple")
+                                    ลงทะเบียนได้มากกว่า 1 ครั้ง
+                                @else
+                                    ไม่ต้องลงทะเบียน
+                                @endif
+                            </span>
+                            <span class="{{ $project->project_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
+                                <i class="fas fa-{{ $project->project_active ? "check-circle" : "times-circle" }} mr-2"></i>
+                                {{ $project->project_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
+                            </span>
                         </div>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <a class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.projects.registrations.index", $project->id) }}">
-                            <i class="fas fa-users mr-2"></i>
-                            จัดการการลงทะเบียน
-                        </a>
-                        <a class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-green-700" href="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
-                            <i class="fas fa-check-circle mr-2"></i>
-                            จัดการการอนุมัติ
-                        </a>
-                        <a class="inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-purple-700" href="{{ route("hrd.admin.projects.results.index", $project->id) }}">
-                            <i class="fas fa-chart-bar mr-2"></i>
-                            จัดการผลการประเมิน
-                        </a>
-                        @if ($project->project_seat_assign)
-                            <a class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700" href="{{ route("hrd.admin.projects.seat.management", $project->id) }}">
-                                <i class="fas fa-cogs mr-2"></i>
-                                จัดการที่นั่ง
-                            </a>
-                        @endif
-                        @if ($project->project_group_assign)
-                            <a class="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-teal-700" href="{{ route("hrd.admin.projects.groups.index", $project->id) }}">
-                                <i class="fas fa-users mr-2"></i>
-                                จัดการกลุ่ม
-                            </a>
-                        @endif
-                        <a class="inline-flex items-center rounded-lg bg-yellow-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-yellow-700" href="{{ route("hrd.admin.projects.edit", $project->id) }}">
-                            <i class="fas fa-edit mr-2"></i>
-                            แก้ไข
-                        </a>
                     </div>
                 </div>
 
@@ -76,6 +44,44 @@
         </div>
 
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Action Buttons Section -->
+            <div class="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-4 flex items-center text-lg font-semibold text-gray-900">
+                    <i class="fas fa-cogs mr-3 text-blue-600"></i>
+                    การจัดการโปรเจกต์
+                </h2>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <a class="flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700" href="{{ route("hrd.admin.projects.registrations.index", $project->id) }}">
+                        <i class="fas fa-users mr-2"></i>
+                        จัดการการลงทะเบียน
+                    </a>
+                    <a class="flex h-12 w-full items-center justify-center rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-green-700" href="{{ route("hrd.admin.projects.approvals.index", $project->id) }}">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        จัดการการอนุมัติ
+                    </a>
+                    <a class="flex h-12 w-full items-center justify-center rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-purple-700" href="{{ route("hrd.admin.projects.results.index", $project->id) }}">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        จัดการผลการประเมิน
+                    </a>
+                    @if ($project->project_seat_assign)
+                        <a class="flex h-12 w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700" href="{{ route("hrd.admin.projects.seat.management", $project->id) }}">
+                            <i class="fas fa-cogs mr-2"></i>
+                            จัดการที่นั่ง
+                        </a>
+                    @endif
+                    @if ($project->project_group_assign)
+                        <a class="flex h-12 w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-teal-700" href="{{ route("hrd.admin.projects.groups.index", $project->id) }}">
+                            <i class="fas fa-users mr-2"></i>
+                            จัดการกลุ่ม
+                        </a>
+                    @endif
+                    <a class="flex h-12 w-full items-center justify-center rounded-lg bg-yellow-600 px-4 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-yellow-700" href="{{ route("hrd.admin.projects.edit", $project->id) }}">
+                        <i class="fas fa-edit mr-2"></i>
+                        แก้ไข
+                    </a>
+                </div>
+            </div>
 
             <!-- Project Information -->
             <div class="rounded-xl border border-gray-200 bg-white py-6 shadow-sm">
@@ -669,7 +675,34 @@
             if (checkbox1) checkbox1.addEventListener('change', checkDeleteConfirmation);
             if (checkbox2) checkbox2.addEventListener('change', checkDeleteConfirmation);
             if (textInput) textInput.addEventListener('input', checkDeleteConfirmation);
+
+            // Adjust project name font size based on length
+            adjustProjectNameFontSize();
         });
+
+        function adjustProjectNameFontSize() {
+            const projectNameElement = document.getElementById('projectName');
+            if (!projectNameElement) return;
+
+            const projectName = projectNameElement.textContent.trim();
+            const length = projectName.length;
+
+            let fontSize = '1.875rem'; // Default 3xl (30px)
+
+            if (length > 50) {
+                fontSize = '1.5rem'; // text-2xl (24px)
+            } else if (length > 30) {
+                fontSize = '1.25rem'; // text-xl (20px)
+            } else if (length > 20) {
+                fontSize = '1.125rem'; // text-lg (18px)
+            } else if (length > 10) {
+                fontSize = '1rem'; // text-base (16px)
+            } else {
+                fontSize = '1.875rem'; // text-3xl (30px) for short names
+            }
+
+            projectNameElement.style.fontSize = fontSize;
+        }
 
         function confirmDelete() {
             document.getElementById('deleteModal').style.display = 'flex';

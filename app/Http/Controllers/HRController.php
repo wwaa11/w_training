@@ -1710,6 +1710,26 @@ class HRController extends Controller
             'attends.time',
         ])->findOrFail($id);
 
+        // Calculate total statistics from all registrations (before pagination)
+        $totalRegistrations = $project->attends()
+            ->where('attend_delete', false)
+            ->count();
+
+        $attendedCount = $project->attends()
+            ->where('attend_delete', false)
+            ->whereNotNull('attend_datetime')
+            ->count();
+
+        $notAttendedCount = $project->attends()
+            ->where('attend_delete', false)
+            ->whereNull('attend_datetime')
+            ->count();
+
+        $approvedCount = $project->attends()
+            ->where('attend_delete', false)
+            ->whereNotNull('approve_datetime')
+            ->count();
+
         // Start with base query for active registrations
         $query = $project->attends()
             ->where('attend_delete', false)
@@ -1747,7 +1767,14 @@ class HRController extends Controller
         // Preserve search parameters in pagination links
         $registrations->appends(request()->query());
 
-        return view('hrd.admin.projects.participants.registration-management', compact('project', 'registrations'));
+        return view('hrd.admin.projects.participants.registration-management', compact(
+            'project',
+            'registrations',
+            'totalRegistrations',
+            'attendedCount',
+            'notAttendedCount',
+            'approvedCount'
+        ));
     }
 
     /**

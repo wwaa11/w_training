@@ -53,7 +53,7 @@
                 <div class="flex items-center">
                     <i class="fas fa-users mr-3 text-2xl text-blue-600"></i>
                     <div>
-                        <p class="text-2xl font-bold text-blue-900">{{ $registrations->total() }}</p>
+                        <p class="text-2xl font-bold text-blue-900">{{ $totalRegistrations }}</p>
                         <p class="text-sm text-blue-700">การลงทะเบียนทั้งหมด</p>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
                 <div class="flex items-center">
                     <i class="fas fa-check-circle mr-3 text-2xl text-green-600"></i>
                     <div>
-                        <p class="text-2xl font-bold text-green-900">{{ $registrations->where("attend_datetime", "!=", null)->count() }}</p>
+                        <p class="text-2xl font-bold text-green-900">{{ $attendedCount }}</p>
                         <p class="text-sm text-green-700">เข้าร่วมแล้ว (Check-in)</p>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                 <div class="flex items-center">
                     <i class="fas fa-clock mr-3 text-2xl text-yellow-600"></i>
                     <div>
-                        <p class="text-2xl font-bold text-yellow-900">{{ $registrations->where("attend_datetime", null)->count() }}</p>
+                        <p class="text-2xl font-bold text-yellow-900">{{ $notAttendedCount }}</p>
                         <p class="text-sm text-yellow-700">รอเข้าร่วม</p>
                     </div>
                 </div>
@@ -80,7 +80,7 @@
                 <div class="flex items-center">
                     <i class="fas fa-thumbs-up mr-3 text-2xl text-indigo-600"></i>
                     <div>
-                        <p class="text-2xl font-bold text-indigo-900">{{ $registrations->where("approve_datetime", "!=", null)->count() }}</p>
+                        <p class="text-2xl font-bold text-indigo-900">{{ $approvedCount }}</p>
                         <p class="text-sm text-indigo-700">อนุมัติแล้ว</p>
                     </div>
                 </div>

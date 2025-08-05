@@ -24,6 +24,31 @@
             <form id="projectForm" action="{{ route("hrd.admin.projects.update", $project->id) }}" method="POST">
                 @csrf
 
+                <!-- Project Active Status - Top Section -->
+                <div class="mb-6 rounded-lg border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6">
+                    <div class="mb-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-600">
+                                <i class="fas fa-toggle-on text-lg text-white"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-800">สถานะโปรเจกต์</h2>
+                        </div>
+                        <button class="inline-flex items-center rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-green-700 hover:to-emerald-700" type="submit" form="projectForm">
+                            <i class="fas fa-save mr-2"></i>
+                            อัปเดตโปรเจกต์
+                        </button>
+                    </div>
+                    <div class="rounded-xl border-2 border-green-200 bg-white p-6">
+                        <label class="flex cursor-pointer items-center">
+                            <input class="h-6 w-6 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500" type="checkbox" name="project_active" value="1" {{ old("project_active", $project->project_active) ? "checked" : "" }}>
+                            <div class="ml-4">
+                                <span class="text-lg font-bold text-green-800">โปรเจกต์ใช้งาน</span>
+                                <p class="mt-1 text-sm text-green-600">เปิดใช้งานโปรเจกต์นี้เพื่อให้ผู้ใช้สามารถเข้าถึงและลงทะเบียนได้</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Basic Project Information -->
                 <div class="mb-6 rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-6">
                     <div class="mb-6">
@@ -44,12 +69,15 @@
                             </div>
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-gray-700">ประเภทโปรเจกต์ *</label>
-                                <select class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" name="project_type" required>
+                                <select class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" name="project_type" required onchange="showProjectTypeHint(this.value)">
                                     <option value="">เลือกประเภท</option>
                                     <option value="single" {{ old("project_type", $project->project_type) === "single" ? "selected" : "" }}>ลงทะเบียน 1 ครั้ง</option>
                                     <option value="multiple" {{ old("project_type", $project->project_type) === "multiple" ? "selected" : "" }}>ลงทะเบียนได้มากกว่า 1 ครั้ง</option>
                                     <option value="attendance" {{ old("project_type", $project->project_type) === "attendance" ? "selected" : "" }}>ไม่ต้องลงทะเบียน</option>
                                 </select>
+                                <div class="mt-2 hidden text-sm text-gray-600" id="projectTypeHint">
+                                    <!-- Hints will be shown here -->
+                                </div>
                             </div>
                             <div class="md:col-span-2">
                                 <label class="mb-2 block text-sm font-semibold text-gray-700">รายละเอียดโปรเจกต์</label>
@@ -62,25 +90,6 @@
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-gray-700">สิ้นสุดลงทะเบียน *</label>
                                 <input class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" type="datetime-local" name="project_end_register" value="{{ old("project_end_register", $project->project_end_register ? $project->project_end_register->format("Y-m-d\TH:i") : "") }}" required>
-                            </div>
-                        </div>
-
-                        <!-- Project Active Status - Prominent Position -->
-                        <div class="mt-8 border-t border-gray-200 pt-6">
-                            <div class="mb-6 flex items-center">
-                                <div class="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-600">
-                                    <i class="fas fa-toggle-on text-lg text-white"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-800">สถานะโปรเจกต์</h3>
-                            </div>
-                            <div class="rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-6">
-                                <label class="flex cursor-pointer items-center">
-                                    <input class="h-6 w-6 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500" type="checkbox" name="project_active" value="1" {{ old("project_active", $project->project_active) ? "checked" : "" }}>
-                                    <div class="ml-4">
-                                        <span class="text-lg font-bold text-green-800">โปรเจกต์ใช้งาน</span>
-                                        <p class="mt-1 text-sm text-green-600">เปิดใช้งานโปรเจกต์นี้เพื่อให้ผู้ใช้สามารถเข้าถึงและลงทะเบียนได้</p>
-                                    </div>
-                                </label>
                             </div>
                         </div>
 
@@ -198,7 +207,40 @@
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             loadExistingData();
+
+            // Show project type hint for current project type
+            const currentProjectType = @json($project->project_type);
+            if (currentProjectType) {
+                showProjectTypeHint(currentProjectType);
+            }
         });
+
+        function showProjectTypeHint(projectType) {
+            const hintDiv = document.getElementById('projectTypeHint');
+            let hintText = '';
+            let hintClass = '';
+
+            switch (projectType) {
+                case 'single':
+                    hintText = '💡 ผู้ใช้สามารถลงทะเบียนได้เพียง 1 ครั้งเท่านั้น เหมาะสำหรับกิจกรรมที่ต้องการจำกัดจำนวนผู้เข้าร่วม';
+                    hintClass = 'bg-blue-50 border-blue-200 text-blue-800';
+                    break;
+                case 'multiple':
+                    hintText = '💡 ผู้ใช้สามารถลงทะเบียนได้หลายครั้ง เหมาะสำหรับกิจกรรมที่จัดหลายวันหรือหลายรอบ';
+                    hintClass = 'bg-green-50 border-green-200 text-green-800';
+                    break;
+                case 'attendance':
+                    hintText = '💡 ไม่มีการลงทะเบียนล่วงหน้า ผู้ใช้สามารถเข้าร่วมได้โดยตรง เหมาะสำหรับกิจกรรมที่เปิดให้เข้าร่วมได้ทันที';
+                    hintClass = 'bg-purple-50 border-purple-200 text-purple-800';
+                    break;
+                default:
+                    hintDiv.classList.add('hidden');
+                    return;
+            }
+
+            hintDiv.innerHTML = `<div class="p-3 rounded-lg border ${hintClass}">${hintText}</div>`;
+            hintDiv.classList.remove('hidden');
+        }
 
 
 

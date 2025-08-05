@@ -78,13 +78,20 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
                         @forelse($projects as $project)
-                            <tr class="hover:bg-gray-50">
-                                <td class="whitespace-nowrap px-6 py-4">
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">{{ $project->project_name }}</div>
-                                        @if ($project->project_detail)
-                                            <div class="text-sm text-gray-500">{{ Str::limit($project->project_detail, 50) }}</div>
-                                        @endif
+                            <tr class="{{ $loop->even ? "bg-gray-50" : "bg-white" }} {{ $project->project_active ? "border-green-500" : "border-red-500" }} border-l-4 hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="{{ $project->project_active ? "bg-green-100" : "bg-red-100" }} flex h-8 w-8 items-center justify-center rounded-full">
+                                                <i class="fas fa-{{ $project->project_active ? "check-circle" : "times-circle" }} {{ $project->project_active ? "text-green-600" : "text-red-600" }} text-sm"></i>
+                                            </div>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="break-words text-sm font-semibold text-gray-900">{{ $project->project_name }}</div>
+                                            @if ($project->project_detail)
+                                                <div class="mt-1 break-words text-sm text-gray-500">{{ Str::limit($project->project_detail, 50) }}</div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-4">
@@ -113,11 +120,13 @@
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-4">
                                     @if ($project->project_active)
-                                        <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
+                                        <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-2 text-sm font-semibold text-green-800 shadow-sm">
+                                            <i class="fas fa-check-circle mr-2"></i>
                                             ใช้งาน
                                         </span>
                                     @else
-                                        <span class="inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-800">
+                                        <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-2 text-sm font-semibold text-red-800 shadow-sm">
+                                            <i class="fas fa-times-circle mr-2"></i>
                                             ไม่ใช้งาน
                                         </span>
                                     @endif

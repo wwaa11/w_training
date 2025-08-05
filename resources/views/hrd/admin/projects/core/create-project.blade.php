@@ -44,12 +44,15 @@
                             </div>
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-gray-700">ประเภทโปรเจกต์ *</label>
-                                <select class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" name="project_type" required>
+                                <select class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" name="project_type" required onchange="showProjectTypeHint(this.value)">
                                     <option value="">เลือกประเภท</option>
                                     <option value="single" {{ old("project_type") === "single" ? "selected" : "" }}>ลงทะเบียน 1 ครั้ง</option>
                                     <option value="multiple" {{ old("project_type") === "multiple" ? "selected" : "" }}>ลงทะเบียนได้มากกว่า 1 ครั้ง</option>
                                     <option value="attendance" {{ old("project_type") === "attendance" ? "selected" : "" }}>ไม่ต้องลงทะเบียน</option>
                                 </select>
+                                <div class="mt-2 hidden text-sm text-gray-600" id="projectTypeHint">
+                                    <!-- Hints will be shown here -->
+                                </div>
                             </div>
                             <div class="md:col-span-2">
                                 <label class="mb-2 block text-sm font-semibold text-gray-700">รายละเอียดโปรเจกต์</label>
@@ -204,7 +207,40 @@
                     restoreLinkData(index, linkData);
                 });
             }
+
+            // Show project type hint if there's an old value
+            const oldProjectType = @json(old("project_type", ""));
+            if (oldProjectType) {
+                showProjectTypeHint(oldProjectType);
+            }
         });
+
+        function showProjectTypeHint(projectType) {
+            const hintDiv = document.getElementById('projectTypeHint');
+            let hintText = '';
+            let hintClass = '';
+
+            switch (projectType) {
+                case 'single':
+                    hintText = '💡 ผู้ใช้สามารถลงทะเบียนได้เพียง 1 ครั้งเท่านั้น เหมาะสำหรับกิจกรรมที่ต้องการจำกัดจำนวนผู้เข้าร่วม';
+                    hintClass = 'bg-blue-50 border-blue-200 text-blue-800';
+                    break;
+                case 'multiple':
+                    hintText = '💡 ผู้ใช้สามารถลงทะเบียนได้หลายครั้ง เหมาะสำหรับกิจกรรมที่จัดหลายวันหรือหลายรอบ';
+                    hintClass = 'bg-green-50 border-green-200 text-green-800';
+                    break;
+                case 'attendance':
+                    hintText = '💡 ไม่มีการลงทะเบียนล่วงหน้า ผู้ใช้สามารถเข้าร่วมได้โดยตรง เหมาะสำหรับกิจกรรมที่เปิดให้เข้าร่วมได้ทันที';
+                    hintClass = 'bg-purple-50 border-purple-200 text-purple-800';
+                    break;
+                default:
+                    hintDiv.classList.add('hidden');
+                    return;
+            }
+
+            hintDiv.innerHTML = `<div class="p-3 rounded-lg border ${hintClass}">${hintText}</div>`;
+            hintDiv.classList.remove('hidden');
+        }
 
         // Form submission with SweetAlert confirmation
         document.getElementById('projectForm').addEventListener('submit', function(e) {
