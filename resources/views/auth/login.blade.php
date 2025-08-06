@@ -56,7 +56,7 @@
             box-shadow: 0 15px 40px var(--shadow-medium);
             border: 1px solid var(--border-color);
             width: 100%;
-            max-width: 320px;
+            max-width: 450px;
             animation: fadeInUp 0.6s ease-out;
         }
 
@@ -72,8 +72,15 @@
             filter: drop-shadow(0 2px 4px var(--shadow-light));
         }
 
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 var(--spacing-xs) 0;
+        }
+
         .auth-subtitle {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             margin: 0;
         }
@@ -91,21 +98,23 @@
         }
 
         .form-label {
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-primary);
             display: flex;
             align-items: center;
+            margin-bottom: var(--spacing-xs);
         }
 
         .form-input {
-            padding: var(--spacing-sm) var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
             border: 2px solid var(--border-color);
             border-radius: var(--radius-md);
-            font-size: 0.9rem;
+            font-size: 1rem;
             transition: all var(--transition-normal);
             background: var(--background-primary);
             color: var(--text-primary);
+            min-height: 48px;
         }
 
         .form-input:focus {
@@ -124,15 +133,16 @@
             color: white;
             border: none;
             border-radius: var(--radius-md);
-            padding: var(--spacing-sm) var(--spacing-md);
-            font-size: 0.9rem;
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all var(--transition-normal);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+            min-height: 52px;
         }
 
         .auth-button:hover {
@@ -157,18 +167,61 @@
         }
 
         /* Responsive Design */
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: var(--spacing-md);
+            }
+
+            .auth-card {
+                padding: var(--spacing-lg);
+                max-width: 380px;
+            }
+
+            .auth-title {
+                font-size: 1.3rem;
+            }
+
+            .auth-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .form-input {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.95rem;
+                min-height: 44px;
+            }
+
+            .auth-button {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.95rem;
+                min-height: 48px;
+            }
+        }
+
         @media (max-width: 480px) {
             .auth-container {
                 padding: var(--spacing-sm);
             }
 
             .auth-card {
-                padding: var(--spacing-lg);
-                max-width: 280px;
+                padding: var(--spacing-md);
+                max-width: 320px;
             }
 
-            .auth-logo {
-                width: 70px;
+            .auth-title {
+                font-size: 1.2rem;
+            }
+
+            .form-input {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.9rem;
+                min-height: 42px;
+            }
+
+            .auth-button {
+                padding: var(--spacing-sm) var(--spacing-md);
+                font-size: 0.9rem;
+                min-height: 46px;
             }
         }
     </style>
@@ -198,10 +251,12 @@
             // Show loading state
             Swal.fire({
                 title: 'กำลังเข้าสู่ระบบ',
-                html: '<div class="loading-spinner"></div>',
-                icon: 'info',
                 allowOutsideClick: false,
                 showConfirmButton: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
             axios.post('{{ route("login") }}', {
@@ -248,22 +303,17 @@
             }
         });
 
-        // Add loading spinner styles
+        // Add SweetAlert modal scrolling styles
         const style = document.createElement('style');
         style.textContent = `
-            .loading-spinner {
-                width: 40px;
-                height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid var(--primary-color);
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 0 auto;
+            /* Ensure SweetAlert modal allows scrolling */
+            .swal2-container {
+                overflow-y: auto !important;
             }
             
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+            .swal2-popup {
+                max-height: 90vh;
+                overflow-y: auto;
             }
         `;
         document.head.appendChild(style);

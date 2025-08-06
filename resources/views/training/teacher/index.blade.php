@@ -5,9 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     @yield("meta")
-    <title inertia>PR9 HRD</title>
+    <title inertia>PR9 Training</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
-    <link rel="stylesheet" type="text/css" href="{{ url("css/all.min.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -22,214 +23,6 @@
             font-family: "Prompt", sans-serif;
             font-weight: 400;
             font-style: normal;
-        }
-
-        .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #c1dccd;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            padding: 0.5rem 2rem;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 20;
-            min-height: 4.5rem;
-            transition: background 0.2s;
-        }
-
-        .navbar-logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .navbar-logo img {
-            max-height: 2.5rem;
-        }
-
-        .navbar-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2563eb;
-            letter-spacing: 1px;
-        }
-
-        .navbar-links {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .navbar-links a {
-            color: #143429;
-            font-size: 1rem;
-            font-weight: 500;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .navbar-links a:hover,
-        .navbar-links a.active {
-            background: #2563eb;
-            color: #fff;
-        }
-
-        .navbar-user {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: #fff;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            padding: 0.5rem 1rem;
-            min-width: 180px;
-        }
-
-        .navbar-user-info {
-            flex: 1;
-            text-align: left;
-        }
-
-        .navbar-user-info .userid {
-            font-weight: 600;
-            color: #2563eb;
-        }
-
-        .navbar-user-info .department {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .navbar-user-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .navbar-user-actions a,
-        .navbar-user-actions button {
-            background: none;
-            border: none;
-            color: #2563eb;
-            font-size: 0.95rem;
-            cursor: pointer;
-            padding: 0.25rem 0;
-            text-align: left;
-            transition: color 0.2s;
-        }
-
-        .navbar-user-actions button.logout {
-            color: #dc2626;
-            font-weight: 600;
-        }
-
-        .navbar-user-actions button.logout:hover {
-            text-decoration: underline;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 2rem;
-            color: #1a3f34;
-            cursor: pointer;
-        }
-
-        @media (max-width: 1024px) {
-
-            .navbar-links,
-            .navbar-user {
-                display: none;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-        }
-
-        .mobile-menu {
-            display: none;
-            position: fixed;
-            top: 4.5rem;
-            left: 0;
-            right: 0;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            z-index: 30;
-            padding: 1.5rem 1rem 1rem 1rem;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .mobile-menu a {
-            color: #143429;
-            font-size: 1.1rem;
-            font-weight: 500;
-            text-decoration: none;
-            padding: 0.75rem 0.5rem;
-            border-radius: 0.375rem;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .mobile-menu a:hover,
-        .mobile-menu a.active {
-            background: #2563eb;
-            color: #fff;
-        }
-
-        .mobile-menu .user-block {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f1f5f9;
-            border-radius: 0.5rem;
-            color: #2563eb;
-            font-weight: 600;
-        }
-
-        .mobile-menu .department {
-            color: #64748b;
-            font-size: 0.95rem;
-        }
-
-        .mobile-menu .user-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .mobile-menu .user-actions a,
-        .mobile-menu .user-actions button {
-            background: none;
-            border: none;
-            color: #2563eb;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 0.25rem 0;
-        }
-
-        .mobile-menu .user-actions button.logout {
-            color: #dc2626;
-            font-weight: 600;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.2s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
         }
     </style>
 </head>
@@ -292,173 +85,59 @@
 
         <div class="overflow-x-auto">
             <table class="min-w-full rounded-lg border border-gray-200 bg-white">
-                <thead class="bg-blue-100">
+                <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-2 text-left text-gray-700">UserID/Name</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Position/Department</th>
-                        <th class="px-4 py-2 text-left text-gray-700">DATE</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Check-in Time</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Group</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Teacher</th>
-                        <th class="px-4 py-2 text-left text-gray-700">Time</th>
-                        <th class="px-4 py-2 text-center text-gray-700">User Status</th>
-                        <th class="px-4 py-2 text-center text-gray-700">Admin Status</th>
-                        <th class="px-4 py-2 text-center text-gray-700">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Department</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Action</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @php
-                        $attend_array = [];
-                    @endphp
-                    @if ($attendances->isEmpty())
-                        <tr class="py-8 text-center text-gray-500">
-                            <td colspan="10">Not found check-in record.</td>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    @foreach ($attendances as $attendance)
+                        <tr>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ $attendance->user->name }}</div>
+                                <div class="text-sm text-gray-500">{{ $attendance->user->userid }}</div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attendance->user->department }}</td>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attendance->date }}</td>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{{ $attendance->time }}</td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                @if ($attendance->admin)
+                                    <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Approved</span>
+                                @else
+                                    <span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">Pending</span>
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                                @if (!$attendance->admin)
+                                    <button class="rounded bg-blue-600 px-3 py-1 text-white transition hover:bg-blue-700" onclick="approveuser({{ $attendance->id }})">Approve</button>
+                                @else
+                                    <span class="text-gray-500">Already Approved</span>
+                                @endif
+                            </td>
                         </tr>
-                    @else
-                        @foreach ($attendances as $attend)
-                            @if (isset($attend->date) && $attend->date->time->session->teacher->name === auth()->user()->name)
-                                @php
-                                    $attend_array[] = $attend->id;
-                                @endphp
-                                <tr class="border-t border-gray-100 hover:bg-blue-50" id="row-{{ $attend->id }}">
-                                    <td class="px-4 py-2">
-                                        {{ $attend->user_id }}
-                                        @if (isset($englishNames[$attend->user_id]))
-                                            <br><span class="text-sm text-gray-600">{{ $englishNames[$attend->user_id]["name_EN"] }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-2">
-                                        @if (isset($englishNames[$attend->user_id]))
-                                            <div class="text-sm">
-                                                <div class="font-medium">{{ $englishNames[$attend->user_id]["position_EN"] }}</div>
-                                                <div class="text-gray-600">{{ $englishNames[$attend->user_id]["department_EN"] }}</div>
-                                            </div>
-                                        @else
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-2">{{ $attend->date_name }}</td>
-                                    <td class="px-4 py-2">{{ date("H:i", strtotime($attend->user_date)) }}</td>
-                                    <td class="px-4 py-2">
-                                        {{ $attend->date && $attend->date->time && $attend->date->time->session && $attend->date->time->session->teacher && $attend->date->time->session->teacher->team ? $attend->date->time->session->teacher->team->name : "-" }}
-                                    </td>
-                                    <td class="px-4 py-2">
-                                        {{ $attend->date && $attend->date->time && $attend->date->time->session && $attend->date->time->session->teacher ? $attend->date->time->session->teacher->name : "-" }}
-                                    </td>
-                                    <td class="px-4 py-2">
-                                        {{ $attend->date && $attend->date->time ? $attend->date->time->name : "-" }}
-                                    </td>
-                                    <td class="px-4 py-2 text-center">
-                                        @if ($attend->user)
-                                            <span class="m-auto flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">✔</span>
-                                        @else
-                                            <span class="m-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-600">✗</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-2 text-center" id="admin-status-{{ $attend->id }}">
-                                        @if ($attend->admin)
-                                            <span class="m-auto flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">✔</span>
-                                        @else
-                                            <span class="m-auto flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-600">✗</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-2 text-center" id="action-{{ $attend->id }}">
-                                        @if (!$attend->admin)
-                                            <button class="approve-btn rounded bg-green-500 px-3 py-1 text-white transition hover:bg-green-600" data-id="{{ $attend->id }}" onclick="approveuser('{{ $attend->id }}')" type="button">อนุมัติ</button>
-                                        @else
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
-                    @endif
+                    @endforeach
                 </tbody>
             </table>
         </div>
     </div>
+
     <!-- Logout Modal -->
     <div id="logoutModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:100; align-items:center; justify-content:center;">
-        <div style="background:#fff; border-radius:1rem; padding:2rem; min-width:300px; box-shadow:0 2px 16px rgba(0,0,0,0.15); text-align:center;">
-            <div style="font-size:1.2rem; font-weight:600; margin-bottom:1rem;">ยืนยันการออกจากระบบ?</div>
-            <div style="display:flex; gap:1rem; justify-content:center;">
-                <button onclick="hideLogoutModal()" style="background:#64748b; color:#fff; border:none; border-radius:0.5rem; padding:0.5rem 1.5rem; font-size:1rem; cursor:pointer;">ยกเลิก</button>
-                <button onclick="logout()" style="background:#dc2626; color:#fff; border:none; border-radius:0.5rem; padding:0.5rem 1.5rem; font-size:1rem; font-weight:600; cursor:pointer;">ออกจากระบบ</button>
+        <div style="background:var(--background-primary); border-radius:var(--radius-lg); padding:var(--spacing-xl); min-width:300px; box-shadow:0 2px 16px var(--shadow-medium); text-align:center; border:1px solid var(--border-color);">
+            <div style="font-size:1.2rem; font-weight:600; margin-bottom:var(--spacing-lg); color:var(--text-primary);">ยืนยันการออกจากระบบ?</div>
+            <div style="display:flex; gap:var(--spacing-md); justify-content:center;">
+                <button onclick="hideLogoutModal()" style="background:var(--secondary-color); color:var(--background-primary); border:none; border-radius:var(--radius-md); padding:var(--spacing-md) var(--spacing-lg); font-size:1rem; cursor:pointer; transition:all var(--transition-fast);">ยกเลิก</button>
+                <button onclick="logout()" style="background:var(--danger-color); color:var(--background-primary); border:none; border-radius:var(--radius-md); padding:var(--spacing-md) var(--spacing-lg); font-size:1rem; font-weight:600; cursor:pointer; transition:all var(--transition-fast);">ออกจากระบบ</button>
             </div>
         </div>
     </div>
+
     <script>
-        document.getElementById('filterAdmin').addEventListener('change', function() {
-            this.form.submit();
-        });
-
-        function approveuser(id) {
-            const button = document.querySelector('button[data-id="' + id + '"]');
-            if (button) {
-                button.disabled = true;
-                button.innerHTML = '<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>';
-            }
-            axios.post('{{ route("training.admin.approve.user") }}', {
-                'id': id,
-            }).then((res) => {
-                if (res.data.status === 'success') {
-                    document.getElementById('admin-status-' + id).innerHTML = '<span class="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">✔</span>';
-                    document.getElementById('action-' + id).innerHTML = '<span class="text-gray-400">-</span>';
-                } else {
-                    if (button) {
-                        button.disabled = false;
-                        button.innerHTML = 'Approve';
-                    }
-                    alert('Error: ' + (res.data.message || 'could not approve selected user.'));
-                }
-            }).catch(() => {
-                if (button) {
-                    button.disabled = false;
-                    button.innerHTML = 'Approve';
-                }
-                alert('Error occurred while connecting.');
-            });
-        }
-
-        function approveusers() {
-            Swal.fire({
-                title: 'Confirm Approval',
-                text: 'Do you want to approve all items?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, approve all!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const btn = document.getElementById('approve-all-btn');
-                    const text = document.getElementById('approve-all-text');
-                    const spinner = document.getElementById('approve-all-spinner');
-                    btn.disabled = true;
-                    text.classList.add('hidden');
-                    spinner.classList.remove('hidden');
-                    axios.post('{{ route("training.admin.approve.teacher") }}', {
-                        ids: '{{ json_encode($attend_array) }}'
-                    }).then((res) => {
-                        if (res.data.status === 'success') {
-                            window.location.reload();
-                        } else {
-                            btn.disabled = false;
-                            text.classList.remove('hidden');
-                            spinner.classList.add('hidden');
-                            alert('Error: ' + (res.data.message || 'could not approve all records.'));
-                        }
-                    }).catch(() => {
-                        btn.disabled = false;
-                        text.classList.remove('hidden');
-                        spinner.classList.add('hidden');
-                        alert('Error occurred while connecting.');
-                    });
-                }
-            });
-        }
-
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             if (menu.style.display === 'flex') {
@@ -481,6 +160,33 @@
                 window.location.href = '{{ route("login") }}';
             });
         }
+
+        function approveuser(id) {
+            axios.post('{{ route("training.teacher.approve") }}', {
+                id: id
+            }).then((res) => {
+                window.location.reload();
+            });
+        }
+
+        function approveusers() {
+            const btn = document.getElementById('approve-all-btn');
+            const text = document.getElementById('approve-all-text');
+            const spinner = document.getElementById('approve-all-spinner');
+
+            btn.disabled = true;
+            text.textContent = 'Approving...';
+            spinner.classList.remove('hidden');
+
+            axios.post('{{ route("training.teacher.approve-all") }}').then((res) => {
+                window.location.reload();
+            }).catch((error) => {
+                btn.disabled = false;
+                text.textContent = 'Approve All records.';
+                spinner.classList.add('hidden');
+            });
+        }
+
         // Hide mobile menu on resize to desktop
         window.addEventListener('resize', function() {
             if (window.innerWidth >= 1024) {

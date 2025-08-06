@@ -128,7 +128,7 @@
                 </div>
 
                 <div class="divide-y divide-gray-200">
-                    @foreach ($attendanceHistory as $attendance)
+                    @foreach ($attendanceHistory as $index => $attendance)
                         @php
                             $project = $attendance->project;
                             $date = $attendance->date;
@@ -143,7 +143,10 @@
                                 <div class="space-y-2 sm:space-y-3">
                                     <!-- Header with badges -->
                                     <div class="flex flex-wrap items-start gap-1.5 sm:gap-2">
-                                        <h3 class="text-sm font-semibold text-gray-900 sm:text-base lg:text-lg">{{ $project->project_name }}</h3>
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600 sm:h-7 sm:w-7 sm:text-sm">{{ $index + 1 }}</span>
+                                            <h3 class="text-sm font-semibold text-gray-900 sm:text-base lg:text-lg">{{ $project->project_name }}</h3>
+                                        </div>
 
                                         <!-- Project Type Badge -->
                                         <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
@@ -362,9 +365,12 @@
         <!-- Legacy HR Data Section -->
         @if ($legacyTransactions->count() > 0)
             <div class="mt-6 rounded-xl bg-white shadow-sm">
+                <div class="border-b border-gray-200 px-3 py-2 sm:px-6 sm:py-3">
+                    <h2 class="text-base font-semibold text-gray-900 sm:text-lg">ประวัติการเข้าร่วมโปรแกรม (ระบบเดิม)</h2>
+                </div>
 
                 <div class="divide-y divide-gray-200">
-                    @foreach ($legacyTransactions as $transaction)
+                    @foreach ($legacyTransactions as $index => $transaction)
                         @php
                             $item = $transaction->item;
                             $slot = $item->slot;
@@ -378,7 +384,10 @@
                             <div class="space-y-2 sm:space-y-3">
                                 <!-- Header with badges -->
                                 <div class="flex flex-wrap items-start gap-1.5 sm:gap-2">
-                                    <h3 class="text-sm font-semibold text-gray-900 sm:text-base lg:text-lg">{{ $project->project_name }}</h3>
+                                    <div class="flex items-center gap-2">
+                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-600 sm:h-7 sm:w-7 sm:text-sm">{{ $index + 1 }}</span>
+                                        <h3 class="text-sm font-semibold text-gray-900 sm:text-base lg:text-lg">{{ $project->project_name }}</h3>
+                                    </div>
 
                                     <!-- Attendance Status Badge -->
                                     @if ($hasAttended)

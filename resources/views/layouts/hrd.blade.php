@@ -7,8 +7,8 @@
     @yield("meta")
     <title inertia>PR9 HRD</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
-    <link rel="stylesheet" type="text/css" href="{{ url("css/all.min.css") }}">
-    <link rel="stylesheet" type="text/css" href="{{ url("css/theme.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
