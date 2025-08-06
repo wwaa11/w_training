@@ -436,6 +436,9 @@ class HRController extends Controller
         // Calculate time slot states
         $timeSlotStates = $this->calculateTimeSlotStates($project, $userRegistrations, $today);
 
+        // Calculate attendance status
+        $attendanceStatus = $this->calculateAttendanceStatus($project, $userRegistrations);
+
         return [
             'userRegistrations'          => $userRegistrations,
             'canRegister'                => $canRegister,
@@ -449,6 +452,7 @@ class HRController extends Controller
             'isWithinRegistrationPeriod' => $isWithinRegistrationPeriod,
             'isUpcoming'                 => $isUpcoming,
             'isExpired'                  => $isExpired,
+            'attendanceStatus'           => $attendanceStatus,
         ];
     }
 
@@ -2695,6 +2699,9 @@ class HRController extends Controller
         $registrationCount = $userRegistrations->count();
         $attendedCount     = $userRegistrations->where('attend_datetime', '!=', null)->count();
 
+        // Calculate attendance status based on project type and user attendance
+        $attendanceStatus = $this->calculateAttendanceStatus($project, $userRegistrations);
+
         return [
             'canRegister'       => $canRegister,
             'isUpcoming'        => $isUpcoming,
@@ -2702,7 +2709,55 @@ class HRController extends Controller
             'registrationCount' => $registrationCount,
             'attendedCount'     => $attendedCount,
             'projectType'       => $project->project_type,
+            'attendanceStatus'  => $attendanceStatus,
         ];
+    }
+
+    /**
+     * Calculate attendance status message based on project type and user attendance
+     */
+    private function calculateAttendanceStatus($project, $userRegistrations)
+    {
+        // If user has no registrations, return null
+        if ($userRegistrations->count() === 0) {
+            return null;
+        }
+
+        // For attendance type projects
+        if ($project->project_type === 'attendance') {
+            return 'มีการเข้าร่วมแล้ว';
+        }
+
+        // For single type projects
+        if ($project->project_type === 'single') {
+            return 'มีการลงทะเบียนแล้ว';
+        }
+
+        // For multiple type projects
+        if ($project->project_type === 'multiple') {
+            // Get all dates for this project
+            $projectDates = $project->dates->where('date_delete', false);
+            $totalDates   = $projectDates->count();
+
+            if ($totalDates === 0) {
+                return 'มีการลงทะเบียนแล้ว';
+            }
+
+            // Count how many dates the user has attended
+            $attendedDates = $userRegistrations
+                ->where('attend_delete', false)
+                ->pluck('date_id')
+                ->unique()
+                ->count();
+
+            if ($attendedDates === $totalDates) {
+                return 'มีการลงทะเบียนครบทุกวันแล้ว';
+            } else {
+                return 'มีการลงทะเบียนบางส่วน';
+            }
+        }
+
+        return null;
     }
 
     // ========================================================================

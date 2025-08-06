@@ -196,17 +196,25 @@
                     <!-- Project Header -->
                     <div class="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white p-4 sm:p-6">
                         <div class="mb-3 flex items-start justify-between">
-                            <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800 border border-blue-200
-                                    @elseif($project->project_type === "multiple") bg-green-100 text-green-800 border border-green-200
-                                    @else bg-purple-100 text-purple-800 border border-purple-200 @endif inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm sm:px-4 sm:py-1.5 sm:text-sm">
-                                @if ($project->project_type === "single")
-                                    <i class="fas fa-user mr-1.5"></i>ลงทะเบียน 1 ครั้ง
-                                @elseif($project->project_type === "multiple")
-                                    <i class="fas fa-users mr-1.5"></i>ลงทะเบียนได้มากกว่า 1 ครั้ง
-                                @else
-                                    <i class="fas fa-calendar-check mr-1.5"></i>ไม่ต้องลงทะเบียน
+                            <div class="flex items-center space-x-2">
+                                <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800 border border-blue-200
+                                        @elseif($project->project_type === "multiple") bg-green-100 text-green-800 border border-green-200
+                                        @else bg-purple-100 text-purple-800 border border-purple-200 @endif inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm sm:px-4 sm:py-1.5 sm:text-sm">
+                                    @if ($project->project_type === "single")
+                                        <i class="fas fa-user mr-1.5"></i>ลงทะเบียน 1 ครั้ง
+                                    @elseif($project->project_type === "multiple")
+                                        <i class="fas fa-users mr-1.5"></i>ลงทะเบียนได้มากกว่า 1 ครั้ง
+                                    @else
+                                        <i class="fas fa-calendar-check mr-1.5"></i>ไม่ต้องลงทะเบียน
+                                    @endif
+                                </span>
+                                @if ($state["attendanceStatus"])
+                                    <span class="inline-flex items-center rounded-full bg-gradient-to-r from-green-500 to-green-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                        <i class="fas fa-check-circle mr-1.5"></i>
+                                        {{ $state["attendanceStatus"] }}
+                                    </span>
                                 @endif
-                            </span>
+                            </div>
                             @if ($project->project_type === "attendance")
                                 <span class="inline-flex items-center rounded-full bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
                                     <i class="fas fa-info-circle mr-1.5"></i>
