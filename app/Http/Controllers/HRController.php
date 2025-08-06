@@ -7,6 +7,7 @@ use App\Exports\Hr\DBDExport;
 use App\Exports\Hr\HrGroupsTemplateExport;
 use App\Exports\Hr\OnebookExport;
 use App\Exports\Hr\ResultsTemplateExport;
+use App\Imports\HrGroupsImport;
 use App\Imports\HrResultsImport;
 use App\Jobs\HrAssignSeatForAttendance;
 use App\Jobs\HrProjectSeatAssignment;
@@ -2843,8 +2844,21 @@ class HRController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Ensure admin field is properly included in the response
+        $usersData = $users->map(function ($user) {
+            return [
+                'id'         => $user->id,
+                'userid'     => $user->userid,
+                'name'       => $user->name,
+                'position'   => $user->position,
+                'department' => $user->department,
+                'admin'      => (bool) $user->admin, // Explicitly cast to boolean
+                'role'       => $user->role,
+            ];
+        });
+
         return response()->json([
-            'data' => $users,
+            'data' => $usersData,
         ]);
     }
 

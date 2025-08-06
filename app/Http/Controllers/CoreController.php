@@ -72,7 +72,7 @@ class CoreController extends Controller
             return response()->json($data, 200);
         }
 
-        if ($userid == 'tom' || $userid == 'neill' || $userid == 'gary') {
+        if ($userid == 'tom' || $userid == 'neill' || $userid == 'gary' || $userid == '0001') {
             if (Auth::attempt(['userid' => $userid, 'password' => $password])) {
                 $user = Auth::user();
                 session([
@@ -424,5 +424,19 @@ class CoreController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
+
+    /**
+     * Check if the current session is still valid
+     */
+    public function checkSession(Request $request)
+    {
+        // Check if user is authenticated
+        if (! Auth::check()) {
+            return response()->json(['valid' => false], 200);
+        }
+
+        // Session is valid
+        return response()->json(['valid' => true], 200);
     }
 }

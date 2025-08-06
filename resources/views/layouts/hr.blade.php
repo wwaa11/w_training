@@ -90,6 +90,55 @@
         </div>
     </div>
     <script>
+        // Session validation function
+        function checkSessionValidity() {
+            axios.get('{{ route("session.check") }}', {
+                    timeout: 5000
+                })
+                .then((response) => {
+                    if (response.data.valid === false) {
+                        console.log('Session expired, refreshing page...');
+                        window.location.reload();
+                    }
+                })
+                .catch((error) => {
+                    console.error('Session check failed:', error);
+                    // If we can't reach the server, assume session might be invalid
+                    if (error.code === 'ECONNABORTED' || error.response?.status === 401) {
+                        console.log('Session check timeout or unauthorized, refreshing page...');
+                        window.location.reload();
+                    }
+                });
+        }
+
+        // Check session validity every 5 minutes
+        setInterval(checkSessionValidity, 5 * 60 * 1000);
+
+        // Also check when the page becomes visible (user returns to tab)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                checkSessionValidity();
+            }
+        });
+
+        // Check session when user interacts with the page after being idle
+        let sessionCheckTimeout;
+
+        function resetSessionCheck() {
+            clearTimeout(sessionCheckTimeout);
+            sessionCheckTimeout = setTimeout(checkSessionValidity, 30 * 1000); // Check after 30 seconds of inactivity
+        }
+
+        // Add event listeners for user activity
+        ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, resetSessionCheck, true);
+        });
+
+        // Initial session check after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkSessionValidity, 1000); // Check 1 second after page load
+        });
+
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             if (menu.style.display === 'flex') {

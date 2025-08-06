@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/login', [CoreController::class, 'Login'])->name('login');
 Route::post('/login', [CoreController::class, 'LoginRequest'])->name('login.post');
 Route::post('/logout', [CoreController::class, 'LogoutRequest'])->name('logout');
+Route::get('/session/check', [CoreController::class, 'checkSession'])->name('session.check');
 
 // ============================================================================
 // AUTHENTICATED USER ROUTES

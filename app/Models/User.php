@@ -14,6 +14,8 @@ class User extends Authenticatable
         'department',
         'division',
         'last_update',
+        'admin',
+        'role',
     ];
 
     protected $hidden = [

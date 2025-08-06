@@ -182,8 +182,8 @@
             $('#clearSearchBtn').addClass('hidden');
             $('#searchInfo').html('<i class="fas fa-info-circle"></i><span>พิมพ์เพื่อค้นหาแบบทันที หรือคลิกปุ่มค้นหาเพื่อค้นหาแบบละเอียด</span>');
             $('#searchResults').text('-');
-            // Show all rows
-            $("#userTable tr").show();
+            // Reload the page to restore original data
+            window.location.reload();
         }
 
 
