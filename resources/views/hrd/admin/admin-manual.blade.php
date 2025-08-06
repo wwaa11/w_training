@@ -55,7 +55,8 @@
                     <li><a class="text-xs hover:underline sm:text-sm" href="#result-management">7. การจัดการผลการประเมิน</a></li>
                     <li><a class="text-xs hover:underline sm:text-sm" href="#export-features">8. การส่งออกข้อมูล</a></li>
                     <li><a class="text-xs hover:underline sm:text-sm" href="#user-management">9. การจัดการผู้ใช้</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#troubleshooting">10. การแก้ไขปัญหา</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#group-management">10. การจัดการกลุ่ม</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#troubleshooting">11. การแก้ไขปัญหา</a></li>
                 </ul>
             </div>
 
@@ -127,16 +128,51 @@
                             <li>คลิกปุ่ม "สร้างโปรเจกต์ใหม่" ในหน้าหลัก</li>
                             <li>กรอกข้อมูลพื้นฐานของโปรเจกต์:
                                 <ul class="ml-6 mt-2 list-disc">
-                                    <li><strong>ชื่อโปรเจกต์:</strong> ชื่อที่แสดงให้ผู้ใช้เห็น</li>
-                                    <li><strong>รายละเอียด:</strong> คำอธิบายเพิ่มเติม</li>
-                                    <li><strong>ประเภทโปรเจกต์:</strong> เลือกประเภทการลงทะเบียน</li>
-                                    <li><strong>จำนวนที่นั่งสูงสุด:</strong> จำกัดจำนวนผู้เข้าร่วม</li>
+                                    <li><strong>ชื่อโปรเจกต์:</strong> ชื่อที่แสดงให้ผู้ใช้เห็น (สูงสุด 255 ตัวอักษร)</li>
+                                    <li><strong>รายละเอียด:</strong> คำอธิบายเพิ่มเติมของโปรเจกต์</li>
+                                    <li><strong>ประเภทโปรเจกต์:</strong>
+                                        <ul class="ml-4 mt-1 list-disc">
+                                            <li><strong>Single:</strong> ลงทะเบียนได้ 1 ครั้งต่อโปรเจกต์</li>
+                                            <li><strong>Multiple:</strong> ลงทะเบียนได้หลายครั้งในโปรเจกต์เดียวกัน</li>
+                                            <li><strong>Attendance:</strong> ไม่ต้องลงทะเบียนล่วงหน้า</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>การจัดที่นั่ง:</strong> เปิด/ปิดการจัดที่นั่งอัตโนมัติ</li>
+                                    <li><strong>การจัดกลุ่ม:</strong> เปิด/ปิดการจัดกลุ่มผู้เข้าร่วม</li>
                                 </ul>
                             </li>
-                            <li>กำหนดช่วงเวลาลงทะเบียน (วันที่เริ่มและสิ้นสุด)</li>
-                            <li>เพิ่มวันที่และช่วงเวลาของกิจกรรม</li>
+                            <li>กำหนดช่วงเวลาลงทะเบียน:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li><strong>วันที่เริ่มลงทะเบียน:</strong> วันแรกที่ผู้ใช้สามารถลงทะเบียนได้</li>
+                                    <li><strong>วันที่สิ้นสุดลงทะเบียน:</strong> วันสุดท้ายที่ผู้ใช้สามารถลงทะเบียนได้</li>
+                                    <li><strong>ลงทะเบียนวันนี้:</strong> อนุญาตให้ลงทะเบียนในวันเดียวกัน</li>
+                                </ul>
+                            </li>
+                            <li>เพิ่มวันที่และช่วงเวลาของกิจกรรม:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li><strong>ชื่อวันที่:</strong> ชื่อของวันกิจกรรม (เช่น "วันที่ 1")</li>
+                                    <li><strong>รายละเอียด:</strong> คำอธิบายเพิ่มเติมของวันนั้น</li>
+                                    <li><strong>สถานที่:</strong> สถานที่จัดกิจกรรม</li>
+                                    <li><strong>วันที่:</strong> วันจริงของกิจกรรม</li>
+                                    <li><strong>ช่วงเวลา:</strong> เวลาเริ่ม-สิ้นสุดของแต่ละรอบ</li>
+                                    <li><strong>จำกัดจำนวน:</strong> จำกัดจำนวนผู้เข้าร่วมต่อรอบ</li>
+                                </ul>
+                            </li>
+                            <li>เพิ่มลิงก์ (ถ้ามี):
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li><strong>ชื่อลิงก์:</strong> ชื่อที่แสดงให้ผู้ใช้เห็น</li>
+                                    <li><strong>URL:</strong> ลิงก์ที่ต้องการ</li>
+                                    <li><strong>จำกัดเวลา:</strong> จำกัดเวลาการเข้าถึงลิงก์</li>
+                                </ul>
+                            </li>
                             <li>คลิก "สร้างโปรเจกต์" เพื่อบันทึก</li>
                         </ol>
+                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>หมายเหตุ:</strong> ระบบจะสร้างโปรเจกต์พร้อมกับวันที่ ช่วงเวลา และลิงก์ทั้งหมดในครั้งเดียว
+                                หากเกิดข้อผิดพลาด ระบบจะลบข้อมูลทั้งหมดที่สร้างไว้แล้ว
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -146,12 +182,26 @@
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>คลิก "ดูรายละเอียด" ในรายการโปรเจกต์</li>
                             <li>คลิกปุ่ม "แก้ไขโปรเจกต์"</li>
-                            <li>แก้ไขข้อมูลที่ต้องการ</li>
+                            <li>แก้ไขข้อมูลที่ต้องการ:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li><strong>ข้อมูลพื้นฐาน:</strong> ชื่อ รายละเอียด ประเภทโปรเจกต์</li>
+                                    <li><strong>การตั้งค่า:</strong> การจัดที่นั่ง การจัดกลุ่ม ช่วงเวลาลงทะเบียน</li>
+                                    <li><strong>วันที่และเวลา:</strong> เพิ่ม แก้ไข หรือลบวันที่และช่วงเวลา</li>
+                                    <li><strong>ลิงก์:</strong> เพิ่ม แก้ไข หรือลบลิงก์ที่เกี่ยวข้อง</li>
+                                </ul>
+                            </li>
                             <li>คลิก "อัปเดตโปรเจกต์" เพื่อบันทึกการเปลี่ยนแปลง</li>
                         </ol>
                         <div class="mt-4 rounded-lg bg-yellow-50 p-3">
                             <p class="text-sm text-yellow-800">
                                 <strong>หมายเหตุ:</strong> การแก้ไขโปรเจกต์ที่มีผู้ลงทะเบียนแล้วอาจส่งผลต่อการลงทะเบียนที่มีอยู่
+                                ระบบจะแสดงคำเตือนหากมีการเปลี่ยนแปลงที่อาจส่งผลกระทบ
+                            </p>
+                        </div>
+                        <div class="mt-3 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>ฟีเจอร์พิเศษ:</strong> ระบบจะแสดงข้อมูลโปรเจกต์ในรูปแบบที่ง่ายต่อการแก้ไข
+                                รวมถึงการแสดงวันที่และช่วงเวลาทั้งหมดในหน้าเดียว
                             </p>
                         </div>
                     </div>
@@ -170,14 +220,22 @@
                                 <strong>คำเตือน:</strong> การลบโปรเจกต์จะลบข้อมูลทั้งหมดที่เกี่ยวข้องอย่างถาวร รวมถึง:
                             </p>
                             <ul class="ml-4 mt-2 list-disc text-xs text-red-700">
-                                <li>ข้อมูลการลงทะเบียนและประวัติการเข้าร่วม</li>
-                                <li>วันที่และช่วงเวลาของกิจกรรม</li>
-                                <li>การจัดที่นั่ง</li>
-                                <li>ผลการประเมิน</li>
-                                <li>ลิงก์ที่เกี่ยวข้อง</li>
+                                <li>ข้อมูลการลงทะเบียนและประวัติการเข้าร่วมทั้งหมด</li>
+                                <li>วันที่และช่วงเวลาของกิจกรรมทั้งหมด</li>
+                                <li>การจัดที่นั่งและการจัดกลุ่ม</li>
+                                <li>ผลการประเมินและหัวข้อการประเมิน</li>
+                                <li>ลิงก์ที่เกี่ยวข้องทั้งหมด</li>
+                                <li>ข้อมูลการเข้าร่วมและการลงชื่อ</li>
                             </ul>
                             <p class="mt-2 text-xs text-red-700">
                                 <strong>หมายเหตุ:</strong> การลบนี้ไม่สามารถกู้คืนได้ กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ
+                                ระบบจะบันทึกการลบในล็อกเพื่อการตรวจสอบ
+                            </p>
+                        </div>
+                        <div class="mt-3 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>การบันทึกล็อก:</strong> ระบบจะบันทึกข้อมูลโปรเจกต์ที่ถูกลบไว้ในล็อก
+                                พร้อมรายละเอียดผู้ที่ทำการลบและเวลาที่ลบ
                             </p>
                         </div>
                     </div>
@@ -194,8 +252,21 @@
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>คลิก "ดูรายละเอียด" ในรายการโปรเจกต์</li>
                             <li>คลิกแท็บ "การลงทะเบียน"</li>
-                            <li>ดูรายการผู้ลงทะเบียนทั้งหมด พร้อมสถานะ</li>
+                            <li>ดูรายการผู้ลงทะเบียนทั้งหมด พร้อมสถานะ:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li><strong>รอการอนุมัติ:</strong> การลงทะเบียนที่ยังไม่ได้รับการอนุมัติ</li>
+                                    <li><strong>ได้รับการอนุมัติ:</strong> การลงทะเบียนที่ได้รับการอนุมัติแล้ว</li>
+                                    <li><strong>วันที่ลงทะเบียน:</strong> วันและเวลาที่ผู้ใช้ลงทะเบียน</li>
+                                    <li><strong>วันที่และเวลา:</strong> วันที่และช่วงเวลาที่เลือก</li>
+                                </ul>
+                            </li>
                         </ol>
+                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>ฟีเจอร์:</strong> สามารถกรองตามสถานะ วันที่ และช่วงเวลาได้
+                                รวมถึงการค้นหาตามชื่อหรือรหัสพนักงาน
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -205,9 +276,38 @@
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>ไปที่หน้า "การลงทะเบียน" ของโปรเจกต์</li>
                             <li>คลิกปุ่ม "เพิ่มการลงทะเบียน"</li>
-                            <li>เลือกผู้ใช้จากรายการ</li>
-                            <li>เลือกวันที่และช่วงเวลาที่ต้องการ</li>
+                            <li>พิมพ์รหัสพนักงานที่ต้องการลงทะเบียน</li>
+                            <li>เลือกวันที่และช่วงเวลาที่ต้องการ Checkin , Approval:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>พิมพ์วันที่ในรูปแบบ YYYY-MM-DD</li>
+                                    <li>พิมพ์ช่วงเวลาในรูปแบบ HH:MM</li>
+                                    <li>ตรวจสอบจำนวนที่นั่งที่เหลือ</li>
+                                </ul>
+                            </li>
                             <li>คลิก "บันทึก" เพื่อเพิ่มการลงทะเบียน</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-green-50 p-3">
+                            <p class="text-sm text-green-700">
+                                <strong>ข้อดี:</strong> สามารถเพิ่มการลงทะเบียนให้ผู้ใช้ที่อาจมีปัญหาในการลงทะเบียนด้วยตนเอง
+                                หรือสำหรับกรณีพิเศษที่ต้องการจัดการโดยตรง
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การแก้ไขการลงทะเบียน</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>ไปที่หน้า "การลงทะเบียน" ของโปรเจกต์</li>
+                            <li>คลิกปุ่ม "แก้ไข" ข้างการลงทะเบียนที่ต้องการ</li>
+                            <li>แก้ไขข้อมูลที่ต้องการ:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>เปลี่ยนวันที่หรือช่วงเวลา</li>
+                                    <li>เปลี่ยนสถานะการอนุมัติ</li>
+                                </ul>
+                            </li>
+                            <li>คลิก "อัปเดต" เพื่อบันทึกการเปลี่ยนแปลง</li>
                         </ol>
                     </div>
                 </div>
@@ -220,6 +320,12 @@
                             <li>คลิกปุ่ม "ลบ" ข้างการลงทะเบียนที่ต้องการ</li>
                             <li>ยืนยันการลบ</li>
                         </ol>
+                        <div class="mt-4 rounded-lg bg-yellow-50 p-3">
+                            <p class="text-sm text-yellow-800">
+                                <strong>หมายเหตุ:</strong> การลบการลงทะเบียนจะทำให้ที่นั่งที่ถูกจองกลับมาเป็นว่าง
+                                และผู้ใช้จะไม่สามารถเข้าร่วมกิจกรรมในรอบนั้นได้
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -233,10 +339,45 @@
                     <div class="rounded-lg bg-gray-50 p-4">
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>ไปที่หน้า "การอนุมัติ" ของโปรเจกต์</li>
-                            <li>ดูรายการการลงทะเบียนที่รอการอนุมัติ</li>
-                            <li>เลือกการลงทะเบียนที่ต้องการอนุมัติ</li>
+                            <li>ดูรายการการลงทะเบียนที่รอการอนุมัติ:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>แสดงรายการผู้ลงทะเบียนที่ยังไม่ได้รับการอนุมัติ</li>
+                                    <li>แสดงข้อมูลผู้ลงทะเบียน วันที่ลงทะเบียน และวันที่/เวลาที่เลือก</li>
+                                    <li>สามารถกรองตามวันที่ ช่วงเวลา หรือสถานะได้</li>
+                                </ul>
+                            </li>
+                            <li>เลือกการลงทะเบียนที่ต้องการอนุมัติ:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>เลือกทีละรายการ หรือเลือกหลายรายการพร้อมกัน</li>
+                                    <li>ตรวจสอบข้อมูลก่อนการอนุมัติ</li>
+                                </ul>
+                            </li>
                             <li>คลิกปุ่ม "อนุมัติ" หรือ "อนุมัติทั้งหมด"</li>
                         </ol>
+                        <div class="mt-4 rounded-lg bg-green-50 p-3">
+                            <p class="text-sm text-green-700">
+                                <strong>ข้อดี:</strong> การอนุมัติจะทำให้ผู้ใช้สามารถเข้าร่วมกิจกรรมได้
+                                และระบบจะจัดที่นั่งให้อัตโนมัติ (หากเปิดใช้งาน)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การอนุมัติแบบกลุ่ม</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>ไปที่หน้า "การอนุมัติ" ของโปรเจกต์</li>
+                            <li>เลือกการลงทะเบียนหลายรายการที่ต้องการอนุมัติ</li>
+                            <li>คลิกปุ่ม "อนุมัติทั้งหมด"</li>
+                            <li>ยืนยันการอนุมัติในหน้าต่างที่ปรากฏ</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>ฟีเจอร์:</strong> สามารถเลือกอนุมัติตามเงื่อนไข เช่น อนุมัติทั้งหมดในวันที่เดียวกัน
+                                หรืออนุมัติตามแผนกหรือตำแหน่ง
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -247,11 +388,12 @@
                             <li>ไปที่หน้า "การอนุมัติ" ของโปรเจกต์</li>
                             <li>ดูรายการการลงทะเบียนที่ได้รับการอนุมัติแล้ว</li>
                             <li>คลิกปุ่ม "ยกเลิกการอนุมัติ" ข้างการลงทะเบียนที่ต้องการ</li>
+                            <li>ยืนยันการยกเลิกการอนุมัติ</li>
                         </ol>
-                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
-                            <p class="text-sm text-blue-700">
-                                <strong>หมายเหตุ:</strong> การยกเลิกการอนุมัติจะทำให้การลงทะเบียนกลับไปอยู่ในสถานะ "รอการอนุมัติ"
-                                และสามารถอนุมัติใหม่ได้ในภายหลัง
+                        <div class="mt-4 rounded-lg bg-yellow-50 p-3">
+                            <p class="text-sm text-yellow-800">
+                                <strong>ผลกระทบ:</strong> การยกเลิกการอนุมัติจะทำให้การลงทะเบียนกลับไปอยู่ในสถานะ "รอการอนุมัติ"
+                                และสามารถอนุมัติใหม่ได้ในภายหลัง หากมีการจัดที่นั่งแล้ว จะยกเลิกการจัดที่นั่งด้วย
                             </p>
                         </div>
                     </div>
@@ -276,6 +418,28 @@
                         </p>
                     </div>
                 </div>
+
+                <div class="mt-6 rounded-lg bg-purple-50 p-4">
+                    <h3 class="mb-2 font-semibold text-purple-800">คุณสมบัติพิเศษของระบบการอนุมัติ</h3>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การแจ้งเตือน</h4>
+                            <p class="text-xs text-gray-600">แจ้งเตือนเมื่อมีการลงทะเบียนใหม่ที่รอการอนุมัติ</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การบันทึกล็อก</h4>
+                            <p class="text-xs text-gray-600">บันทึกการอนุมัติและยกเลิกการอนุมัติในล็อก</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การกรองขั้นสูง</h4>
+                            <p class="text-xs text-gray-600">กรองตามวันที่ ช่วงเวลา แผนก หรือสถานะ</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การจัดการแบบกลุ่ม</h4>
+                            <p class="text-xs text-gray-600">อนุมัติหรือยกเลิกการอนุมัติหลายรายการพร้อมกัน</p>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- 6. การจัดการที่นั่ง -->
@@ -288,9 +452,21 @@
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>ไปที่หน้า "การจัดการที่นั่ง" ของโปรเจกต์</li>
                             <li>คลิกปุ่ม "กำหนดที่นั่งอัตโนมัติ"</li>
-                            <li>ระบบจะจัดที่นั่งให้ผู้ลงทะเบียนที่ได้รับการอนุมัติแล้ว</li>
+                            <li>ระบบจะจัดที่นั่งให้ผู้ลงทะเบียนทั้งหมด (ทั้งที่ได้รับการอนุมัติและยังไม่ได้รับการอนุมัติ):
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>จัดที่นั่งตามลำดับการลงทะเบียน</li>
+                                    <li>พิจารณาแผนกและตำแหน่งในการจัดที่นั่ง</li>
+                                    <li>หลีกเลี่ยงการจัดที่นั่งซ้ำ</li>
+                                    <li>คำนวณจำนวนที่นั่งที่เหมาะสม</li>
+                                </ul>
+                            </li>
                             <li>ตรวจสอบผลลัพธ์และปรับแต่งตามต้องการ</li>
                         </ol>
+                        <div class="mt-4 rounded-lg bg-green-50 p-3">
+                            <p class="text-sm text-green-700">
+                                <strong>ข้อดี:</strong> ประหยัดเวลาในการจัดที่นั่ง ลดความผิดพลาด และจัดที่นั่งได้อย่างเป็นระบบ
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -299,9 +475,11 @@
                     <div class="rounded-lg bg-gray-50 p-4">
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>ไปที่หน้า "การจัดการที่นั่ง" ของโปรเจกต์</li>
-                            <li>เลือกผู้ใช้จากรายการ</li>
-                            <li>เลือกที่นั่งที่ต้องการ</li>
-                            <li>คลิก "กำหนดที่นั่ง" เพื่อบันทึก</li>
+                            <li>เลือกผู้ใช้จากรายการ:
+
+                            </li>
+
+                            <li>คลิก + เพื่อเพิ่มที่นั่ง</li>
                         </ol>
                     </div>
                 </div>
@@ -311,9 +489,55 @@
                     <div class="rounded-lg bg-gray-50 p-4">
                         <ol class="ml-6 list-decimal space-y-2 text-gray-700">
                             <li>ไปที่หน้า "การจัดการที่นั่ง" ของโปรเจกต์</li>
-                            <li>คลิกปุ่ม "ลบ" ข้างการกำหนดที่นั่งที่ต้องการ</li>
+                            <li>คลิกปุ่ม X ข้างการกำหนดที่นั่งที่ต้องการ</li>
                             <li>ยืนยันการลบ</li>
                         </ol>
+                        <div class="mt-4 rounded-lg bg-yellow-50 p-3">
+                            <p class="text-sm text-yellow-800">
+                                <strong>หมายเหตุ:</strong> การลบการกำหนดที่นั่งจะทำให้ที่นั่งนั้นกลับมาเป็นว่าง
+                                และสามารถจัดให้ผู้ใช้อื่นได้
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การล้างที่นั่งทั้งหมด</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>ไปที่หน้า "การจัดการที่นั่ง" ของโปรเจกต์</li>
+                            <li>เลือกช่วงเวลาที่ต้องการล้างที่นั่ง</li>
+                            <li>คลิกปุ่ม "ล้างที่นั่งทั้งหมด"</li>
+                            <li>ยืนยันการล้างที่นั่ง</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-red-50 p-3">
+                            <p class="text-sm text-red-800">
+                                <strong>คำเตือน:</strong> การล้างที่นั่งทั้งหมดจะลบการกำหนดที่นั่งทั้งหมดในช่วงเวลานั้น
+                                ใช้เฉพาะเมื่อต้องการเริ่มต้นใหม่เท่านั้น
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-lg bg-purple-50 p-4">
+                    <h3 class="mb-2 font-semibold text-purple-800">คุณสมบัติพิเศษของการจัดการที่นั่ง</h3>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การจัดที่นั่งอัจฉริยะ</h4>
+                            <p class="text-xs text-gray-600">พิจารณาแผนก ตำแหน่ง และความเหมาะสมในการจัดที่นั่ง</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การตรวจสอบความขัดแย้ง</h4>
+                            <p class="text-xs text-gray-600">ตรวจสอบการจัดที่นั่งซ้ำหรือความขัดแย้งอัตโนมัติ</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การแสดงผลแบบ Visual</h4>
+                            <p class="text-xs text-gray-600">แสดงที่นั่งในรูปแบบแผนผังที่เข้าใจง่าย</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การจัดการแบบกลุ่ม</h4>
+                            <p class="text-xs text-gray-600">จัดที่นั่งหลายคนพร้อมกันหรือล้างที่นั่งหลายรายการ</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -323,39 +547,37 @@
                 <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">7. การจัดการผลการประเมิน</h2>
 
                 <div class="mb-4 sm:mb-6">
-                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การสร้างหัวข้อการประเมิน</h3>
+                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การนำเข้าข้อมูลผลการประเมิน</h3>
                     <div class="rounded-lg bg-gray-50 p-3 sm:p-4">
                         <ol class="ml-4 list-decimal space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
                             <li>ไปที่หน้า "การจัดการผลการประเมิน" ของโปรเจกต์</li>
-                            <li>คลิกปุ่ม "สร้างหัวข้อการประเมิน"</li>
-                            <li>กรอกชื่อหัวข้อการประเมิน (เช่น ความรู้ความเข้าใจ, ทักษะการปฏิบัติ)</li>
-                            <li>กำหนดน้ำหนักหรือคะแนนเต็มของแต่ละหัวข้อ</li>
-                            <li>คลิก "บันทึก" เพื่อสร้างหัวข้อ</li>
+                            <li>คลิกปุ่ม "ดาวน์โหลดเทมเพลต" เพื่อดาวน์โหลดไฟล์ Excel</li>
+                            <li>กรอกข้อมูลผลการประเมินในไฟล์ Excel:
+                                <ul class="ml-4 mt-1 list-disc">
+                                    <li>รหัสพนักงานของผู้เข้าร่วม</li>
+                                    <li>คะแนนในแต่ละหัวข้อการประเมิน</li>
+                                    <li>หมายเหตุหรือข้อเสนอแนะ (ถ้ามี)</li>
+                                </ul>
+                            </li>
+                            <li>อัปโหลดไฟล์ Excel ที่กรอกข้อมูลแล้ว</li>
+                            <li>ตรวจสอบข้อมูลและยืนยันการนำเข้า</li>
                         </ol>
                     </div>
                 </div>
 
                 <div class="mb-4 sm:mb-6">
-                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การบันทึกผลการประเมิน</h3>
+                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การล้างข้อมูลผลการประเมิน</h3>
                     <div class="rounded-lg bg-gray-50 p-3 sm:p-4">
                         <ol class="ml-4 list-decimal space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
-                            <li>เลือกผู้เข้าร่วมที่ต้องการบันทึกผลการประเมิน</li>
-                            <li>กรอกคะแนนในแต่ละหัวข้อการประเมิน</li>
-                            <li>เพิ่มหมายเหตุหรือข้อเสนอแนะ (ถ้ามี)</li>
-                            <li>คลิก "บันทึกผลการประเมิน"</li>
+                            <li>ไปที่หน้า "การจัดการผลการประเมิน" ของโปรเจกต์</li>
+                            <li>คลิกปุ่ม "ล้างข้อมูลผลการประเมิน"</li>
+                            <li>ยืนยันการล้างข้อมูล</li>
                         </ol>
-                    </div>
-                </div>
-
-                <div class="mb-4 sm:mb-6">
-                    <h3 class="mb-2 text-base font-semibold text-gray-700 sm:mb-3 sm:text-lg">การแก้ไขผลการประเมิน</h3>
-                    <div class="rounded-lg bg-gray-50 p-3 sm:p-4">
-                        <ol class="ml-4 list-decimal space-y-1.5 text-sm text-gray-700 sm:ml-6 sm:space-y-2">
-                            <li>ค้นหาผลการประเมินที่ต้องการแก้ไข</li>
-                            <li>คลิกปุ่ม "แก้ไข" ข้างผลการประเมิน</li>
-                            <li>แก้ไขคะแนนหรือหมายเหตุตามต้องการ</li>
-                            <li>คลิก "อัปเดต" เพื่อบันทึกการเปลี่ยนแปลง</li>
-                        </ol>
+                        <div class="mt-3 rounded-lg bg-red-50 p-2">
+                            <p class="text-xs text-red-700">
+                                <strong>คำเตือน:</strong> การล้างข้อมูลจะลบผลการประเมินทั้งหมดอย่างถาวร
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -363,20 +585,12 @@
                     <h3 class="mb-2 text-sm font-semibold text-purple-800 sm:text-base">คุณสมบัติของระบบผลการประเมิน</h3>
                     <div class="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-2">
                         <div class="rounded-lg bg-white p-2.5 sm:p-3">
-                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การประเมินหลายหัวข้อ</h4>
-                            <p class="text-xs text-gray-600 sm:text-sm">รองรับการประเมินหลายหัวข้อต่อกิจกรรม</p>
+                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การนำเข้าข้อมูล</h4>
+                            <p class="text-xs text-gray-600 sm:text-sm">นำเข้าข้อมูลผลการประเมินจากไฟล์ Excel</p>
                         </div>
                         <div class="rounded-lg bg-white p-2.5 sm:p-3">
-                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การคำนวณอัตโนมัติ</h4>
-                            <p class="text-xs text-gray-600 sm:text-sm">คำนวณคะแนนรวมและเปอร์เซ็นต์อัตโนมัติ</p>
-                        </div>
-                        <div class="rounded-lg bg-white p-2.5 sm:p-3">
-                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การส่งออกผลการประเมิน</h4>
-                            <p class="text-xs text-gray-600 sm:text-sm">ส่งออกผลการประเมินในรูปแบบ Excel</p>
-                        </div>
-                        <div class="rounded-lg bg-white p-2.5 sm:p-3">
-                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การติดตามประวัติ</h4>
-                            <p class="text-xs text-gray-600 sm:text-sm">ติดตามประวัติการประเมินของผู้เข้าร่วม</p>
+                            <h4 class="mb-1 text-xs font-semibold text-purple-600 sm:text-sm">การจัดการข้อมูล</h4>
+                            <p class="text-xs text-gray-600 sm:text-sm">ล้างและจัดการข้อมูลผลการประเมิน</p>
                         </div>
                     </div>
                 </div>
@@ -386,25 +600,52 @@
             <section class="mb-8" id="export-features">
                 <h2 class="mb-4 text-2xl font-bold text-gray-800">8. การส่งออกข้อมูล</h2>
 
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">วิธีการส่งออกข้อมูล</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>ไปที่หน้า "รายละเอียดโปรเจกต์"</li>
+                            <li>เลือกประเภทรายงานที่ต้องการส่งออก</li>
+                            <li>คลิกปุ่ม "ส่งออก" หรือ "ดาวน์โหลด"</li>
+                            <li>เลือกรูปแบบไฟล์ (Excel, PDF)</li>
+                            <li>รอการประมวลผลและดาวน์โหลดไฟล์</li>
+                        </ol>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div class="rounded-lg border border-gray-200 p-6">
                         <h3 class="mb-3 text-lg font-semibold text-blue-600">รายงาน DBD</h3>
                         <p class="mb-3 text-gray-700">ส่งออกข้อมูลในรูปแบบที่เหมาะสมสำหรับการรายงาน DBD</p>
                         <ul class="ml-6 list-disc space-y-1 text-sm text-gray-600">
                             <li>ข้อมูลการลงทะเบียนทั้งหมด</li>
-                            <li>สถิติการเข้าร่วม</li>
-                            <li>รายละเอียดโปรเจกต์</li>
+                            <li>สถิติการเข้าร่วมและเปอร์เซ็นต์</li>
+                            <li>รายละเอียดโปรเจกต์และกิจกรรม</li>
+                            <li>ข้อมูลผู้เข้าร่วมตามแผนกและตำแหน่ง</li>
+                            <li>รายงานตามช่วงเวลาและวันที่</li>
                         </ul>
+                        <div class="mt-3 rounded-lg bg-blue-50 p-2">
+                            <p class="text-xs text-blue-700">
+                                <strong>รูปแบบ:</strong> Excel (.xlsx) พร้อมการจัดรูปแบบที่เหมาะสม
+                            </p>
+                        </div>
                     </div>
 
                     <div class="rounded-lg border border-gray-200 p-6">
                         <h3 class="mb-3 text-lg font-semibold text-green-600">รายงาน Onebook</h3>
                         <p class="mb-3 text-gray-700">ส่งออกข้อมูลสำหรับการทำ Onebook</p>
                         <ul class="ml-6 list-disc space-y-1 text-sm text-gray-600">
-                            <li>รายชื่อผู้เข้าร่วม</li>
-                            <li>ข้อมูลการลงทะเบียน</li>
-                            <li>รายละเอียดกิจกรรม</li>
+                            <li>รายชื่อผู้เข้าร่วมทั้งหมด</li>
+                            <li>ข้อมูลการลงทะเบียนและสถานะ</li>
+                            <li>รายละเอียดกิจกรรมและตารางเวลา</li>
+                            <li>ข้อมูลการเข้าร่วมและการลงชื่อ</li>
+                            <li>สถิติการเข้าร่วมตามกลุ่ม</li>
                         </ul>
+                        <div class="mt-3 rounded-lg bg-green-50 p-2">
+                            <p class="text-xs text-green-700">
+                                <strong>รูปแบบ:</strong> Excel (.xlsx) พร้อมการจัดกลุ่มข้อมูล
+                            </p>
+                        </div>
                     </div>
 
                     <div class="rounded-lg border border-gray-200 p-6">
@@ -414,17 +655,53 @@
                             <li>รายชื่อผู้เข้าร่วมในแต่ละวัน</li>
                             <li>สถิติการเข้าร่วมรายวัน</li>
                             <li>รายละเอียดกิจกรรมรายวัน</li>
+                            <li>ข้อมูลการลงชื่อและการเข้าร่วม</li>
+                            <li>รายงานตามช่วงเวลาในแต่ละวัน</li>
                         </ul>
+                        <div class="mt-3 rounded-lg bg-purple-50 p-2">
+                            <p class="text-xs text-purple-700">
+                                <strong>รูปแบบ:</strong> Excel (.xlsx) แยกตามวันที่
+                            </p>
+                        </div>
                     </div>
 
                     <div class="rounded-lg border border-gray-200 p-6">
                         <h3 class="mb-3 text-lg font-semibold text-orange-600">รายงาน PDF</h3>
                         <p class="mb-3 text-gray-700">ส่งออกรายงานในรูปแบบ PDF</p>
                         <ul class="ml-6 list-disc space-y-1 text-sm text-gray-600">
-                            <li>รายงานการเข้าร่วม</li>
-                            <li>รายชื่อผู้เข้าร่วม</li>
-                            <li>สถิติต่างๆ</li>
+                            <li>รายงานการเข้าร่วมแบบสรุป</li>
+                            <li>รายชื่อผู้เข้าร่วมพร้อมที่นั่ง</li>
+                            <li>สถิติการเข้าร่วมและกราฟ</li>
+                            <li>รายงานตามช่วงเวลา</li>
+                            <li>ข้อมูลโปรเจกต์และกิจกรรม</li>
                         </ul>
+                        <div class="mt-3 rounded-lg bg-orange-50 p-2">
+                            <p class="text-xs text-orange-700">
+                                <strong>รูปแบบ:</strong> PDF (.pdf) พร้อมการจัดรูปแบบที่สวยงาม
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 rounded-lg bg-purple-50 p-4">
+                    <h3 class="mb-2 font-semibold text-purple-800">คุณสมบัติพิเศษของการส่งออกข้อมูล</h3>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การกรองข้อมูล</h4>
+                            <p class="text-xs text-gray-600">กรองข้อมูลก่อนส่งออกตามวันที่ ช่วงเวลา หรือสถานะ</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การจัดรูปแบบอัตโนมัติ</h4>
+                            <p class="text-xs text-gray-600">จัดรูปแบบข้อมูลอัตโนมัติให้เหมาะสมกับการใช้งาน</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การคำนวณสถิติ</h4>
+                            <p class="text-xs text-gray-600">คำนวณสถิติการเข้าร่วมและเปอร์เซ็นต์อัตโนมัติ</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การส่งออกแบบกลุ่ม</h4>
+                            <p class="text-xs text-gray-600">ส่งออกหลายรายงานพร้อมกันหรือตามช่วงเวลา</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -433,51 +710,165 @@
             <section class="mb-8" id="user-management">
                 <h2 class="mb-4 text-2xl font-bold text-gray-800">9. การจัดการผู้ใช้</h2>
 
-                <div class="rounded-lg bg-gray-50 p-6">
+                <div class="mb-6">
                     <h3 class="mb-3 text-lg font-semibold text-gray-700">การค้นหาผู้ใช้</h3>
-                    <ul class="ml-6 list-disc space-y-2 text-gray-700">
-                        <li>ใช้ฟิลด์ค้นหาเพื่อหาผู้ใช้ตามชื่อหรือรหัสพนักงาน</li>
-                        <li>ระบบจะแสดงผลการค้นหาแบบ Real-time</li>
-                        <li>สามารถเลือกผู้ใช้จากผลการค้นหาเพื่อเพิ่มการลงทะเบียน</li>
-                    </ul>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>ไปที่หน้า "การจัดการผู้ใช้"</li>
+                            <li>ใช้ฟิลด์ค้นหาเพื่อหาผู้ใช้:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li><strong>ชื่อ:</strong> ค้นหาตามชื่อจริงหรือนามสกุล</li>
+                                    <li><strong>รหัสพนักงาน:</strong> ค้นหาตามรหัสพนักงาน</li>
+                                    <li><strong>ตำแหน่ง:</strong> ค้นหาตามตำแหน่งงาน</li>
+                                    <li><strong>แผนก:</strong> ค้นหาตามแผนก</li>
+                                </ul>
+                            </li>
+                            <li>ระบบจะแสดงผลการค้นหาแบบ Real-time</li>
+                            <li>สามารถเลือกผู้ใช้จากผลการค้นหาเพื่อเพิ่มการลงทะเบียน</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>ฟีเจอร์:</strong> การค้นหาขั้นสูงรองรับการค้นหาด้วยหลายเงื่อนไขพร้อมกัน
+                                และสามารถกรองผลลัพธ์ตามแผนกหรือตำแหน่งได้
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mt-6 rounded-lg bg-gray-50 p-6">
+                <div class="mb-6">
                     <h3 class="mb-3 text-lg font-semibold text-gray-700">การดูประวัติผู้ใช้</h3>
-                    <ul class="ml-6 list-disc space-y-2 text-gray-700">
-                        <li>คลิกที่ชื่อผู้ใช้เพื่อดูประวัติการเข้าร่วม</li>
-                        <li>ดูสถิติการเข้าร่วมกิจกรรมต่างๆ</li>
-                        <li>ตรวจสอบสถานะการลงทะเบียนปัจจุบัน</li>
-                    </ul>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>คลิกที่ชื่อผู้ใช้เพื่อดูประวัติการเข้าร่วม</li>
+                            <li>ดูสถิติการเข้าร่วมกิจกรรมต่างๆ:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>จำนวนครั้งที่เข้าร่วมกิจกรรม</li>
+                                    <li>เปอร์เซ็นต์การเข้าร่วม</li>
+                                    <li>รายการกิจกรรมที่เข้าร่วม</li>
+                                    <li>สถานะการลงทะเบียนปัจจุบัน</li>
+                                </ul>
+                            </li>
+                            <li>ตรวจสอบข้อมูลเพิ่มเติม:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>ข้อมูลส่วนตัวและติดต่อ</li>
+                                    <li>ประวัติการลงทะเบียน</li>
+                                    <li>ผลการประเมิน (ถ้ามี)</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การรีเซ็ตรหัสผ่าน</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>ค้นหาผู้ใช้ที่ต้องการรีเซ็ตรหัสผ่าน</li>
+                            <li>คลิกปุ่ม "รีเซ็ตรหัสผ่าน" ข้างชื่อผู้ใช้</li>
+                            <li>ยืนยันการรีเซ็ตรหัสผ่าน</li>
+                            <li>ระบบจะตั้งรหัสผ่านใหม่เป็นรหัสพนักงานของผู้ใช้</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-yellow-50 p-3">
+                            <p class="text-sm text-yellow-800">
+                                <strong>หมายเหตุ:</strong> การรีเซ็ตรหัสผ่านจะทำให้ผู้ใช้ต้องเปลี่ยนรหัสผ่านใหม่เมื่อเข้าสู่ระบบครั้งต่อไป
+                                ระบบจะบันทึกการรีเซ็ตรหัสผ่านในล็อกเพื่อการตรวจสอบ
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การติดตามการเข้าร่วม</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>คลิกที่ชื่อผู้ใช้เพื่อดูรายละเอียด</li>
+                            <li>ไปที่แท็บ "ประวัติการเข้าร่วม"</li>
+                            <li>ดูรายการกิจกรรมที่เข้าร่วม:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>วันที่และเวลาที่เข้าร่วม</li>
+                                    <li>สถานะการลงชื่อเข้า-ออก</li>
+                                    <li>ที่นั่งที่ได้รับจัดสรร</li>
+                                    <li>ผลการประเมิน (ถ้ามี)</li>
+                                </ul>
+                            </li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-green-50 p-3">
+                            <p class="text-sm text-green-700">
+                                <strong>ข้อดี:</strong> สามารถติดตามพฤติกรรมการเข้าร่วมของผู้ใช้แต่ละคน
+                                และใช้ข้อมูลนี้ในการวางแผนกิจกรรมในอนาคต
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-lg bg-purple-50 p-4">
+                    <h3 class="mb-2 font-semibold text-purple-800">คุณสมบัติพิเศษของการจัดการผู้ใช้</h3>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การค้นหาขั้นสูง</h4>
+                            <p class="text-xs text-gray-600">ค้นหาด้วยหลายเงื่อนไขและกรองผลลัพธ์</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การติดตามประวัติ</h4>
+                            <p class="text-xs text-gray-600">ติดตามประวัติการเข้าร่วมและพฤติกรรม</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การจัดการรหัสผ่าน</h4>
+                            <p class="text-xs text-gray-600">รีเซ็ตรหัสผ่านและจัดการความปลอดภัย</p>
+                        </div>
+                        <div class="rounded-lg bg-white p-3">
+                            <h4 class="mb-1 text-sm font-semibold text-purple-600">การรายงานสถิติ</h4>
+                            <p class="text-xs text-gray-600">สร้างรายงานสถิติการเข้าร่วมของผู้ใช้</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- 10. การใช้งานบนมือถือ -->
-            <section class="mb-8" id="mobile-admin">
-                <h2 class="mb-4 text-2xl font-bold text-gray-800">10. การใช้งานบนมือถือ</h2>
+            <!-- 10. การจัดการกลุ่ม -->
+            <section class="mb-8" id="group-management">
+                <h2 class="mb-4 text-2xl font-bold text-gray-800">10. การจัดการกลุ่ม</h2>
 
-                <div class="rounded-lg bg-gray-50 p-6">
-                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การเข้าสู่ระบบบนมือถือ</h3>
-                    <ul class="ml-6 list-disc space-y-2 text-gray-700">
-                        <li>เข้าสู่ระบบ HRD ผ่านแอปพลิเคชันบนมือถือ</li>
-                        <li>ตรวจสอบข้อมูลผู้ใช้และสิทธิ์</li>
-                        <li>ดูรายการโปรเจกต์และการลงทะเบียน</li>
-                    </ul>
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การเพิ่มสมาชิกในกลุ่ม</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>เลือกกลุ่มที่ต้องการเพิ่มสมาชิก</li>
+                            <li>คลิกปุ่ม "เพิ่มสมาชิก"</li>
+                            <li>ค้นหาและเลือกผู้ใช้ที่ต้องการเพิ่ม</li>
+                            <li>คลิก "เพิ่มสมาชิก" เพื่อบันทึก</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>ฟีเจอร์:</strong> สามารถเพิ่มสมาชิกหลายคนพร้อมกัน
+                                และระบบจะตรวจสอบความขัดแย้งอัตโนมัติ
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mt-6 rounded-lg bg-gray-50 p-6">
-                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การจัดการผลการประเมินบนมือถือ</h3>
-                    <ul class="ml-6 list-disc space-y-2 text-gray-700">
-                        <li>ดูรายการผลการประเมินทั้งหมด</li>
-                        <li>สร้างผลการประเมินใหม่</li>
-                        <li>แก้ไขผลการประเมินที่มีอยู่</li>
-                    </ul>
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-gray-700">การนำเข้าข้อมูลกลุ่ม</h3>
+                    <div class="rounded-lg bg-gray-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-gray-700">
+                            <li>คลิกปุ่ม "นำเข้าข้อมูลกลุ่ม"</li>
+                            <li>ดาวน์โหลดเทมเพลต Excel</li>
+                            <li>กรอกข้อมูลในเทมเพลต:
+                                <ul class="ml-6 mt-2 list-disc">
+                                    <li>ชื่อกลุ่ม</li>
+                                    <li>รายชื่อสมาชิก</li>
+                                    <li>ข้อมูลเพิ่มเติม (ถ้ามี)</li>
+                                </ul>
+                            </li>
+                            <li>อัปโหลดไฟล์ Excel ที่กรอกข้อมูลแล้ว</li>
+                            <li>ตรวจสอบข้อมูลและยืนยันการนำเข้า</li>
+                        </ol>
+                    </div>
                 </div>
             </section>
 
-            <!-- 10. การแก้ไขปัญหา -->
+            <!-- 11. การแก้ไขปัญหา -->
             <section class="mb-6 sm:mb-8" id="troubleshooting">
-                <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">10. การแก้ไขปัญหา</h2>
+                <h2 class="mb-3 text-xl font-bold text-gray-800 sm:mb-4 sm:text-2xl">11. การแก้ไขปัญหา</h2>
 
                 <div class="space-y-6">
                     <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-6">
@@ -529,6 +920,11 @@
                             หากพบปัญหาที่ไม่สามารถแก้ไขได้ กรุณาติดต่อฝ่าย IT Support
                             พร้อมระบุรายละเอียดปัญหาและขั้นตอนที่ทำให้เกิดปัญหา
                         </p>
+                        <div class="mt-3 rounded-lg bg-white p-3">
+                            <p class="text-sm text-green-700">
+                                <strong>ติดต่อ:</strong> โทร 21471 (Programmer)
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>

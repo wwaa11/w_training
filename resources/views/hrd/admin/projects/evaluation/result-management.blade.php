@@ -15,12 +15,6 @@
                             <p class="mt-1 text-lg text-gray-600">{{ $project->project_name }}</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <a class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-green-700" href="{{ route("hrd.admin.projects.results.template", $project->id) }}">
-                            <i class="fas fa-download mr-2"></i>
-                            ดาวน์โหลดเทมเพลต
-                        </a>
-                    </div>
                 </div>
 
                 @if (session("success"))
@@ -108,9 +102,9 @@
                             ข้อมูลผลการประเมิน
                         </h2>
                         @if ($results->count() > 0)
-                            <form action="{{ route("hrd.admin.projects.results.clear", $project->id) }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลผลการประเมินทั้งหมด?')">
+                            <form id="clearResultsForm" action="{{ route("hrd.admin.projects.results.clear", $project->id) }}" method="POST">
                                 @csrf
-                                <button class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-700" type="submit">
+                                <button class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-700" type="button" onclick="confirmClearResults()">
                                     <i class="fas fa-trash mr-2"></i>
                                     ลบข้อมูลทั้งหมด
                                 </button>
@@ -170,4 +164,23 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function confirmClearResults() {
+            Swal.fire({
+                title: 'ยืนยันการลบข้อมูล',
+                text: 'คุณแน่ใจหรือไม่ที่จะลบข้อมูลผลการประเมินทั้งหมด?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ลบข้อมูล',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('clearResultsForm').submit();
+                }
+            });
+        }
+    </script>
 @endsection

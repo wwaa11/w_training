@@ -136,52 +136,56 @@
         </div>
 
         <!-- Projects Grid -->
-        <div class="space-y-3 sm:space-y-4" id="projectsGrid">
+        <div class="space-y-4 sm:space-y-6" id="projectsGrid">
             @forelse($projectsWithStates as $projectData)
                 @php
                     $project = $projectData["project"];
                     $state = $projectData["registrationState"];
                 @endphp
                 <a class="block" href="{{ route("hrd.projects.show", $project->id) }}">
-                    <div class="project-card cursor-pointer rounded-xl bg-white shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-lg" data-type="{{ $project->project_type }}" data-name="{{ strtolower($project->project_name) }}">
+                    <div class="project-card @if ($project->project_type === "single") border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white hover:border-l-blue-600
+                        @elseif($project->project_type === "multiple") 
+                            border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-white hover:border-l-green-600
+                        @else 
+                            border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-white hover:border-l-purple-600 @endif cursor-pointer rounded-xl border border-gray-200 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:border-gray-300 hover:shadow-xl" data-type="{{ $project->project_type }}" data-name="{{ strtolower($project->project_name) }}">
 
                         <!-- Project Header -->
-                        <div class="border-b border-gray-100 p-4 sm:p-6">
+                        <div class="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white p-4 sm:p-6">
                             <div class="mb-3 flex items-start justify-between">
-                                <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800
-                                    @elseif($project->project_type === "multiple") bg-green-100 text-green-800
-                                    @else bg-purple-100 text-purple-800 @endif inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium sm:px-3 sm:py-1">
+                                <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800 border border-blue-200
+                                    @elseif($project->project_type === "multiple") bg-green-100 text-green-800 border border-green-200
+                                    @else bg-purple-100 text-purple-800 border border-purple-200 @endif inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm sm:px-4 sm:py-1.5 sm:text-sm">
                                     @if ($project->project_type === "single")
-                                        ลงทะเบียน 1 ครั้ง
+                                        <i class="fas fa-user mr-1.5"></i>ลงทะเบียน 1 ครั้ง
                                     @elseif($project->project_type === "multiple")
-                                        ลงทะเบียนได้มากกว่า 1 ครั้ง
+                                        <i class="fas fa-users mr-1.5"></i>ลงทะเบียนได้มากกว่า 1 ครั้ง
                                     @else
-                                        ไม่ต้องลงทะเบียน
+                                        <i class="fas fa-calendar-check mr-1.5"></i>ไม่ต้องลงทะเบียน
                                     @endif
                                 </span>
                                 @if ($project->project_type === "attendance")
-                                    <span class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 sm:px-3 sm:py-1">
-                                        <i class="fas fa-info-circle mr-1"></i>
+                                    <span class="inline-flex items-center rounded-full bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                        <i class="fas fa-info-circle mr-1.5"></i>
                                         ไม่ต้องลงทะเบียน
                                     </span>
                                 @elseif($state["canRegister"])
-                                    <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 sm:px-3 sm:py-1">
-                                        <i class="fas fa-circle mr-1 text-green-400" style="font-size: 6px;"></i>
+                                    <span class="inline-flex items-center rounded-full bg-gradient-to-r from-green-500 to-green-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                        <i class="fas fa-circle mr-1.5 text-green-200" style="font-size: 6px;"></i>
                                         เปิดรับลงทะเบียน
                                     </span>
                                 @elseif($state["isUpcoming"])
-                                    <span class="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 sm:px-3 sm:py-1">
-                                        <i class="fas fa-clock mr-1"></i>
+                                    <span class="inline-flex items-center rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                        <i class="fas fa-clock mr-1.5"></i>
                                         เร็วๆ นี้
                                     </span>
                                 @elseif($state["isExpired"])
-                                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 sm:px-3 sm:py-1">
-                                        <i class="fas fa-lock mr-1"></i>
+                                    <span class="inline-flex items-center rounded-full bg-gradient-to-r from-gray-500 to-gray-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                        <i class="fas fa-lock mr-1.5"></i>
                                         ปิดรับลงทะเบียน
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 sm:px-3 sm:py-1">
-                                        <i class="fas fa-ban mr-1"></i>
+                                    <span class="inline-flex items-center rounded-full bg-gradient-to-r from-red-500 to-red-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                        <i class="fas fa-ban mr-1.5"></i>
                                         ไม่ใช้งาน
                                     </span>
                                 @endif
@@ -195,7 +199,7 @@
                         </div>
 
                         <!-- Project Information -->
-                        <div class="space-y-3 p-4 sm:p-6">
+                        <div class="space-y-4 bg-white p-4 sm:p-6">
                             <!-- Registration Period -->
                             <div class="flex items-start">
                                 <div class="mr-2 mt-1 rounded-full bg-blue-100 p-1 sm:mr-3">
@@ -280,12 +284,12 @@
                         </div>
 
                         <!-- Action Footer -->
-                        <div class="border-t border-gray-200 bg-gray-50 px-4 py-3 sm:px-6 sm:py-4">
+                        <div class="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 sm:px-6 sm:py-4">
                             <div class="flex items-center justify-between">
-                                <div class="text-xs text-gray-500 sm:text-sm">
+                                <div class="text-xs font-medium text-gray-600 sm:text-sm">
                                     คลิกเพื่อดูรายละเอียดเพิ่มเติม
                                 </div>
-                                <div class="inline-flex items-center text-xs font-medium text-blue-600 sm:text-sm">
+                                <div class="inline-flex items-center text-xs font-semibold text-blue-700 sm:text-sm">
                                     <i class="fas fa-arrow-right mr-1.5 transition-transform duration-200 group-hover:translate-x-1 sm:mr-2"></i>
                                     ดูรายละเอียด
                                 </div>

@@ -18,6 +18,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingController extends Controller
 {
+    public function checkSlot()
+    {
+
+    }
     // Data Management
     public function deleteTestData()
     {

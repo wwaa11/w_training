@@ -3,11 +3,12 @@ namespace App\Exports\Hr;
 
 use App\Models\HrProject;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ResultsTemplateExport implements FromArray, WithHeadings, WithStyles
+class ResultsTemplateExport implements FromArray, WithHeadings, WithStyles, ShouldAutoSize
 {
     protected $project;
 
@@ -35,9 +36,9 @@ class ResultsTemplateExport implements FromArray, WithHeadings, WithStyles
             $row = [
                 $index + 1,
                 $attend->user->userid ?? '',
-                $attend->user->name ?? '',
-                $attend->user->position ?? '',
-                $attend->user->department ?? '',
+                'Not Required *' . $attend->user->name ?? '',
+                'Not Required *' . $attend->user->position ?? '',
+                'Not Required *' . $attend->user->department ?? '',
                 '', // result_1
                 '', // result_2
                 '', // result_3
@@ -64,15 +65,15 @@ class ResultsTemplateExport implements FromArray, WithHeadings, WithStyles
             'ตำแหน่ง',
             'หน่วยงาน',
             'ผลการประเมิน 1',
-            'ผลการประเมิน 2',
-            'ผลการประเมิน 3',
-            'ผลการประเมิน 4',
-            'ผลการประเมิน 5',
-            'ผลการประเมิน 6',
-            'ผลการประเมิน 7',
-            'ผลการประเมิน 8',
-            'ผลการประเมิน 9',
-            'ผลการประเมิน 10',
+            'ผลการประเมิน 2 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 3 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 4 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 5 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 6 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 7 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 8 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 9 *ลบออกกรณีไม่ใช่งานประเมิน',
+            'ผลการประเมิน 10 *ลบออกกรณีไม่ใช่งานประเมิน',
         ];
     }
 

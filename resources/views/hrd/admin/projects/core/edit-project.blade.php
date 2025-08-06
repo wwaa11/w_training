@@ -108,7 +108,7 @@
                                 </label>
                                 <label class="flex cursor-pointer items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100">
                                     <input class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" type="checkbox" name="project_register_today" value="1" {{ old("project_register_today", $project->project_register_today) ? "checked" : "" }}>
-                                    <span class="ml-3 text-sm font-medium text-gray-700">อนุญาตให้ลงทะเบียนวันเดียวกัน</span>
+                                    <span class="ml-3 text-sm font-medium text-gray-700">เปิดให้ลงทะเบียนในวันที่มีการจัดหลักสูตร</span>
                                 </label>
                                 <label class="flex cursor-pointer items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100">
                                     <input class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" type="checkbox" name="project_group_assign" value="1" {{ old("project_group_assign", $project->project_group_assign) ? "checked" : "" }}>

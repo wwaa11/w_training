@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 use App\Exports\Hr\AllDateExport;
 use App\Exports\Hr\DateExport;
 use App\Exports\Hr\DBDExport;
+use App\Exports\Hr\HrGroupsTemplateExport;
 use App\Exports\Hr\OnebookExport;
 use App\Exports\Hr\ResultsTemplateExport;
 use App\Imports\HrResultsImport;
+use App\Jobs\HrAssignSeatForAttendance;
+use App\Jobs\HrProjectSeatAssignment;
 use App\Models\HrAttend;
 use App\Models\HrDate;
 use App\Models\HrGroup;
@@ -14,6 +17,7 @@ use App\Models\HrProject;
 use App\Models\HrResult;
 use App\Models\HrSeat;
 use App\Models\HrTime;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Traits\HrLoggingTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -49,7 +53,7 @@ class HRController extends Controller
                     $query->where('attend_delete', false);
                 },
             ])
-            ->orderBy('created_at', 'asc')
+            ->orderBy('project_end_register', 'asc')
             ->paginate(12);
 
         $ongoingProjects = $this->getOngoingProjects($projects);
@@ -704,7 +708,7 @@ class HRController extends Controller
 
                 // Dispatch seat assignment job if project has seat assignment enabled
                 if ($project->project_seat_assign) {
-                    \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+                    HrAssignSeatForAttendance::dispatch($attendance->id);
                 }
             }
 
@@ -805,7 +809,7 @@ class HRController extends Controller
 
             // Dispatch seat assignment job if project has seat assignment enabled
             if ($project->project_seat_assign) {
-                \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+                HrAssignSeatForAttendance::dispatch($attendance->id);
             }
 
             // Log attendance recording
@@ -1027,7 +1031,7 @@ class HRController extends Controller
             ->paginate(20);
 
         // Get legacy HR data
-        $legacyTransactions = \App\Models\Transaction::with([
+        $legacyTransactions = Transaction::with([
             'item.slot.project',
             'scoreHeader',
             'scoreData',
@@ -1035,6 +1039,7 @@ class HRController extends Controller
             ->where('user', auth()->user()->userid)
             ->where('transaction_active', true)
             ->orderBy('date', 'desc')
+            ->where('created_at', '<', '2025-08-01')
             ->get();
 
         // Calculate statistics including legacy data
@@ -1845,7 +1850,7 @@ class HRController extends Controller
 
             // Dispatch seat assignment job if project has seat assignment enabled
             if ($project->project_seat_assign) {
-                \App\Jobs\HrAssignSeatForAttendance::dispatch($attendance->id);
+                HrAssignSeatForAttendance::dispatch($attendance->id);
             }
 
             // Log admin registration creation
@@ -2191,7 +2196,7 @@ class HRController extends Controller
             }
 
             // Dispatch the bulk assignment job for the specific project
-            \App\Jobs\HrProjectSeatAssignment::dispatch($project->id);
+            HrProjectSeatAssignment::dispatch($project->id);
 
             // Log seat assignment trigger
             $this->logBulkOperation('SEAT_ASSIGNMENT_TRIGGER', $project, 0, [
@@ -2236,10 +2241,11 @@ class HRController extends Controller
                         ->get()
                         ->map(function ($seat) {
                             return [
-                                'seat_number' => $seat->seat_number,
-                                'user_id'     => $seat->user_id,
-                                'user_name'   => $seat->user->name ?? 'Unknown',
-                                'department'  => $seat->department ?? 'Unknown',
+                                'seat_number'  => $seat->seat_number,
+                                'user_id'      => $seat->user_id,
+                                'real_user_id' => $seat->user->userid ?? 'Unknown',
+                                'user_name'    => $seat->user->name ?? 'Unknown',
+                                'department'   => $seat->department ?? 'Unknown',
                             ];
                         })
                         ->toArray();
@@ -2253,6 +2259,7 @@ class HRController extends Controller
                             $seat = collect($seats)->firstWhere('user_id', $attend->user_id);
                             return [
                                 'user_id'          => $attend->user_id,
+                                'real_user_id'     => $attend->user->userid ?? 'Unknown',
                                 'user_name'        => $attend->user->name ?? 'Unknown',
                                 'department'       => $attend->user->department ?? 'Unknown',
                                 'seat_number'      => $seat ? $seat['seat_number'] : null,
@@ -2968,11 +2975,20 @@ class HRController extends Controller
         $project = HrProject::findOrFail($projectId);
 
         // Get all groups for this project
-        $groups = HrGroup::with('user')
+        $groupedData = HrGroup::with('user')
             ->where('project_id', $projectId)
             ->orderBy('group')
             ->get()
             ->groupBy('group');
+
+        // Transform the data to match view expectations
+        $groups = [];
+        foreach ($groupedData as $groupName => $members) {
+            $groups[] = [
+                'name'    => $groupName,
+                'members' => $members,
+            ];
+        }
 
         // Get all users who have attended this project
         $attendedUsers = HrAttend::with('user')
@@ -2982,9 +2998,10 @@ class HRController extends Controller
             ->where('attend_delete', false)
             ->get()
             ->pluck('user')
-            ->unique('userid');
+            ->unique('userid')
+            ->values();
 
-        return view('hrd.admin.projects.participants.groups.group-management', compact('project', 'groups', 'attendedUsers'));
+        return view('hrd.admin.projects.participants.group-management', compact('project', 'groups', 'attendedUsers'));
     }
 
     /**
@@ -3012,24 +3029,37 @@ class HRController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if ($existingGroup) {
-            return redirect()->back()->with('error', 'ผู้ใช้ ' . $user->name . ' ถูกจัดกลุ่มแล้วในกลุ่ม: ' . $existingGroup->group);
-        }
-
-        // Create new group assignment
-        HrGroup::create([
-            'project_id' => $projectId,
-            'user_id'    => $user->id,
-            'group'      => $request->group,
-        ]);
-
-        // Log group assignment
         $project = HrProject::findOrFail($projectId);
-        $this->logGroupAssignment($project, $user, $request->group, 'assigned', [
-            'assigned_by_admin' => true,
-        ]);
 
-        return redirect()->back()->with('success', 'จัดกลุ่มผู้ใช้ ' . $user->name . ' (รหัส: ' . $request->user_id . ') เข้ากลุ่ม ' . $request->group . ' เรียบร้อยแล้ว');
+        if ($existingGroup) {
+            // Update existing group assignment
+            $oldGroup = $existingGroup->group;
+            $existingGroup->update([
+                'group' => $request->group,
+            ]);
+
+            // Log group update
+            $this->logGroupAssignment($project, $user, $request->group, 'updated', [
+                'updated_by_admin' => true,
+                'old_group'        => $oldGroup,
+            ]);
+
+            return redirect()->back()->with('success', 'อัปเดตการจัดกลุ่มผู้ใช้ ' . $user->name . ' (รหัส: ' . $request->user_id . ') จากกลุ่ม ' . $oldGroup . ' เป็นกลุ่ม ' . $request->group . ' เรียบร้อยแล้ว');
+        } else {
+            // Create new group assignment
+            HrGroup::create([
+                'project_id' => $projectId,
+                'user_id'    => $user->id,
+                'group'      => $request->group,
+            ]);
+
+            // Log group assignment
+            $this->logGroupAssignment($project, $user, $request->group, 'assigned', [
+                'assigned_by_admin' => true,
+            ]);
+
+            return redirect()->back()->with('success', 'จัดกลุ่มผู้ใช้ ' . $user->name . ' (รหัส: ' . $request->user_id . ') เข้ากลุ่ม ' . $request->group . ' เรียบร้อยแล้ว');
+        }
     }
 
     /**
@@ -3093,7 +3123,7 @@ class HRController extends Controller
         try {
             $project = HrProject::findOrFail($projectId);
 
-            Excel::import(new \App\Imports\HrGroupsImport($projectId), $request->file('import_file'));
+            Excel::import(new HrGroupsImport($projectId), $request->file('import_file'));
 
             $importResults = session('import_results', []);
 
@@ -3138,7 +3168,7 @@ class HRController extends Controller
     {
         $project = HrProject::findOrFail($projectId);
 
-        return Excel::download(new \App\Exports\HrGroupsTemplateExport($projectId),
+        return Excel::download(new HrGroupsTemplateExport($projectId),
             'group_import_template_' . $project->project_name . '.xlsx');
     }
 

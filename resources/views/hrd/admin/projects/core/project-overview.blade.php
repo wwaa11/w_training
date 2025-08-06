@@ -138,7 +138,7 @@
                                             <i class="fas fa-{{ $project->project_register_today ? "calendar-day text-green-600" : "times text-red-600" }} text-lg"></i>
                                         </div>
                                         <div class="ml-3">
-                                            <p class="{{ $project->project_register_today ? "text-green-900" : "text-red-900" }} font-medium">ลงทะเบียนวันเดียวกัน</p>
+                                            <p class="{{ $project->project_register_today ? "text-green-900" : "text-red-900" }} font-medium">เปิดให้ลงทะเบียนในวันที่มีการจัดหลักสูตร</p>
                                             <p class="{{ $project->project_register_today ? "text-green-700" : "text-red-700" }} text-sm">
                                                 {{ $project->project_register_today ? "เปิดใช้งาน" : "ปิดใช้งาน" }}
                                             </p>
@@ -214,7 +214,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">ผู้เข้าร่วมทั้งหมด</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $project->attends->where("attend_delete", false)->count() }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $project->getUniqueParticipantsCount() }}</p>
                         </div>
                     </div>
                 </div>
@@ -591,7 +591,7 @@
                 <button onclick="hideDeleteModal()" style="background:#6b7280; color:#fff; border:none; border-radius:0.5rem; padding:0.75rem 1.5rem; font-size:1rem; cursor:pointer;">
                     ยกเลิก
                 </button>
-                <button onclick="deleteProject()" style="background:#dc2626; color:#fff; border:none; border-radius:0.5rem; padding:0.75rem 1.5rem; font-size:1rem; font-weight:600; cursor:pointer;">
+                <button id="modalDeleteBtn" onclick="deleteProject()" style="background:#dc2626; color:#fff; border:none; border-radius:0.5rem; padding:0.75rem 1.5rem; font-size:1rem; font-weight:600; cursor:pointer;">
                     ลบโปรเจกต์
                 </button>
             </div>
@@ -725,11 +725,16 @@
                 }
             });
 
-            // Show loading state on button
-            const deleteBtn = document.querySelector('#deleteModal button[onclick="deleteProject()"]');
-            const originalText = deleteBtn.innerHTML;
-            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังลบ...';
-            deleteBtn.disabled = true;
+            // Show loading state on button - with null check
+            const deleteBtn = document.getElementById('modalDeleteBtn');
+            let originalText = '';
+            if (deleteBtn) {
+                originalText = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังลบ...';
+                deleteBtn.disabled = true;
+            } else {
+                console.warn('Delete button not found in modal');
+            }
 
             axios.post(`{{ route("hrd.admin.projects.delete", $project->id) }}`)
                 .then(response => {
@@ -825,9 +830,13 @@
                     });
                 })
                 .finally(() => {
-                    // Reset button state
-                    deleteBtn.innerHTML = originalText;
-                    deleteBtn.disabled = false;
+                    // Reset button state - with null check
+                    if (deleteBtn) {
+                        deleteBtn.innerHTML = originalText;
+                        deleteBtn.disabled = false;
+                    } else {
+                        console.warn('Delete button not found when resetting state');
+                    }
                     hideDeleteModal();
                 });
         }

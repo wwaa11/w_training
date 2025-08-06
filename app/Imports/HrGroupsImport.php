@@ -3,13 +3,15 @@ namespace App\Imports;
 
 use App\Models\HrGroup;
 use App\Models\User;
+use App\Traits\HrLoggingTrait;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class HrGroupsImport implements ToCollection, WithHeadingRow
 {
+    use HrLoggingTrait;
+
     private $projectId;
 
     public function __construct(int $projectId)
@@ -20,8 +22,12 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         $importedCount = 0;
+        $updatedCount  = 0;
         $skippedCount  = 0;
         $errors        = [];
+
+        // Skip first 2 rows and start from row 3
+        $rows = $rows->slice(1);
 
         foreach ($rows as $rowIndex => $row) {
             try {
@@ -38,13 +44,10 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
                 $user = User::where('userid', $userId)->first();
 
                 if (! $user) {
-                    $errors[] = "แถว " . ($rowIndex + 2) . ": ไม่พบผู้ใช้ที่มีรหัส '{$userId}'";
+                    $errors[] = "แถว " . ($rowIndex + 3) . ": ไม่พบผู้ใช้ที่มีรหัส '{$userId}'"; // +4 because we skipped 2 rows and rowIndex starts from 0
                     $skippedCount++;
                     continue;
                 }
-
-                // Note: Users can be added to groups even if they haven't attended yet
-                // This allows for pre-assignment of groups before attendance
 
                 // Check if user is already in a group for this project
                 $existingGroup = HrGroup::where('project_id', $this->projectId)
@@ -52,38 +55,62 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
                     ->first();
 
                 if ($existingGroup) {
-                    $errors[] = "แถว " . ($rowIndex + 2) . ": ผู้ใช้ {$user->name} (รหัส: {$userId}) ถูกจัดกลุ่มแล้วในกลุ่ม '{$existingGroup->group}'";
-                    $skippedCount++;
-                    continue;
+                    // Update existing group assignment
+                    $oldGroup = $existingGroup->group;
+                    $existingGroup->update(['group' => $groupName]);
+                    $updatedCount++;
+
+                    // Log group assignment update using HR logging trait
+                    $this->logGroupAssignment(
+                        (object) ['id' => $this->projectId, 'project_name' => 'HR Groups Import'],
+                        $user,
+                        $groupName,
+                        'updated',
+                        ['old_group' => $oldGroup]
+                    );
+                } else {
+                    // Create new group assignment
+                    HrGroup::create([
+                        'project_id' => $this->projectId,
+                        'user_id'    => $user->id,
+                        'group'      => $groupName,
+                    ]);
+                    $importedCount++;
+
+                    // Log new group assignment using HR logging trait
+                    $this->logGroupAssignment(
+                        (object) ['id' => $this->projectId, 'project_name' => 'HR Groups Import'],
+                        $user,
+                        $groupName,
+                        'assigned'
+                    );
                 }
 
-                // Create new group assignment
-                HrGroup::create([
-                    'project_id' => $this->projectId,
-                    'user_id'    => $user->id,
-                    'group'      => $groupName,
-                ]);
-
-                $importedCount++;
-
             } catch (\Exception $e) {
-                $errors[] = "แถว " . ($rowIndex + 2) . ": " . $e->getMessage();
+                $errors[] = "แถว " . ($rowIndex + 3) . ": " . $e->getMessage(); // +4 because we skipped 2 rows and rowIndex starts from 0
                 $skippedCount++;
             }
         }
 
-        // Log the import results
-        Log::channel('hrd_admin')->info('Imported HR groups from Excel', [
-            'project_id'     => $this->projectId,
-            'imported_count' => $importedCount,
-            'skipped_count'  => $skippedCount,
-            'errors'         => $errors,
-        ]);
+        // Log the import operation summary using HR logging trait
+        $this->logImportOperation(
+            (object) ['id' => $this->projectId, 'project_name' => 'HR Groups Import'],
+            'HR_GROUPS',
+            $importedCount + $updatedCount,
+            $skippedCount,
+            $errors,
+            [
+                'imported_count'  => $importedCount,
+                'updated_count'   => $updatedCount,
+                'total_processed' => $importedCount + $updatedCount + $skippedCount,
+            ]
+        );
 
         // Store results in session for display
         session([
             'import_results' => [
                 'imported' => $importedCount,
+                'updated'  => $updatedCount,
                 'skipped'  => $skippedCount,
                 'errors'   => $errors,
             ],

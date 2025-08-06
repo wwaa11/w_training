@@ -6,16 +6,16 @@ use App\Models\HrProject;
 use App\Models\HrSeat;
 use App\Models\HrTime;
 use App\Models\User;
+use App\Traits\HrLoggingTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class HrProjectSeatAssignment implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, HrLoggingTrait;
 
     protected $projectId;
 
@@ -32,33 +32,57 @@ class HrProjectSeatAssignment implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::error("Start Job");
+        $this->logHrAction('SEAT_ASSIGNMENT_JOB_STARTED', [
+            'project_id' => $this->projectId,
+            'job_type'   => 'HR_PROJECT_SEAT_ASSIGNMENT',
+        ]);
+
         try {
             if ($this->projectId) {
                 // Get project by ID
                 $project = HrProject::with(['dates.times.attends'])->find($this->projectId);
 
                 if ($project) {
-                    $project->dates->each(function ($date) {
-                        $date->times->each(function ($time) {
-                            $time->attends->each(function ($attendance) {
+                    $assignedCount = 0;
+                    $skippedCount  = 0;
+                    $errorCount    = 0;
+
+                    $project->dates->each(function ($date) use (&$assignedCount, &$skippedCount, &$errorCount) {
+                        $date->times->each(function ($time) use (&$assignedCount, &$skippedCount, &$errorCount) {
+                            $time->attends->each(function ($attendance) use (&$assignedCount, &$skippedCount, &$errorCount) {
                                 if ($attendance->seat_id == null) {
-                                    $this->assignSeatForAttendance($attendance->id);
+                                    $result = $this->assignSeatForAttendance($attendance->id);
+                                    if ($result === 'assigned') {
+                                        $assignedCount++;
+                                    } elseif ($result === 'skipped') {
+                                        $skippedCount++;
+                                    } else {
+                                        $errorCount++;
+                                    }
                                 }
                             });
                         });
                     });
-                    Log::error("HR Project Seat Assignment Job completed for project: {$project->project_name}");
+
+                    $this->logHrAction('SEAT_ASSIGNMENT_JOB_COMPLETED', [
+                        'project_id'      => $project->id,
+                        'project_name'    => $project->project_name,
+                        'assigned_count'  => $assignedCount,
+                        'skipped_count'   => $skippedCount,
+                        'error_count'     => $errorCount,
+                        'total_processed' => $assignedCount + $skippedCount + $errorCount,
+                    ]);
                 } else {
-                    Log::warning("Project with ID {$this->projectId} not found");
+                    $this->logHrAction('SEAT_ASSIGNMENT_JOB_ERROR', [
+                        'project_id' => $this->projectId,
+                        'error'      => 'Project not found',
+                    ], 'warning');
                 }
             }
 
         } catch (\Exception $e) {
-            Log::error('HR Project Seat Assignment Job Error: ' . $e->getMessage(), [
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
+            $this->logHrError($e, 'HR Project Seat Assignment Job', [
+                'project_id' => $this->projectId,
             ]);
         }
     }
@@ -66,24 +90,27 @@ class HrProjectSeatAssignment implements ShouldQueue
     /**
      * Assign seat for a specific attendance record
      */
-    private function assignSeatForAttendance($attendId): void
+    private function assignSeatForAttendance($attendId): string
     {
         try {
             $attendance = HrAttend::with(['project', 'time', 'user'])->find($attendId);
 
             if (! $attendance) {
-                Log::warning("Attendance record not found: {$attendId}");
-                return;
+                $this->logHrAction('SEAT_ASSIGNMENT_SKIPPED', [
+                    'attend_id' => $attendId,
+                    'reason'    => 'Attendance record not found',
+                ], 'warning');
+                return 'skipped';
             }
 
             // Check if project has seat assignment enabled
             if (! $attendance->project || ! $attendance->project->project_seat_assign) {
-                return;
+                return 'skipped';
             }
 
             // Check if attendance is not deleted
             if ($attendance->attend_delete) {
-                return;
+                return 'skipped';
             }
 
             // Check if seat is already assigned
@@ -93,26 +120,35 @@ class HrProjectSeatAssignment implements ShouldQueue
                 ->first();
 
             if ($existingSeat) {
-                Log::info("Seat already assigned for user {$attendance->user_id} in time slot {$attendance->time_id}");
-                return;
+                $this->logHrAction('SEAT_ASSIGNMENT_SKIPPED', [
+                    'attend_id' => $attendId,
+                    'user_id'   => $attendance->user_id,
+                    'time_id'   => $attendance->time_id,
+                    'reason'    => 'Seat already assigned',
+                ], 'info');
+                return 'skipped';
             }
 
             // Get user department
             $userDepartment = $this->getUserDepartment($attendance->user_id);
             if (! $userDepartment) {
-                Log::warning("No department found for user {$attendance->user_id}");
-                return;
+                $this->logHrAction('SEAT_ASSIGNMENT_SKIPPED', [
+                    'attend_id' => $attendId,
+                    'user_id'   => $attendance->user_id,
+                    'reason'    => 'No department found for user',
+                ], 'warning');
+                return 'skipped';
             }
 
             // Assign seat
-            $this->assignSeatToUser($attendance, $userDepartment);
+            $result = $this->assignSeatToUser($attendance, $userDepartment);
+            return $result;
 
         } catch (\Exception $e) {
-            Log::error('Error assigning seat for attendance: ' . $e->getMessage(), [
+            $this->logHrError($e, 'Error assigning seat for attendance', [
                 'attend_id' => $attendId,
-                'file'      => $e->getFile(),
-                'line'      => $e->getLine(),
             ]);
+            return 'error';
         }
     }
 
@@ -132,7 +168,7 @@ class HrProjectSeatAssignment implements ShouldQueue
     /**
      * Assign seat to user based on department separation rules
      */
-    private function assignSeatToUser(HrAttend $attendance, string $userDepartment): void
+    private function assignSeatToUser(HrAttend $attendance, string $userDepartment): string
     {
         $time = $attendance->time;
 
@@ -174,13 +210,25 @@ class HrProjectSeatAssignment implements ShouldQueue
         // Create seat assignment if found
         if ($assignedSeat) {
             $this->createSeatAssignment($time, $attendance, $userDepartment, $assignedSeat);
-            Log::info("Seat {$assignedSeat} assigned to user {$attendance->user_id} in time slot {$time->id}");
+            return 'assigned';
         } else {
             if ($time->time_limit) {
-                Log::warning("No seat available for user {$attendance->user_id} in time slot {$time->id} - time slot is full (limit: {$time->time_max})");
+                $this->logHrAction('SEAT_ASSIGNMENT_FAILED', [
+                    'user_id'    => $attendance->user_id,
+                    'time_id'    => $time->id,
+                    'time_title' => $time->time_title,
+                    'reason'     => 'Time slot is full',
+                    'limit'      => $time->time_max,
+                ], 'warning');
             } else {
-                Log::warning("No seat available for user {$attendance->user_id} in time slot {$time->id} - unexpected (unlimited mode)");
+                $this->logHrAction('SEAT_ASSIGNMENT_FAILED', [
+                    'user_id'    => $attendance->user_id,
+                    'time_id'    => $time->id,
+                    'time_title' => $time->time_title,
+                    'reason'     => 'No seat available (unlimited mode)',
+                ], 'warning');
             }
+            return 'skipped';
         }
     }
 
@@ -226,7 +274,14 @@ class HrProjectSeatAssignment implements ShouldQueue
 
         if ($existingSeat) {
             // Log warning and skip - don't overwrite existing seat assignments
-            Log::warning("Seat number {$seatNumber} is already assigned to user {$existingSeat->user_id} in time slot {$time->id}. Skipping assignment for user {$attendance->user_id}.");
+            $this->logHrAction('SEAT_ASSIGNMENT_CONFLICT', [
+                'time_id'          => $time->id,
+                'time_title'       => $time->time_title,
+                'seat_number'      => $seatNumber,
+                'existing_user_id' => $existingSeat->user_id,
+                'new_user_id'      => $attendance->user_id,
+                'reason'           => 'Seat number already assigned to another user',
+            ], 'warning');
             return;
         }
 
@@ -238,11 +293,16 @@ class HrProjectSeatAssignment implements ShouldQueue
 
         if ($existingUserSeat) {
             // Update existing user's seat assignment
+            $oldSeatNumber = $existingUserSeat->seat_number;
             $existingUserSeat->update([
                 'seat_number' => $seatNumber,
                 'department'  => $userDepartment,
             ]);
-            Log::info("Updated seat assignment for user {$attendance->user_id} from seat {$existingUserSeat->seat_number} to seat {$seatNumber} in time slot {$time->id}");
+
+            $this->logSeatAssignment($time, $attendance->user, $seatNumber, 'updated', [
+                'old_seat_number' => $oldSeatNumber,
+                'new_seat_number' => $seatNumber,
+            ]);
         } else {
             // Create new seat assignment
             HrSeat::create([
@@ -252,7 +312,8 @@ class HrProjectSeatAssignment implements ShouldQueue
                 'seat_number' => $seatNumber,
                 'seat_delete' => false,
             ]);
-            Log::info("Created new seat assignment: user {$attendance->user_id} assigned to seat {$seatNumber} in time slot {$time->id}");
+
+            $this->logSeatAssignment($time, $attendance->user, $seatNumber, 'auto');
         }
     }
 }

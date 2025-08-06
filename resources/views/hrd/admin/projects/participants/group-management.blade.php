@@ -148,33 +148,49 @@
                     กลุ่มปัจจุบัน
                 </h2>
 
-                @if ($groups->count() > 0)
-                    <div class="space-y-4">
-                        @foreach ($groups as $groupName => $groupMembers)
-                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                                <div class="mb-3 flex items-center justify-between">
-                                    <h3 class="text-lg font-semibold text-gray-800">{{ $groupName }}</h3>
-                                    <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-                                        {{ $groupMembers->count() }} คน
-                                    </span>
-                                </div>
+                @if (count($groups) > 0)
+                    <!-- Group Selector -->
+                    <div class="mb-6">
+                        <label class="mb-2 block text-sm font-medium text-gray-700" for="group-selector">เลือกกลุ่ม</label>
+                        <select class="group-selector w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" id="group-selector">
+                            <option value="" selected disabled>กรุณาเลือกกลุ่มเพื่อดูข้อมูล</option>
+                            @foreach ($groups as $index => $groupData)
+                                <option value="{{ $index }}">
+                                    {{ $groupData["name"] }} ({{ $groupData["members"]->count() }} คน)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                                <div class="space-y-2">
-                                    @foreach ($groupMembers as $member)
-                                        <div class="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm">
-                                            <div>
-                                                <p class="font-medium text-gray-900">{{ $member->user->name }}</p>
-                                                <p class="text-sm text-gray-600">{{ $member->user->userid }}</p>
+                    <!-- Group Content -->
+                    <div class="group-content">
+                        @foreach ($groups as $index => $groupData)
+                            <div class="group-pane hidden" id="group-{{ $index }}">
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                    <div class="mb-3 flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-gray-800">{{ $groupData["name"] }}</h3>
+                                        <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+                                            {{ $groupData["members"]->count() }} คน
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        @foreach ($groupData["members"] as $member)
+                                            <div class="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm">
+                                                <div>
+                                                    <p class="font-medium text-gray-900">{{ $member->user->name }}</p>
+                                                    <p class="text-sm text-gray-600">{{ $member->user->userid }}</p>
+                                                </div>
+                                                <form class="ml-4" action="{{ route("hrd.admin.projects.groups.delete", [$project->id, $member->id]) }}" method="POST">
+                                                    @csrf
+                                                    @method("DELETE")
+                                                    <button class="text-red-600 transition-colors duration-200 hover:text-red-800" type="submit" onclick="return confirm('คุณต้องการลบผู้เข้าร่วมนี้ออกจากกลุ่มใช่หรือไม่?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
                                             </div>
-                                            <form class="ml-4" action="{{ route("hrd.admin.projects.groups.delete", [$project->id, $member->id]) }}" method="POST">
-                                                @csrf
-                                                @method("DELETE")
-                                                <button class="text-red-600 transition-colors duration-200 hover:text-red-800" type="submit" onclick="return confirm('คุณต้องการลบผู้เข้าร่วมนี้ออกจากกลุ่มใช่หรือไม่?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endforeach
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -227,11 +243,37 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-orange-600">จำนวนกลุ่ม</p>
-                            <p class="text-2xl font-bold text-orange-900">{{ $groups->count() }}</p>
+                            <p class="text-2xl font-bold text-orange-900">{{ count($groups) }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const groupSelector = document.getElementById('group-selector');
+            const groupPanes = document.querySelectorAll('.group-pane');
+
+            groupSelector.addEventListener('change', function() {
+                const selectedIndex = this.value;
+
+                // Hide all group panes
+                groupPanes.forEach(pane => {
+                    pane.classList.add('hidden');
+                    pane.classList.remove('block');
+                });
+
+                // Show the selected group pane only if a valid option is selected
+                if (selectedIndex !== '') {
+                    const targetPane = document.getElementById('group-' + selectedIndex);
+                    if (targetPane) {
+                        targetPane.classList.remove('hidden');
+                        targetPane.classList.add('block');
+                    }
+                }
+            });
+        });
+    </script>
 @endsection

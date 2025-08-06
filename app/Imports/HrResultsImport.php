@@ -5,13 +5,15 @@ use App\Models\HrAttend;
 use App\Models\HrResult;
 use App\Models\HrResultHeader;
 use App\Models\User;
+use App\Traits\HrLoggingTrait;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
 class HrResultsImport implements ToCollection, WithCalculatedFormulas
 {
+    use HrLoggingTrait;
+
     private $id;
 
     public function __construct(int $id)
@@ -21,8 +23,11 @@ class HrResultsImport implements ToCollection, WithCalculatedFormulas
 
     public function collection(Collection $rows)
     {
-        $id           = $this->id;
-        $activeFields = []; // Track which fields have non-null headers
+        $id            = $this->id;
+        $activeFields  = []; // Track which fields have non-null headers
+        $importedCount = 0;
+        $skippedCount  = 0;
+        $errors        = [];
 
         foreach ($rows as $rowIndex => $row) {
             if ($rowIndex == 0) {
@@ -49,7 +54,8 @@ class HrResultsImport implements ToCollection, WithCalculatedFormulas
                 $user = User::where('userid', $row[1])->first();
 
                 if (! $user) {
-                    Log::channel('hr_delete')->info('Import : User with userid ' . $row[1] . ' not found in User table.');
+                    $errors[] = 'User with userid ' . $row[1] . ' not found in User table.';
+                    $skippedCount++;
                     continue;
                 }
 
@@ -108,11 +114,22 @@ class HrResultsImport implements ToCollection, WithCalculatedFormulas
                         }
                     }
 
-                    Log::channel('hr_delete')->info('Import : User ' . $user->userid . ' has ' . $userAttends->count() . ' attendance records, created ' . $userAttends->count() . ' result records with same data.');
+                    $importedCount += $userAttends->count();
                 } else {
-                    Log::channel('hr_delete')->info('Import : ' . $user->userid . ' not found active attendance.');
+                    $errors[] = 'User ' . $user->userid . ' not found active attendance.';
+                    $skippedCount++;
                 }
             }
         }
+
+        // Log the import operation summary
+        $this->logImportOperation(
+            (object) ['id' => $id, 'project_name' => 'HR Results Import'],
+            'HR_RESULTS',
+            $importedCount,
+            $skippedCount,
+            $errors,
+            ['active_fields_count' => count(array_filter($activeFields))]
+        );
     }
 }

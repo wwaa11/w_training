@@ -582,12 +582,12 @@
                                             @if ($project->project_register_today)
                                                 <div class="flex items-center text-sm text-green-600">
                                                     <i class="fas fa-calendar-day mr-1"></i>
-                                                    อนุญาตให้ลงทะเบียนในวันเดียวกัน
+                                                    เปิดให้ลงทะเบียนในวันที่มีการจัดหลักสูตร
                                                 </div>
                                             @else
                                                 <div class="flex items-center text-sm text-red-600">
                                                     <i class="fas fa-ban mr-1"></i>
-                                                    ไม่อนุญาตให้ลงทะเบียนในวันเดียวกัน
+                                                    ไม่เปิดให้ลงทะเบียนในวันที่มีการจัดหลักสูตร
                                                 </div>
                                             @endif
                                         </div>

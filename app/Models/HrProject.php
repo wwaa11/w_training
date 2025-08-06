@@ -173,4 +173,25 @@ class HrProject extends Model
     {
         return now() >= $this->project_start_register && now() <= $this->project_end_register;
     }
+
+    /**
+     * Get count of unique users who have registered for this project
+     */
+    public function getUniqueParticipantsCount()
+    {
+        return $this->activeAttends()
+            ->distinct('user_id')
+            ->count('user_id');
+    }
+
+    /**
+     * Get count of unique users who have attended (check-in) for this project
+     */
+    public function getUniqueAttendedCount()
+    {
+        return $this->activeAttends()
+            ->whereNotNull('attend_datetime')
+            ->distinct('user_id')
+            ->count('user_id');
+    }
 }
