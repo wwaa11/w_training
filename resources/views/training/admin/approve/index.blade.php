@@ -72,7 +72,30 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $roel = [];
+                            $tom = [];
+                            $gary = [];
+                            $neil = [];
+                        @endphp
                         @foreach ($attendances as $attend)
+                            @if ($attend->date->time->session->teacher->name == "Mr. Roel")
+                                @php
+                                    $roel[] = $attend->id;
+                                @endphp
+                            @elseif ($attend->date->time->session->teacher->name == "Mr. Tom")
+                                @php
+                                    $tom[] = $attend->id;
+                                @endphp
+                            @elseif ($attend->date->time->session->teacher->name == "Mr. Gary")
+                                @php
+                                    $gary[] = $attend->id;
+                                @endphp
+                            @elseif ($attend->date->time->session->teacher->name == "Mr. Neil")
+                                @php
+                                    $neil[] = $attend->id;
+                                @endphp
+                            @endif
                             <tr class="border-t border-gray-100 hover:bg-blue-50" id="row-{{ $attend->id }}">
                                 <td class="px-4 py-2">{{ $attend->user_id }}</td>
                                 <td class="px-4 py-2">{{ $attend->date_name }}</td>
@@ -211,9 +234,35 @@
             btn.disabled = true;
             text.classList.add('hidden');
             spinner.classList.remove('hidden');
+
+            // Collect only visible attendee IDs that can be approved (not yet approved)
+            const visibleIds = [];
+            document.querySelectorAll('tbody tr').forEach(row => {
+                // Only include rows that are visible (not hidden by filters)
+                if (row.style.display !== 'none') {
+                    // Get the attendee ID from the row ID (row-{id})
+                    const rowId = row.id;
+                    if (rowId && rowId.startsWith('row-')) {
+                        const attendId = rowId.replace('row-', '');
+
+                        // Check if this attendee can be approved (has an approve button)
+                        const actionCell = row.querySelector('td:last-child');
+                        const approveButton = actionCell.querySelector('button.approve-btn');
+
+                        // Only include if there's an approve button (meaning not yet approved)
+                        if (approveButton) {
+                            visibleIds.push(attendId);
+                        }
+                    }
+                }
+            });
+
+            console.log('Approvable attendee IDs:', visibleIds);
+
             axios.post('{{ route("training.admin.approve.users") }}', {
                 name: '{{ $filterDate }}',
-                admin: '{{ $filterAdmin }}'
+                admin: '{{ $filterAdmin }}',
+                ids: visibleIds
             }).then((res) => {
                 if (res.data.status === 'success') {
                     window.location.reload();
@@ -221,13 +270,13 @@
                     btn.disabled = false;
                     text.classList.remove('hidden');
                     spinner.classList.add('hidden');
-                    alert('เกิดข้อผิดพลาด: ' + (res.data.message || 'ไม่สามารถอนุมัติทั้งหมดได้'));
+                    // alert('เกิดข้อผิดพลาด: ' + (res.data.message || 'ไม่สามารถอนุมัติทั้งหมดได้'));
                 }
             }).catch(() => {
                 btn.disabled = false;
                 text.classList.remove('hidden');
                 spinner.classList.add('hidden');
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                // alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
             });
         }
     </script>

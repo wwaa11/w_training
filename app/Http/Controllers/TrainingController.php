@@ -1218,15 +1218,11 @@ class TrainingController extends Controller
             'admin_filter' => $request->input('admin', 'all'),
             'request'      => $request->all(),
         ]);
-        $filterDate  = $request->input('name', date('Y-m-d'));
-        $filterAdmin = $request->input('admin', 'all');
-        $query       = TrainingAttend::where('name', $filterDate);
-        if ($filterAdmin === 'false') {
-            $query->where(function ($q) {
-                $q->whereNull('admin')->orWhere('admin', false);
-            });
-        }
+
+        $query = TrainingAttend::whereIn('id', $request->ids);
+
         $count = $query->update(['admin' => true, 'admin_date' => now()]);
+
         return response()->json(['status' => 'success', 'updated' => $count]);
     }
 

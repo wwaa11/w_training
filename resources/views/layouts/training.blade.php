@@ -28,7 +28,7 @@
         </button>
         <div class="navbar-links hidden lg:flex">
             <a class="{{ request()->routeIs("index") ? "active" : "" }}" href="{{ route("index") }}">
-                <i class="fa-solid fa-home mr-2"></i>หน้าหลัก
+                <i class="fa-solid fa-home mr-2"></i>Home
             </a>
             <a class="{{ request()->routeIs("training.index") ? "active" : "" }}" href="{{ route("training.index") }}">
                 <i class="fa-solid fa-calendar mr-2"></i>Schedule
@@ -60,7 +60,7 @@
 
     <div class="mobile-menu fade-in" id="mobileMenu">
         <a class="{{ request()->routeIs("index") ? "active" : "" }}" href="{{ route("index") }}">
-            <i class="fa-solid fa-home mr-2"></i>หน้าหลัก
+            <i class="fa-solid fa-home mr-2"></i>Home
         </a>
         <a class="{{ request()->routeIs("training.index") ? "active" : "" }}" href="{{ route("training.index") }}">
             <i class="fa-solid fa-calendar mr-2"></i>Schedule
