@@ -1232,7 +1232,6 @@ class TrainingController extends Controller
 
     public function adminApproveUsersTeacher(Request $request)
     {
-        dd($request->all());
         Log::channel('training_admin')->info("Bulk approved attendances for date: {$request->input('name', date('Y-m-d'))}", [
             'user'    => auth()->user()->userid ?? null,
             'request' => $request->all(),
