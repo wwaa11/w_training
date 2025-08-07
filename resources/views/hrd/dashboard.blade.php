@@ -64,112 +64,81 @@
                 </div>
                 <p class="mb-3 text-xs text-blue-700 sm:text-sm">คุณสามารถเช็คอินสำหรับโปรแกรมต่อไปนี้ได้ตอนนี้:</p>
 
-                <div class="space-y-3 sm:space-y-4">
+                <div class="space-y-2">
                     @foreach ($ongoingProjects as $ongoingProject)
                         @foreach ($ongoingProject["sessions"] as $session)
-                            <div class="group relative overflow-hidden rounded-2xl bg-white p-4 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl sm:p-6">
-                                <!-- Header with project info -->
-                                <div class="mb-4">
-                                    <div class="mb-3">
-                                        <h3 class="mb-1 text-base font-bold text-gray-900 sm:text-lg">{{ $ongoingProject["project"]->project_name }}</h3>
-                                        <div class="flex items-center text-xs text-blue-600 sm:text-sm">
-                                            <i class="fas fa-calendar-day mr-1.5"></i>
-                                            <span class="font-medium">{{ $session["date"]->date_title }}</span>
+                            <div class="rounded-lg bg-white p-4 shadow-sm" id="session-card-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                <!-- Header -->
+                                <div class="mb-3 flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
+                                            <h3 class="text-sm font-semibold text-gray-900" id="project-name-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $ongoingProject["project"]->project_name }}</h3>
                                         </div>
+                                        <p class="ml-6 text-xs text-gray-600" id="date-title-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $session["date"]->date_title }}</p>
                                     </div>
-
-                                    <!-- Location and Time Info -->
-                                    <div class="space-y-2">
-                                        @if ($session["date"]->date_location)
-                                            <div class="flex items-center text-xs text-gray-600 sm:text-sm">
-                                                <div class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-orange-600 sm:h-7 sm:w-7">
-                                                    <i class="fas fa-map-marker-alt text-xs sm:text-sm"></i>
-                                                </div>
-                                                <span class="font-medium">{{ $session["date"]->date_location }}</span>
-                                            </div>
-                                        @endif
-
-                                        <div class="flex items-center text-xs text-blue-600 sm:text-sm">
-                                            <div class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 sm:h-7 sm:w-7">
-                                                <i class="fas fa-clock text-xs sm:text-sm"></i>
-                                            </div>
-                                            <span class="font-medium">
-                                                {{ \Carbon\Carbon::parse($session["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($session["time"]->time_end)->format("H:i") }}
+                                    <div class="flex items-center space-x-2">
+                                        @if ($ongoingProject["project"]->project_seat_assign && $session["userSeat"])
+                                            <span class="text-xs text-purple-600">
+                                                <i class="fas fa-chair mr-1"></i>
+                                                <span class="font-medium">ที่นั่ง:</span> {{ $session["userSeat"]->seat_number }}
                                             </span>
-                                        </div>
+                                        @endif
+                                        @if ($ongoingProject["project"]->project_group_assign)
+                                            @php
+                                                $userGroup = \App\Models\HrGroup::where("project_id", $ongoingProject["project"]->id)
+                                                    ->where("user_id", auth()->id())
+                                                    ->first();
+                                            @endphp
+                                            @if ($userGroup)
+                                                <span class="text-xs text-indigo-600">
+                                                    <i class="fas fa-users mr-1"></i>
+                                                    {{ $userGroup->group }}
+                                                </span>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
 
-                                <!-- Seat and Group Assignment -->
-                                <div class="mb-4 space-y-2">
-                                    @if ($ongoingProject["project"]->project_seat_assign && $session["userSeat"])
-                                        <div class="transform animate-pulse">
-                                            <div class="inline-flex items-center rounded-xl bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 px-4 py-2.5 shadow-lg sm:px-5 sm:py-3">
-                                                <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-white bg-opacity-20 text-white sm:h-9 sm:w-9">
-                                                    <i class="fas fa-chair text-sm sm:text-base"></i>
-                                                </div>
-                                                <div class="text-center">
-                                                    <div class="text-xs font-medium text-purple-100 sm:text-sm">ที่นั่งของคุณ</div>
-                                                    <div class="text-lg font-bold text-white sm:text-xl">{{ $session["userSeat"]->seat_number }}</div>
-                                                </div>
-                                            </div>
+                                <!-- Info -->
+                                <div class="mb-3 space-y-2">
+                                    @if ($session["date"]->date_location)
+                                        <div class="text-xs text-gray-600" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            <span class="font-medium">สถานที่:</span> {{ $session["date"]->date_location }}
                                         </div>
                                     @endif
-
-                                    @if ($ongoingProject["project"]->project_group_assign)
-                                        @php
-                                            $userGroup = \App\Models\HrGroup::where("project_id", $ongoingProject["project"]->id)
-                                                ->where("user_id", auth()->id())
-                                                ->first();
-                                        @endphp
-                                        @if ($userGroup)
-                                            <div class="transform animate-pulse">
-                                                <div class="inline-flex items-center rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 px-4 py-2.5 shadow-lg sm:px-5 sm:py-3">
-                                                    <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-white bg-opacity-20 text-white sm:h-9 sm:w-9">
-                                                        <i class="fas fa-users text-sm sm:text-base"></i>
-                                                    </div>
-                                                    <div class="text-center">
-                                                        <div class="text-xs font-medium text-indigo-100 sm:text-sm">กลุ่มของคุณ</div>
-                                                        <div class="text-lg font-bold text-white sm:text-xl">{{ $userGroup->group }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @endif
+                                    <div class="text-xs text-gray-600" id="time-schedule-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        <span class="font-medium">เวลา:</span> {{ \Carbon\Carbon::parse($session["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($session["time"]->time_end)->format("H:i") }}
+                                    </div>
+                                    <div class="text-xs text-green-600">
+                                        <i class="fas fa-sign-in-alt mr-1"></i>
+                                        <span class="font-medium">เช็คอินได้ตั้งแต่:</span> {{ \Carbon\Carbon::parse($session["time"]->time_start)->subMinutes(30)->format("H:i") }}
+                                    </div>
                                 </div>
 
                                 <!-- Check-in Button -->
-                                <form class="checkin-form" action="{{ $session["checkInRoute"] }}" method="{{ $session["checkInMethod"] }}">
+                                <form class="checkin-form" id="checkin-form-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" action="{{ $session["checkInRoute"] }}" method="{{ $session["checkInMethod"] }}">
                                     @csrf
                                     @foreach ($session["checkInData"] as $key => $value)
                                         <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                     @endforeach
-                                    <button class="active:scale-98 group relative inline-flex w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-green-500 via-green-600 to-green-700 px-6 py-3.5 text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:from-green-600 hover:via-green-700 hover:to-green-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:px-8 sm:py-4" type="submit">
-                                        <!-- Animated background -->
-                                        <div class="absolute inset-0 bg-gradient-to-r from-green-400 via-green-500 to-green-600 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
-
-                                        <!-- Button content -->
-                                        <div class="relative flex items-center">
-                                            <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-white bg-opacity-20 text-white sm:h-9 sm:w-9">
-                                                <i class="fas fa-user-check text-sm sm:text-base"></i>
-                                            </div>
-                                            <div class="text-left">
-                                                <div class="text-sm font-bold sm:text-base">เช็คอินตอนนี้</div>
-                                                <div class="text-xs text-green-100 sm:text-sm">คลิกเพื่อยืนยันการเข้าร่วม</div>
-                                            </div>
-                                            <div class="ml-3 flex h-6 w-6 items-center justify-center rounded-full bg-white bg-opacity-20 text-white transition-transform duration-300 group-hover:translate-x-1 sm:h-7 sm:w-7">
-                                                <i class="fas fa-arrow-right text-xs sm:text-sm"></i>
-                                            </div>
+                                    <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="checkin-btn-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" type="submit">
+                                        <i class="fas fa-user-check mr-3 text-lg text-white"></i>
+                                        <div class="text-center">
+                                            <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
+                                            <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
                                         </div>
                                     </button>
                                 </form>
                             </div>
+                        @endforeach
+                    @endforeach
                 </div>
-        @endforeach
-        @endforeach
+            </div>
+        @endif
     </div>
-    </div>
-    @endif
 
     <!-- Search Section -->
     <div class="mb-4 rounded-lg bg-white p-3 shadow-sm sm:p-4">
@@ -370,7 +339,6 @@
             {{ $projects->links() }}
         </div>
     @endif
-    </div>
 @endsection
 
 @section("scripts")
@@ -412,25 +380,25 @@
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
 
-                    // Get session details from the card
-                    const sessionCard = this.closest('.rounded-2xl.bg-white');
-                    if (!sessionCard) {
-                        console.error('Could not find session card for check-in form');
+                    // Get form ID to extract project and time IDs
+                    const formId = this.id;
+                    const matches = formId.match(/checkin-form-(\d+)-(\d+)/);
+
+                    if (!matches) {
+                        console.error('Could not parse form ID:', formId);
                         return;
                     }
 
-                    const projectName = sessionCard.querySelector('h3')?.textContent || 'Unknown Project';
-                    const dateTitle = sessionCard.querySelector('.fa-calendar-day')?.parentNode?.textContent?.trim() || '';
-                    const location = sessionCard.querySelector('.fa-map-marker-alt')?.parentNode?.parentNode?.querySelector('.font-medium')?.textContent?.trim() || '';
-                    // Try multiple approaches to find the time
-                    let timeSchedule = sessionCard.querySelector('.fa-clock')?.closest('.flex.items-center')?.querySelector('.font-medium')?.textContent?.trim() || '';
-                    if (!timeSchedule) {
-                        timeSchedule = sessionCard.querySelector('.fa-clock')?.parentNode?.parentNode?.querySelector('.font-medium')?.textContent?.trim() || '';
-                    }
-                    if (!timeSchedule) {
-                        timeSchedule = sessionCard.querySelector('.text-blue-600')?.textContent?.trim() || '';
-                    }
-                    console.log('Time schedule found:', timeSchedule); // Debug log
+                    const projectId = matches[1];
+                    const timeId = matches[2];
+
+                    // Use ID-based selectors for better performance and reliability
+                    const projectName = document.getElementById(`project-name-${projectId}-${timeId}`)?.textContent || 'Unknown Project';
+                    const dateTitle = document.getElementById(`date-title-${projectId}-${timeId}`)?.textContent || '';
+                    const locationElement = document.getElementById(`location-${projectId}-${timeId}`);
+                    const location = locationElement ? locationElement.textContent.replace('สถานที่:', '').trim() : '';
+                    const timeScheduleElement = document.getElementById(`time-schedule-${projectId}-${timeId}`);
+                    const timeSchedule = timeScheduleElement ? timeScheduleElement.textContent.replace('เวลา:', '').trim() : '';
 
                     Swal.fire({
                         title: 'ยืนยันการเช็คอิน',
@@ -441,6 +409,12 @@
                                 ${location ? `<p class="mb-2"><strong>สถานที่:</strong> ${location}</p>` : ''}
                                 ${timeSchedule ? `<p class="mb-3"><strong>เวลา:</strong> ${timeSchedule}</p>` : ''}
                             </div>
+                            <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p class="text-sm text-green-700">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    การเช็คอินจะบันทึกเวลาที่คุณเข้าร่วมโปรแกรม
+                                </p>
+                            </div>
                             <p class="mt-4 text-sm text-gray-600">คุณแน่ใจหรือไม่ที่จะเช็คอินสำหรับเซสชันนี้?</p>
                         `,
                         icon: 'question',
@@ -448,9 +422,25 @@
                         confirmButtonColor: '#16a34a',
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'ใช่, เช็คอิน',
-                        cancelButtonText: 'ยกเลิก'
+                        cancelButtonText: 'ยกเลิก',
+                        showLoaderOnConfirm: true,
+                        preConfirm: () => {
+                            return new Promise((resolve) => {
+                                setTimeout(() => {
+                                    resolve();
+                                }, 1000);
+                            });
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
+                            // Show loading state on button using ID
+                            const buttonId = `checkin-btn-${projectId}-${timeId}`;
+                            const button = document.getElementById(buttonId);
+                            if (button) {
+                                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังเช็คอิน...';
+                                button.disabled = true;
+                            }
+
                             this.submit();
                         }
                     });

@@ -257,7 +257,11 @@ class HRController extends Controller
                     $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
                     $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
-                    if ($currentTime >= $timeStart && $currentTime <= $timeEnd) {
+                    // Calculate early check-in time (30 minutes before start)
+                    $earlyCheckInTime = Carbon::parse($time->time_start)->subMinutes(30)->format('H:i:s');
+
+                    // Allow check-in from 30 minutes before start until end time
+                    if ($currentTime >= $earlyCheckInTime && $currentTime <= $timeEnd) {
                         if ($project->project_type === 'attendance') {
                             // For attendance projects, check if user hasn't attended yet
                             $attendanceRecord = $project->attends
@@ -466,6 +470,12 @@ class HRController extends Controller
         $userId            = auth()->id();
         $registrationSlots = collect();
 
+        // Get user's current registrations for this project
+        $userRegistrations = HrAttend::where('project_id', $project->id)
+            ->where('user_id', $userId)
+            ->where('attend_delete', false)
+            ->get();
+
         foreach ($project->dates as $date) {
             $dateString = $date->date_datetime->format('Y-m-d');
 
@@ -486,6 +496,9 @@ class HRController extends Controller
                     $available            = $isLimited ? $time->time_max - $currentRegistrations : null;
                     $isFull               = $isLimited && $available <= 0;
 
+                    // Check if user is already registered for this time slot
+                    $userRegistered = $userRegistrations->where('time_id', $time->id)->first();
+
                     // Get user seat if seat assignment is enabled
                     $userSeat = null;
                     if ($project->project_seat_assign) {
@@ -499,6 +512,7 @@ class HRController extends Controller
                         'available'            => $available,
                         'isFull'               => $isFull,
                         'userSeat'             => $userSeat,
+                        'userRegistered'       => $userRegistered,
                     ]);
                 }
 
@@ -537,6 +551,9 @@ class HRController extends Controller
                 $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
                 $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
+                // Calculate early check-in time (30 minutes before start)
+                $earlyCheckInTime = Carbon::parse($time->time_start)->subMinutes(30)->format('H:i:s');
+
                 $userRegisteredForTime = $userRegistrations->where('time_id', $time->id)->first();
                 $hasAttendedRegistered = $userRegisteredForTime && $userRegisteredForTime->attend_datetime;
 
@@ -561,17 +578,17 @@ class HRController extends Controller
                     $state['attendanceRecord'] = $attendanceRecord;
                     $state['hasAttended']      = $attendanceRecord && $attendanceRecord->attend_datetime;
 
-                    // Check if can check in
+                    // Check if can check in (from 30 minutes before start until end)
                     $state['canCheckIn'] = $today === $dateString &&
-                    $currentTime >= $timeStart &&
+                    $currentTime >= $earlyCheckInTime &&
                     $currentTime <= $timeEnd &&
                     ! $state['hasAttended'];
 
                     if (! $state['hasAttended'] && ! $state['canCheckIn']) {
                         if ($today !== $dateString) {
                             $state['timeSlotMessage'] = 'Check-in available on ' . $date->date_datetime->format('d M Y');
-                        } elseif ($currentTime < $timeStart) {
-                            $state['timeSlotMessage'] = 'Check-in available from ' . Carbon::parse($time->time_start)->format('H:i');
+                        } elseif ($currentTime < $earlyCheckInTime) {
+                            $state['timeSlotMessage'] = 'Check-in available from ' . Carbon::parse($earlyCheckInTime)->format('H:i');
                         } elseif ($currentTime > $timeEnd) {
                             $state['timeSlotMessage'] = 'Check-in period ended';
                         }
@@ -581,14 +598,14 @@ class HRController extends Controller
                 // For registered users (single/multiple projects)
                 if ($userRegisteredForTime && ! $hasAttendedRegistered) {
                     $state['canStamp'] = $today === $dateString &&
-                        $currentTime >= $timeStart &&
+                        $currentTime >= $earlyCheckInTime &&
                         $currentTime <= $timeEnd;
 
                     if (! $state['canStamp']) {
                         if ($today !== $dateString) {
                             $state['timeSlotMessage'] = 'Check-in on ' . $date->date_datetime->format('d M Y');
-                        } elseif ($currentTime < $timeStart) {
-                            $state['timeSlotMessage'] = 'Check-in from ' . Carbon::parse($time->time_start)->format('H:i');
+                        } elseif ($currentTime < $earlyCheckInTime) {
+                            $state['timeSlotMessage'] = 'Check-in from ' . Carbon::parse($earlyCheckInTime)->format('H:i');
                         } elseif ($currentTime > $timeEnd) {
                             $state['timeSlotMessage'] = 'Check-in period ended';
                         }
@@ -631,12 +648,12 @@ class HRController extends Controller
         $project->project_type !== 'attendance';
 
         if (! $canRegister) {
-            return back()->withErrors(['error' => 'Registration is no longer available for this project.']);
+            return back()->withErrors(['error' => 'ไม่สามารถลงทะเบียนได้ โปรเจกต์นี้ปิดรับลงทะเบียนแล้ว']);
         }
 
         // Check project type constraints
         if ($project->project_type === 'single' && count($request->time_ids) > 1) {
-            return back()->withErrors(['error' => 'You can only select one time slot for this project.']);
+            return back()->withErrors(['error' => 'คุณสามารถเลือกช่วงเวลาได้เพียงช่วงเดียวสำหรับโปรเจกต์นี้']);
         }
 
         // Check if user already registered (for single type projects)
@@ -647,7 +664,7 @@ class HRController extends Controller
                 ->first();
 
             if ($existingRegistration) {
-                return back()->withErrors(['error' => 'You are already registered for this project.']);
+                return back()->withErrors(['error' => 'คุณได้ลงทะเบียนสำหรับโปรเจกต์นี้แล้ว']);
             }
         }
 
@@ -670,7 +687,7 @@ class HRController extends Controller
             }
 
             if (! $selectedTime || ! $selectedDate) {
-                return back()->withErrors(['error' => 'Invalid time selection.']);
+                return back()->withErrors(['error' => 'การเลือกช่วงเวลาไม่ถูกต้อง']);
             }
 
             // Check if user already registered for this specific time slot (for multiple type)
@@ -682,7 +699,7 @@ class HRController extends Controller
                     ->first();
 
                 if ($existingRegistration) {
-                    return back()->withErrors(['error' => "You are already registered for time slot: {$selectedTime->time_title}"]);
+                    return back()->withErrors(['error' => "คุณได้ลงทะเบียนในช่วงเวลา: {$selectedTime->time_title} แล้ว"]);
                 }
             }
 
@@ -690,7 +707,7 @@ class HRController extends Controller
             if ($selectedTime->time_limit) {
                 $currentRegistrations = $selectedTime->attends()->where('attend_delete', false)->count();
                 if ($currentRegistrations >= $selectedTime->time_max) {
-                    return back()->withErrors(['error' => "Time slot '{$selectedTime->time_title}' is full."]);
+                    return back()->withErrors(['error' => "ช่วงเวลา '{$selectedTime->time_title}' เต็มแล้ว"]);
                 }
             }
 
@@ -727,8 +744,8 @@ class HRController extends Controller
 
             $sessionCount = count($request->time_ids);
             $message      = $sessionCount === 1
-            ? 'Successfully registered for the session!'
-            : "Successfully registered for {$sessionCount} sessions!";
+            ? 'ลงทะเบียนเซสชันสำเร็จ!'
+            : "ลงทะเบียน {$sessionCount} เซสชันสำเร็จ!";
 
             return redirect()->route('hrd.projects.show', $id)
                 ->with('success', $message);
@@ -743,7 +760,7 @@ class HRController extends Controller
                 'time_ids'   => $request->time_ids,
             ]);
 
-            return back()->withErrors(['error' => 'Failed to register: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'การลงทะเบียนล้มเหลว: ' . $e->getMessage()]);
         }
     }
 
@@ -754,12 +771,12 @@ class HRController extends Controller
 
             // Verify it's an attendance project
             if ($project->project_type !== 'attendance') {
-                return redirect()->back()->with('error', 'This is not an attendance project.');
+                return redirect()->back()->with('error', 'นี่ไม่ใช่โปรเจกต์เข้าร่วม');
             }
 
             // Verify project is active
             if (! $project->project_active || $project->project_delete) {
-                return redirect()->back()->with('error', 'This project is not active.');
+                return redirect()->back()->with('error', 'โปรเจกต์นี้ไม่เปิดใช้งาน');
             }
 
             $request->validate([
@@ -771,7 +788,7 @@ class HRController extends Controller
             // Verify the time belongs to this project
             $time = HrTime::with(['date'])->findOrFail($timeId);
             if ($time->date->project_id != $project->id) {
-                return redirect()->back()->with('error', 'Invalid time slot for this project.');
+                return redirect()->back()->with('error', 'ช่วงเวลาไม่ถูกต้องสำหรับโปรเจกต์นี้');
             }
 
             // Check if today matches the date and current time is within range
@@ -780,15 +797,18 @@ class HRController extends Controller
             $dateTime    = $time->date->date_datetime->format('Y-m-d');
 
             if ($today !== $dateTime) {
-                return redirect()->back()->with('error', 'Attendance is only available on the scheduled date.');
+                return redirect()->back()->with('error', 'การเช็คอินมีเฉพาะในวันที่กำหนดเท่านั้น');
             }
 
-            // Check if current time is within the time slot range
+            // Check if current time is within the time slot range (30 minutes before start until end)
             $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
             $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
-            if ($currentTime < $timeStart || $currentTime > $timeEnd) {
-                return redirect()->back()->with('error', 'Attendance is only available during the scheduled time slot.');
+            // Calculate early check-in time (30 minutes before start)
+            $earlyCheckInTime = Carbon::parse($time->time_start)->subMinutes(30)->format('H:i:s');
+
+            if ($currentTime < $earlyCheckInTime || $currentTime > $timeEnd) {
+                return redirect()->back()->with('error', 'การเช็คอินมีเฉพาะตั้งแต่ 30 นาทีก่อนเวลาเริ่มต้นจนถึงเวลาสิ้นสุดเท่านั้น');
             }
 
             // Check if user has already checked in for this time slot
@@ -799,7 +819,7 @@ class HRController extends Controller
                 ->first();
 
             if ($existingAttend) {
-                return redirect()->back()->with('error', 'You have already checked in for this session.');
+                return redirect()->back()->with('error', 'คุณได้เช็คอินสำหรับเซสชันนี้แล้ว');
             }
 
             // Create attendance record
@@ -823,7 +843,7 @@ class HRController extends Controller
                 'attendance_method' => 'user_self_checkin',
             ]);
 
-            return redirect()->route('hrd.projects.show', $id)->with('success', 'Attendance recorded successfully!');
+            return redirect()->route('hrd.projects.show', $id)->with('success', 'บันทึกการเข้าร่วมสำเร็จ!');
 
         } catch (\Exception $e) {
             // Log error
@@ -833,7 +853,7 @@ class HRController extends Controller
                 'time_id'    => $request->time_id,
             ]);
 
-            return redirect()->back()->with('error', 'Failed to record attendance: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'การบันทึกการเข้าร่วมล้มเหลว: ' . $e->getMessage());
         }
     }
 
@@ -852,12 +872,12 @@ class HRController extends Controller
 
             // Check if already stamped (has attend_datetime)
             if ($attendance->attend_datetime) {
-                return redirect()->back()->with('error', 'You have already checked in for this session.');
+                return redirect()->back()->with('error', 'คุณได้เช็คอินสำหรับเซสชันนี้แล้ว');
             }
 
             // Verify project is active
             if (! $project->project_active || $project->project_delete) {
-                return redirect()->back()->with('error', 'This project is not active.');
+                return redirect()->back()->with('error', 'โปรเจกต์นี้ไม่เปิดใช้งาน');
             }
 
             // Get the time slot details
@@ -870,15 +890,18 @@ class HRController extends Controller
             $dateTime    = $date->date_datetime->format('Y-m-d');
 
             if ($today !== $dateTime) {
-                return redirect()->back()->with('error', 'Check-in is only available on the scheduled date.');
+                return redirect()->back()->with('error', 'การเช็คอินมีเฉพาะในวันที่กำหนดเท่านั้น');
             }
 
-            // Check if current time is within the time slot range
+            // Check if current time is within the time slot range (30 minutes before start until end)
             $timeStart = Carbon::parse($time->time_start)->format('H:i:s');
             $timeEnd   = Carbon::parse($time->time_end)->format('H:i:s');
 
-            if ($currentTime < $timeStart || $currentTime > $timeEnd) {
-                return redirect()->back()->with('error', 'Check-in is only available during the scheduled time slot.');
+            // Calculate early check-in time (30 minutes before start)
+            $earlyCheckInTime = Carbon::parse($time->time_start)->subMinutes(30)->format('H:i:s');
+
+            if ($currentTime < $earlyCheckInTime || $currentTime > $timeEnd) {
+                return redirect()->back()->with('error', 'การเช็คอินมีเฉพาะตั้งแต่ 30 นาทีก่อนเวลาเริ่มต้นจนถึงเวลาสิ้นสุดเท่านั้น');
             }
 
             // Update the attendance record with current timestamp
@@ -892,7 +915,7 @@ class HRController extends Controller
                 'attendance_method' => 'user_self_stamp',
             ]);
 
-            return redirect()->route('hrd.projects.show', $id)->with('success', 'Check-in successful! Attendance recorded.');
+            return redirect()->route('hrd.projects.show', $id)->with('success', 'เช็คอินสำเร็จ! บันทึกการเข้าร่วมแล้ว');
 
         } catch (\Exception $e) {
             // Log error
@@ -902,7 +925,7 @@ class HRController extends Controller
                 'user_id'    => auth()->id(),
             ]);
 
-            return redirect()->back()->with('error', 'Failed to record check-in: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'การบันทึกการเช็คอินล้มเหลว: ' . $e->getMessage());
         }
     }
 
@@ -1394,8 +1417,8 @@ class HRController extends Controller
             'links.*.link_name'           => 'nullable|string|max:255',
             'links.*.link_url'            => 'nullable|url',
             'links.*.link_limit'          => 'boolean',
-            'links.*.link_time_start'     => 'nullable|date_format:Y-m-d\TH:i',
-            'links.*.link_time_end'       => 'nullable|date_format:Y-m-d\TH:i|after:links.*.link_time_start',
+            'links.*.link_time_start'     => 'nullable|date_format:H:i',
+            'links.*.link_time_end'       => 'nullable|date_format:H:i|after:links.*.link_time_start',
         ]);
 
         DB::beginTransaction();
