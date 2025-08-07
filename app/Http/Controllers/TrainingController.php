@@ -1232,11 +1232,28 @@ class TrainingController extends Controller
 
     public function adminApproveUsersTeacher(Request $request)
     {
+        dd($request->all());
         Log::channel('training_admin')->info("Bulk approved attendances for date: {$request->input('name', date('Y-m-d'))}", [
             'user'    => auth()->user()->userid ?? null,
             'request' => $request->all(),
         ]);
         $query = TrainingAttend::whereIn('id', json_decode($request->ids));
+        $count = $query->update(['admin' => true, 'admin_date' => now()]);
+
+        return response()->json(['status' => 'success', 'updated' => $count]);
+    }
+
+    public function teacherApproveAll(Request $request)
+    {
+        Log::channel('training_admin')->info("Teacher bulk approved all pending attendances for today", [
+            'user'    => auth()->user()->userid ?? null,
+            'request' => $request->all(),
+        ]);
+
+        $query = TrainingAttend::where('name', date('Y-m-d'))
+            ->where(function ($q) {
+                $q->whereNull('admin')->orWhere('admin', false);
+            });
         $count = $query->update(['admin' => true, 'admin_date' => now()]);
 
         return response()->json(['status' => 'success', 'updated' => $count]);

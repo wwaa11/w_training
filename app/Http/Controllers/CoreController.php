@@ -219,9 +219,9 @@ class CoreController extends Controller
                         $q->whereNull('admin')->orWhere('admin', false);
                     });
                 }
-                $attendances = $query->get();
+                $attendances = $query->orderBy('time')->get();
 
-                // Fetch English names from STAFF database
+                // Fetch English names from STAFF database and attach to attendance records
                 $userIds      = $attendances->pluck('user_id')->unique()->toArray();
                 $englishNames = [];
 
@@ -245,6 +245,11 @@ class CoreController extends Controller
                             'department_EN' => $staffUser->department_EN,
                         ];
                     }
+                }
+
+                // Attach user information to each attendance record
+                foreach ($attendances as $attendance) {
+                    $attendance->user_info = $englishNames[$attendance->user_id] ?? null;
                 }
 
                 return view($view, compact('attendances', 'filterAdmin', 'englishNames'));
