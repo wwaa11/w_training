@@ -219,7 +219,7 @@ class CoreController extends Controller
                         $q->whereNull('admin')->orWhere('admin', false);
                     });
                 }
-                $attendances = $query->orderBy('time')->get();
+                $attendances = $query->get();
 
                 // Fetch English names from STAFF database and attach to attendance records
                 $userIds      = $attendances->pluck('user_id')->unique()->toArray();
