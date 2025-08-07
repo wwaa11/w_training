@@ -1269,6 +1269,10 @@ class HRController extends Controller
             'dates.times',
             'links',
             'resultHeader',
+            'attends' => function ($query) {
+                $query->where('attend_delete', false)
+                    ->orderBy('created_at', 'desc');
+            },
             'attends.user',
         ])->findOrFail($id);
 
