@@ -207,8 +207,8 @@
                         <!-- Attendance Status Row -->
                         @if ($state["attendanceStatus"])
                             <div class="mb-3">
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-green-500 to-green-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-check-circle mr-1.5"></i>
+                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-yellow-500 to-yellow-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
+                                    <i class="fas fa-user-check mr-1.5"></i>
                                     {{ $state["attendanceStatus"] }}
                                 </span>
                             </div>
@@ -243,7 +243,7 @@
                                     <i class="fas fa-calendar-check text-xs text-green-600"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">วันที่โปรเจกต์ ({{ $project->dates->count() }})</h4>
+                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">วันที่เปิดลงทะเบียน ({{ $project->dates->count() }})</h4>
                                     <div class="mt-1 space-y-1">
                                         @foreach ($project->dates->take(2) as $date)
                                             <div class="flex items-center text-xs text-gray-600 sm:text-sm">
@@ -299,7 +299,7 @@
                                     <i class="fas fa-users text-xs text-gray-600"></i>
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">{{ $state["registrationCount"] }} คนลงทะเบียน</h4>
+                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">ผู้ลงทะเบียน {{ $state["registrationCount"] }}</h4>
                                     <p class="text-xs text-gray-600 sm:text-sm">จำนวนผู้ลงทะเบียนในปัจจุบัน</p>
                                 </div>
                             </div>

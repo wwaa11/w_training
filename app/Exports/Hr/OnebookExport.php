@@ -14,7 +14,7 @@ class OnebookExport implements FromView
         $this->project_id = $project_id;
     }
 
-    public function view(): view
+    public function view(): View
     {
         $attends = HrAttend::with(['user', 'date', 'time'])
             ->where('project_id', $this->project_id)
@@ -22,6 +22,6 @@ class OnebookExport implements FromView
             ->orderBy('user_id', 'ASC')
             ->get();
 
-        return view('hrd.admin.export.onebook')->with(compact('attends'));
+        return view('hrd.admin.export.onebook-report')->with(compact('attends'));
     }
 }

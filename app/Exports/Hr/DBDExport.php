@@ -67,7 +67,7 @@ class DBDExport implements FromView, WithDrawings, WithColumnFormatting
         return $drawings;
     }
 
-    public function view(): view
+    public function view(): View
     {
         $project = HrProject::find($this->project_id);
         $attends = HrAttend::with(['user', 'date', 'time'])
@@ -76,7 +76,7 @@ class DBDExport implements FromView, WithDrawings, WithColumnFormatting
             ->orderBy('user_id', 'ASC')
             ->get();
 
-        return view('hrd.admin.export.DBD')->with(compact('project', 'attends'));
+        return view('hrd.admin.export.dbd-report')->with(compact('project', 'attends'));
     }
 
     public function columnFormats(): array
