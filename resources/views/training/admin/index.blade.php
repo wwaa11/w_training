@@ -13,6 +13,11 @@
                 <span class="text-lg font-semibold text-orange-900">Register User View</span>
                 <span class="ml-auto text-orange-400"><i class="fa-solid fa-arrow-right"></i></span>
             </a>
+            <a class="block items-center gap-4 rounded-lg bg-white p-6 shadow-lg transition hover:bg-blue-50" href="{{ route("training.admin.move.index") }}">
+                <span class="text-2xl text-red-600"><i class="fa-solid fa-exchange-alt"></i></span>
+                <span class="text-lg font-semibold text-red-900">Move Training User</span>
+                <span class="ml-auto text-red-400"><i class="fa-solid fa-arrow-right"></i></span>
+            </a>
             <a class="block items-center gap-4 rounded-lg bg-white p-6 shadow-lg transition hover:bg-blue-50" href="{{ route("training.admin.users.index") }}">
                 <span class="text-2xl text-green-600"><i class="fa-solid fa-users"></i></span>
                 <span class="text-lg font-semibold text-green-900">User Group Management</span>

@@ -1,6 +1,9 @@
 @extends("layouts.training")
 @section("content")
     <div class="container mx-auto max-w-6xl py-10">
+        <a class="mb-3 inline-flex items-center text-gray-600 transition-colors hover:text-gray-800" href="{{ route("training.admin.index") }}">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Back to Management
+        </a>
         <h1 class="mb-8 flex items-center gap-2 text-3xl font-bold text-blue-800">
             <i class="fa-solid fa-user-check"></i> Register User View
         </h1>

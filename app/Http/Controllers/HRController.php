@@ -1204,7 +1204,8 @@ class HRController extends Controller
             ->where('user', auth()->user()->userid)
             ->where('transaction_active', true)
             ->orderBy('date', 'desc')
-            ->where('created_at', '<', '2025-08-01')
+            ->where('project_id', '!=', 15)
+            ->where('project_id', '!=', 16)
             ->get();
 
         // Calculate statistics including legacy data

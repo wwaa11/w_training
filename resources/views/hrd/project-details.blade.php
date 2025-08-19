@@ -181,202 +181,6 @@
             </div>
         </div>
 
-        <!-- Merged Registrations & Schedule Section -->
-        @if ($registrationData["userRegistrations"]->count() > 0 || $project->project_type === "attendance")
-            <div class="mb-4 rounded-lg bg-white p-4 shadow-sm sm:p-6">
-                <h2 class="mb-3 text-lg font-semibold text-gray-900 sm:text-xl">
-                    <i class="fas fa-calendar-check mr-2 text-green-500"></i>
-                    @if ($project->project_type === "attendance")
-                        ตารางการเข้าร่วมโปรแกรม
-                    @else
-                        การลงทะเบียนและตารางการเข้าร่วม
-                    @endif
-                </h2>
-
-                @if ($project->isFull())
-                    <!-- Project Full Notice -->
-                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 sm:p-4">
-                        <div class="flex items-start">
-                            <i class="fas fa-exclamation-triangle mr-2 mt-1 text-red-500 sm:mr-3"></i>
-                            <div>
-                                <h3 class="font-medium text-red-800">โปรเจกต์เต็มแล้ว</h3>
-                                <p class="mt-1 text-sm text-red-700">
-                                    ขออภัย โปรเจกต์นี้เต็มแล้ว ไม่สามารถลงทะเบียนเพิ่มเติมได้
-                                    @if ($project->project_type === "single")
-                                        ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
-                                    @elseif($project->project_type === "multiple")
-                                        ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
-                                    @endif
-                                </p>
-                                <div class="mt-2 text-xs text-red-600">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    จำนวนผู้ลงทะเบียนทั้งหมด: {{ $project->activeAttends->count() }} คน
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="space-y-4">
-                    @foreach ($scheduleView as $d)
-                        <div class="rounded-lg border border-gray-200 p-3 sm:p-4">
-                            <div class="mb-3 flex flex-col justify-between sm:flex-row sm:items-center">
-                                <h3 class="text-base font-medium text-gray-900 sm:text-lg">{{ $d["title"] }}</h3>
-                                <span class="mt-1 text-sm text-gray-500 sm:mt-0">{{ $d["formatted"] }}</span>
-                            </div>
-
-                            @if (!empty($d["detail"]))
-                                <p class="mb-3 text-sm text-gray-600">{{ $d["detail"] }}</p>
-                            @endif
-
-                            @if (!empty($d["location"]))
-                                <div class="mb-3 flex items-center text-sm text-gray-600">
-                                    <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>
-                                    {{ $d["location"] }}
-                                </div>
-                            @endif
-
-                            @if (count($d["times"]) > 0)
-                                <div class="mt-4">
-                                    <h4 class="mb-2 text-sm font-medium text-gray-700">ช่วงเวลา:</h4>
-                                    <div class="space-y-3">
-                                        @foreach ($d["times"] as $t)
-                                            <div class="{{ $t["hasAttended"] ? "bg-blue-50" : ($t["userRegistered"] ? "bg-green-50" : "bg-gray-50") }} rounded-lg p-3">
-                                                <div class="items-center justify-between">
-                                                    <div class="flex">
-                                                        <div class="flex-1">
-                                                            @if ($t["timeLimit"])
-                                                                <div class="mb-2">
-                                                                    @php $available = $t["availableCount"]; @endphp
-                                                                    <span class="{{ $available > 0 ? "text-green-600" : "text-red-600" }} text-xs">
-                                                                        <i class="fas fa-users mr-1"></i>
-                                                                        {{ $available > 0 ? "เหลือ " . $available . " ที่" : "เต็ม" }}
-                                                                    </span>
-                                                                </div>
-                                                            @endif
-
-                                                            <div class="mb-2 flex items-center">
-                                                                <i class="fas fa-calendar-day mr-2 text-gray-500"></i>
-                                                                <h4 class="text-sm font-medium text-gray-900">{{ $t["timeRange"] }}</h4>
-                                                            </div>
-
-                                                            <div class="mb-2 text-xs text-gray-600">
-                                                                <i class="fas fa-clock mr-1"></i>
-                                                                <span class="font-medium">เวลา:</span> {{ $t["timeRange"] }}
-                                                            </div>
-
-                                                            @if (!empty($t["timeDetail"]))
-                                                                <p class="mb-2 text-xs text-gray-500">{{ $t["timeDetail"] }}</p>
-                                                            @endif
-
-                                                            @if ($project->project_seat_assign && $t["userSeat"])
-                                                                <div class="mb-2 flex items-center text-sm text-purple-600">
-                                                                    <i class="fas fa-chair mr-1"></i>
-                                                                    <span class="font-medium">ที่นั่ง:</span> {{ $t["userSeat"]->seat_number }}
-                                                                </div>
-                                                            @endif
-
-                                                            @if ($project->project_group_assign && $t["userGroup"])
-                                                                <div class="mb-2 flex items-center text-xs text-indigo-600">
-                                                                    <i class="fas fa-users mr-1"></i>
-                                                                    <span class="font-medium">กลุ่ม:</span> {{ $t["userGroup"]->group }}
-                                                                </div>
-                                                            @endif
-
-                                                            <div class="mb-2 text-xs text-green-600">
-                                                                <i class="fas fa-sign-in-alt mr-1"></i>
-                                                                <span class="font-medium">เช็คอินได้ตั้งแต่:</span> {{ $t["checkinFromText"] }}
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="flex items-center space-x-3">
-                                                            @if ($t["hasAttended"])
-                                                                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
-                                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                                    เข้าร่วมแล้ว
-                                                                </span>
-                                                            @elseif ($t["userRegistered"])
-                                                                <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                                                                    <i class="fas fa-user-check mr-1"></i>
-                                                                    ลงทะเบียนแล้ว
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-
-                                                    @if ($t["registeredAtText"] || $t["attendedAtText"])
-                                                        <div class="mt-2 border-t border-gray-200 pt-2">
-                                                            @if ($t["attendedAtText"])
-                                                                <div class="flex items-center text-xs font-medium text-blue-600">
-                                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                                    เข้าร่วมแล้ว: {{ $t["attendedAtText"] }}
-                                                                </div>
-                                                            @elseif ($t["registeredAtText"])
-                                                                <div class="text-xs text-yellow-700">
-                                                                    <i class="fas fa-user-check mr-1"></i>
-                                                                    ลงทะเบียนแล้ว: {{ $t["registeredAtText"] }}
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    @endif
-
-                                                    @if ($project->links->where("link_delete", false)->count() > 0 && $t["showLinks"])
-                                                        <div class="mt-3 border-t border-gray-200 pt-3">
-                                                            <div class="mb-2 text-xs font-medium text-blue-700">
-                                                                <i class="fas fa-link mr-1"></i>
-                                                                ทรัพยากรสำหรับเซสชัน
-                                                            </div>
-                                                            <div class="space-y-2">
-                                                                @foreach ($project->links->where("link_delete", false) as $link)
-                                                                    @php
-                                                                        $linkAvailable = true;
-                                                                        if ($link->link_limit) {
-                                                                            $now = now();
-                                                                            $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
-                                                                        }
-                                                                    @endphp
-                                                                    @if ($linkAvailable)
-                                                                        <div class="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-2">
-                                                                            <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
-                                                                            <a class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
-                                                                                <i class="fas fa-external-link-alt mr-1"></i>
-                                                                                เปิด
-                                                                            </a>
-                                                                        </div>
-                                                                    @endif
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
-                                                    @endif
-
-                                                    @if ($t["userRegistrationId"] && !$t["hasAttended"])
-                                                        <div class="mt-2 text-xs font-medium text-yellow-700">
-                                                            <i class="fas fa-user-check mr-1"></i>
-                                                            คุณลงทะเบียนสำหรับเซสชันนี้แล้ว
-                                                        </div>
-
-                                                        @php $canUnregister = $project->project_register_today || ! $d['dateIsToday']; @endphp
-                                                        @if ($canUnregister)
-                                                            <div class="mt-3">
-                                                                <button class="unregister-trigger w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" id="unregister-btn-{{ $project->id }}-{{ $t["userRegistrationId"] }}" data-registration-id="{{ $t["userRegistrationId"] }}" type="button">
-                                                                    <i class="fas fa-user-times mr-2 text-gray-500"></i>
-                                                                    ยกเลิกการลงทะเบียน
-                                                                </button>
-                                                            </div>
-                                                        @endif
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
         <!-- Registration Section -->
         @if ($registrationData["showRegisterForm"])
             <div class="mb-4 rounded-lg bg-white p-4 shadow-sm sm:p-6" id="registration">
@@ -689,6 +493,202 @@
 
                     </div>
                 @endif
+            </div>
+        @endif
+
+        <!-- Merged Registrations & Schedule Section -->
+        @if ($registrationData["userRegistrations"]->count() > 0 || $project->project_type === "attendance")
+            <div class="mb-4 rounded-lg bg-white p-4 shadow-sm sm:p-6">
+                <h2 class="mb-3 text-lg font-semibold text-gray-900 sm:text-xl">
+                    <i class="fas fa-calendar-check mr-2 text-green-500"></i>
+                    @if ($project->project_type === "attendance")
+                        ตารางการเข้าร่วมโปรแกรม
+                    @else
+                        การลงทะเบียนและตารางการเข้าร่วม
+                    @endif
+                </h2>
+
+                @if ($project->isFull())
+                    <!-- Project Full Notice -->
+                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 sm:p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle mr-2 mt-1 text-red-500 sm:mr-3"></i>
+                            <div>
+                                <h3 class="font-medium text-red-800">โปรเจกต์เต็มแล้ว</h3>
+                                <p class="mt-1 text-sm text-red-700">
+                                    ขออภัย โปรเจกต์นี้เต็มแล้ว ไม่สามารถลงทะเบียนเพิ่มเติมได้
+                                    @if ($project->project_type === "single")
+                                        ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
+                                    @elseif($project->project_type === "multiple")
+                                        ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
+                                    @endif
+                                </p>
+                                <div class="mt-2 text-xs text-red-600">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    จำนวนผู้ลงทะเบียนทั้งหมด: {{ $project->activeAttends->count() }} คน
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="space-y-4">
+                    @foreach ($scheduleView as $d)
+                        <div class="rounded-lg border border-gray-200 p-3 sm:p-4">
+                            <div class="mb-3 flex flex-col justify-between sm:flex-row sm:items-center">
+                                <h3 class="text-base font-medium text-gray-900 sm:text-lg">{{ $d["title"] }}</h3>
+                                <span class="mt-1 text-sm text-gray-500 sm:mt-0">{{ $d["formatted"] }}</span>
+                            </div>
+
+                            @if (!empty($d["detail"]))
+                                <p class="mb-3 text-sm text-gray-600">{{ $d["detail"] }}</p>
+                            @endif
+
+                            @if (!empty($d["location"]))
+                                <div class="mb-3 flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>
+                                    {{ $d["location"] }}
+                                </div>
+                            @endif
+
+                            @if (count($d["times"]) > 0)
+                                <div class="mt-4">
+                                    <h4 class="mb-2 text-sm font-medium text-gray-700">ช่วงเวลา:</h4>
+                                    <div class="space-y-3">
+                                        @foreach ($d["times"] as $t)
+                                            <div class="{{ $t["hasAttended"] ? "bg-blue-50" : ($t["userRegistered"] ? "bg-green-50" : "bg-gray-50") }} rounded-lg p-3">
+                                                <div class="items-center justify-between">
+                                                    <div class="flex">
+                                                        <div class="flex-1">
+                                                            @if ($t["timeLimit"])
+                                                                <div class="mb-2">
+                                                                    @php $available = $t["availableCount"]; @endphp
+                                                                    <span class="{{ $available > 0 ? "text-green-600" : "text-red-600" }} text-xs">
+                                                                        <i class="fas fa-users mr-1"></i>
+                                                                        {{ $available > 0 ? "เหลือ " . $available . " ที่" : "เต็ม" }}
+                                                                    </span>
+                                                                </div>
+                                                            @endif
+
+                                                            <div class="mb-2 flex items-center">
+                                                                <i class="fas fa-calendar-day mr-2 text-gray-500"></i>
+                                                                <h4 class="text-sm font-medium text-gray-900">{{ $t["timeRange"] }}</h4>
+                                                            </div>
+
+                                                            <div class="mb-2 text-xs text-gray-600">
+                                                                <i class="fas fa-clock mr-1"></i>
+                                                                <span class="font-medium">เวลา:</span> {{ $t["timeRange"] }}
+                                                            </div>
+
+                                                            @if (!empty($t["timeDetail"]))
+                                                                <p class="mb-2 text-xs text-gray-500">{{ $t["timeDetail"] }}</p>
+                                                            @endif
+
+                                                            @if ($project->project_seat_assign && $t["userSeat"])
+                                                                <div class="mb-2 flex items-center text-sm text-purple-600">
+                                                                    <i class="fas fa-chair mr-1"></i>
+                                                                    <span class="font-medium">ที่นั่ง:</span> {{ $t["userSeat"]->seat_number }}
+                                                                </div>
+                                                            @endif
+
+                                                            @if ($project->project_group_assign && $t["userGroup"])
+                                                                <div class="mb-2 flex items-center text-xs text-indigo-600">
+                                                                    <i class="fas fa-users mr-1"></i>
+                                                                    <span class="font-medium">กลุ่ม:</span> {{ $t["userGroup"]->group }}
+                                                                </div>
+                                                            @endif
+
+                                                            <div class="mb-2 text-xs text-green-600">
+                                                                <i class="fas fa-sign-in-alt mr-1"></i>
+                                                                <span class="font-medium">เช็คอินได้ตั้งแต่:</span> {{ $t["checkinFromText"] }}
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="flex items-center space-x-3">
+                                                            @if ($t["hasAttended"])
+                                                                <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                                                                    <i class="fas fa-check-circle mr-1"></i>
+                                                                    เข้าร่วมแล้ว
+                                                                </span>
+                                                            @elseif ($t["userRegistered"])
+                                                                <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                                                                    <i class="fas fa-user-check mr-1"></i>
+                                                                    ลงทะเบียนแล้ว
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+
+                                                    @if ($t["registeredAtText"] || $t["attendedAtText"])
+                                                        <div class="mt-2 border-t border-gray-200 pt-2">
+                                                            @if ($t["attendedAtText"])
+                                                                <div class="flex items-center text-xs font-medium text-blue-600">
+                                                                    <i class="fas fa-check-circle mr-1"></i>
+                                                                    เข้าร่วมแล้ว: {{ $t["attendedAtText"] }}
+                                                                </div>
+                                                            @elseif ($t["registeredAtText"])
+                                                                <div class="text-xs text-yellow-700">
+                                                                    <i class="fas fa-user-check mr-1"></i>
+                                                                    ลงทะเบียนแล้ว: {{ $t["registeredAtText"] }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+
+                                                    @if ($project->links->where("link_delete", false)->count() > 0 && $t["showLinks"])
+                                                        <div class="mt-3 border-t border-gray-200 pt-3">
+                                                            <div class="mb-2 text-xs font-medium text-blue-700">
+                                                                <i class="fas fa-link mr-1"></i>
+                                                                ทรัพยากรสำหรับเซสชัน
+                                                            </div>
+                                                            <div class="space-y-2">
+                                                                @foreach ($project->links->where("link_delete", false) as $link)
+                                                                    @php
+                                                                        $linkAvailable = true;
+                                                                        if ($link->link_limit) {
+                                                                            $now = now();
+                                                                            $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
+                                                                        }
+                                                                    @endphp
+                                                                    @if ($linkAvailable)
+                                                                        <div class="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-2">
+                                                                            <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
+                                                                            <a class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
+                                                                                <i class="fas fa-external-link-alt mr-1"></i>
+                                                                                เปิด
+                                                                            </a>
+                                                                        </div>
+                                                                    @endif
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+                                                    @if ($t["userRegistrationId"] && !$t["hasAttended"])
+                                                        <div class="mt-2 text-xs font-medium text-yellow-700">
+                                                            <i class="fas fa-user-check mr-1"></i>
+                                                            คุณลงทะเบียนสำหรับเซสชันนี้แล้ว
+                                                        </div>
+
+                                                        @php $canUnregister = $project->project_register_today || ! $d['dateIsToday']; @endphp
+                                                        @if ($canUnregister)
+                                                            <div class="mt-3">
+                                                                <button class="unregister-trigger w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" id="unregister-btn-{{ $project->id }}-{{ $t["userRegistrationId"] }}" data-registration-id="{{ $t["userRegistrationId"] }}" type="button">
+                                                                    <i class="fas fa-user-times mr-2 text-gray-500"></i>
+                                                                    ยกเลิกการลงทะเบียน
+                                                                </button>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
             </div>
         @endif
 

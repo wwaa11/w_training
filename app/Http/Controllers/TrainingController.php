@@ -18,10 +18,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingController extends Controller
 {
-    public function checkSlot()
-    {
-
-    }
     // Data Management
     public function deleteTestData()
     {
@@ -435,9 +431,15 @@ class TrainingController extends Controller
 
     public function history()
     {
-        $user  = TrainingUser::where('user_id', auth()->user()->userid)->first();
-        $dates = $this->getUserDates($user, false);
-        return view('training.history', compact('user', 'dates'));
+        $user    = TrainingUser::where('user_id', auth()->user()->userid)->first();
+        $attends = TrainingAttend::where('user_id', auth()->user()->userid)->get();
+        foreach ($attends as $attend) {
+            $attend->full_date  = $this->dateFull($attend->date->name);
+            $attend->user_date  = date('d/M/Y H:i', strtotime($attend->user_date));
+            $attend->admin_date = date('d/M/Y H:i', strtotime($attend->admin_date));
+        }
+
+        return view('training.history', compact('user', 'attends'));
     }
 
     private function getUserDates($user, $futureOnly = false)
@@ -1399,6 +1401,156 @@ class TrainingController extends Controller
         }
 
         return Excel::download(new TrainingOnebookExport($date), 'Onebook' . $date . '.xlsx');
+    }
+
+    // Move Training User Management
+    public function adminMoveUserIndex()
+    {
+        $teams    = TrainingTeam::where('status', 'active')->get();
+        $teachers = TrainingTeacher::where('status', 'active')->get();
+        $sessions = TrainingSession::where('status', 'active')->get();
+        $times    = TrainingTime::where('status', 'active')->get();
+
+        return view('training.admin.move.index', compact('teams', 'teachers', 'sessions', 'times'));
+    }
+
+    public function adminMoveUser(Request $request)
+    {
+        Log::channel('training_admin')->info("Moved user '{$request->user_id}' to time ID: {$request->time_id}", [
+            'user'    => auth()->user()->userid ?? null,
+            'request' => $request->all(),
+        ]);
+
+        $request->validate([
+            'user_id' => 'required|exists:training_users,user_id',
+            'time_id' => 'required|exists:training_times,id',
+        ]);
+
+        $user_id = $request->user_id;
+        $time_id = $request->time_id;
+        $user    = TrainingUser::where('user_id', $user_id)->first();
+
+        if (! $user) {
+            return response()->json(['status' => 'error', 'message' => 'ไม่พบข้อมูลผู้ใช้']);
+        }
+
+        // Get the destination time slot
+        $destination_time = TrainingTime::find($time_id);
+        if (! $destination_time) {
+            return response()->json(['status' => 'error', 'message' => 'ไม่พบรอบเวลาที่เลือก']);
+        }
+
+        // Check if destination time has available seats
+        if ($destination_time->available_seat <= 0) {
+            // Add one more seat to the destination time
+            $destination_time->max_seat       = $destination_time->max_seat + 1;
+            $destination_time->available_seat = $destination_time->available_seat + 1;
+            $destination_time->save();
+        }
+
+        // Get the current time slot (if user is already registered)
+        $old_time_id = $user->time_id;
+        if ($old_time_id !== null) {
+            $old_time = TrainingTime::find($old_time_id);
+            if ($old_time) {
+                // Increase available seats in the old time slot
+                $old_time->available_seat = $old_time->available_seat + 1;
+                $old_time->save();
+            }
+        }
+
+        // Register user to the new time slot
+        $destination_time->available_seat = $destination_time->available_seat - 1;
+        $destination_time->save();
+
+        $user->time_id = $time_id;
+        $user->save();
+
+        return response()->json([
+            'status'       => 'success',
+            'message'      => 'ย้ายผู้ใช้สำเร็จ',
+            'user_id'      => $user_id,
+            'time_name'    => $destination_time->name,
+            'session_name' => $destination_time->session->name,
+            'teacher_name' => $destination_time->session->teacher->name,
+        ]);
+    }
+
+    public function adminGetUserInfo(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|string',
+        ]);
+
+        $user = TrainingUser::where('user_id', $request->user_id)->first();
+
+        if (! $user) {
+            return response()->json(['status' => 'error', 'message' => 'ไม่พบข้อมูลผู้ใช้']);
+        }
+
+        $userInfo = [
+            'user_id'         => $user->user_id,
+            'team'            => $user->team,
+            'current_time'    => null,
+            'current_session' => null,
+            'current_teacher' => null,
+        ];
+
+        if ($user->time_id) {
+            $time = TrainingTime::with(['session.teacher'])->find($user->time_id);
+            if ($time) {
+                $userInfo['current_time']    = $time->name;
+                $userInfo['current_session'] = $time->session->name;
+                $userInfo['current_teacher'] = $time->session->teacher->name;
+            }
+        }
+
+        return response()->json(['status' => 'success', 'user' => $userInfo]);
+    }
+
+    public function adminGetAvailableTimes(Request $request)
+    {
+        $request->validate([
+            'team_id'    => 'nullable|exists:training_teams,id',
+            'teacher_id' => 'nullable|exists:training_teachers,id',
+            'session_id' => 'nullable|exists:training_sessions,id',
+        ]);
+
+        $query = TrainingTime::with(['session.teacher.team'])
+            ->where('status', 'active');
+
+        if ($request->filled('team_id')) {
+            $query->whereHas('session.teacher.team', function ($q) use ($request) {
+                $q->where('id', $request->team_id);
+            });
+        }
+
+        if ($request->filled('teacher_id')) {
+            $query->whereHas('session.teacher', function ($q) use ($request) {
+                $q->where('id', $request->teacher_id);
+            });
+        }
+
+        if ($request->filled('session_id')) {
+            $query->where('session_id', $request->session_id);
+        }
+
+        $times = $query->get();
+
+        $formattedTimes = [];
+        foreach ($times as $time) {
+            $formattedTimes[] = [
+                'id'             => $time->id,
+                'name'           => $time->name,
+                'max_seat'       => $time->max_seat,
+                'available_seat' => $time->available_seat,
+                'session_name'   => $time->session->name,
+                'teacher_name'   => $time->session->teacher->name,
+                'team_name'      => $time->session->teacher->team->name,
+            ];
+        }
+
+        return response()->json(['status' => 'success', 'times' => $formattedTimes]);
     }
 
 }

@@ -10,6 +10,8 @@ use App\Http\Middleware\NurseAdmin;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/test', [TrainingController::class, 'test']);
+
 // Authentication Routes
 Route::get('/login', [CoreController::class, 'Login'])->name('login');
 Route::post('/login', [CoreController::class, 'LoginRequest'])->name('login.post');
@@ -318,6 +320,14 @@ Route::middleware([HrAdmin::class])->group(function () {
             Route::get('/', [TrainingController::class, 'adminRegisterIndex'])->name('index');
             Route::post('/', [TrainingController::class, 'adminRegisterStore'])->name('store');
             Route::post('/unregister', [TrainingController::class, 'adminUnregisterUser'])->name('unregister');
+        });
+
+        // Move User Management
+        Route::prefix('move')->name('move.')->group(function () {
+            Route::get('/', [TrainingController::class, 'adminMoveUserIndex'])->name('index');
+            Route::post('/user', [TrainingController::class, 'adminMoveUser'])->name('user');
+            Route::post('/get-user-info', [TrainingController::class, 'adminGetUserInfo'])->name('get-user-info');
+            Route::post('/get-available-times', [TrainingController::class, 'adminGetAvailableTimes'])->name('get-available-times');
         });
 
         // Export Management
