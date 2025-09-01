@@ -242,8 +242,6 @@
             hintDiv.classList.remove('hidden');
         }
 
-
-
         // Form submission with SweetAlert confirmation
         document.getElementById('projectForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -642,7 +640,7 @@
 
         function removeDate(index) {
             const dateItem = document.querySelector(`[data-date-index="${index}"]`);
-            if (dateItem) {
+            if (dateItem && confirm('คุณแน่ใจหรือไม่ที่จะลบวันที่นี้?')) {
                 dateItem.remove();
                 // Update row numbers for remaining dates
                 updateDateRowNumbers();
@@ -761,12 +759,10 @@
 
         function removeTime(button) {
             const timeItem = button.closest('.time-item');
-            if (timeItem) {
+            if (timeItem && confirm('คุณแน่ใจหรือไม่ที่จะลบเวลานี้?')) {
                 timeItem.remove();
             }
         }
-
-
 
         function addLink(existingLinkId = null) {
             const container = document.getElementById('linksContainer');
@@ -878,7 +874,7 @@
 
         function removeLink(button) {
             const linkItem = button.closest('.link-item');
-            if (linkItem) {
+            if (linkItem && confirm('คุณแน่ใจหรือไม่ที่จะลบลิงก์นี้?')) {
                 linkItem.remove();
             }
         }
