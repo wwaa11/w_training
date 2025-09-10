@@ -219,9 +219,15 @@
                                         </div>
 
                                         <div class="flex items-center">
-                                            <i class="fas fa-map-marker-alt mr-1.5 text-xs text-purple-500 sm:text-sm"></i>
-                                            <span class="font-medium">สถานที่:</span>
-                                            <span class="ml-1 truncate">{{ $date->date_location ?? "ไม่ระบุ" }}</span>
+                                            @if ($attendance->note)
+                                                <i class="fa-solid fa-circle-info mr-1.5 text-xs text-purple-500 sm:text-sm"></i>
+                                                <span class="font-medium">รายละเอียด:</span>
+                                                <span class="ml-1 truncate">{{ $attendance->note->attend_note }}</span>
+                                            @else
+                                                <i class="fas fa-map-marker-alt mr-1.5 text-xs text-purple-500 sm:text-sm"></i>
+                                                <span class="font-medium">สถานที่:</span>
+                                                <span class="ml-1 truncate">{{ $date->date_location ?? "ไม่ระบุ" }}</span>
+                                            @endif
                                         </div>
 
                                         @if ($project->project_seat_assign && $time)

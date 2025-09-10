@@ -10,7 +10,7 @@ use App\Http\Middleware\NurseAdmin;
 use App\Http\Middleware\pr9Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [TrainingController::class, 'test']);
+// Route::get('/test', [CoreController::class, 'TEST_FUNCTION']);
 
 // Authentication Routes
 Route::get('/login', [CoreController::class, 'Login'])->name('login');

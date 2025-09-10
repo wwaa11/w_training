@@ -75,12 +75,12 @@
                                             <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
                                             <h3 class="text-sm font-semibold text-gray-900" id="project-name-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $ongoingProject["project"]->project_name }}</h3>
                                         </div>
-                                        <p class="ml-6 text-xs text-gray-600" id="date-title-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $session["date"]->date_title }}</p>
+                                        <p class="ml-6 mt-1 text-sm text-gray-600" id="date-title-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $session["date"]->date_title }}</p>
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         @if ($ongoingProject["project"]->project_seat_assign && $session["userSeat"])
                                             <span class="text-xs text-purple-600">
-                                                <i class="fas fa-chair mr-1"></i>
+                                                <i class="fas fa-chair mb-2 mr-1"></i>
                                                 <span class="font-medium">ที่นั่ง:</span> {{ $session["userSeat"]->seat_number }}
                                             </span>
                                         @endif
@@ -91,7 +91,7 @@
                                                     ->first();
                                             @endphp
                                             @if ($userGroup)
-                                                <span class="text-xs text-indigo-600">
+                                                <span class="text-sm text-indigo-600">
                                                     <i class="fas fa-users mr-1"></i>
                                                     {{ $userGroup->group }}
                                                 </span>
@@ -99,39 +99,58 @@
                                         @endif
                                     </div>
                                 </div>
-
                                 <!-- Info -->
                                 <div class="mb-3 space-y-2">
                                     @if ($session["date"]->date_location)
-                                        <div class="text-xs text-gray-600" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                        <div class="text-sm text-gray-600" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                            <i class="fas fa-map-marker-alt mb-2 mr-1"></i>
                                             <span class="font-medium">สถานที่:</span> {{ $session["date"]->date_location }}
                                         </div>
                                     @endif
-                                    <div class="text-xs text-gray-600" id="time-schedule-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                        <i class="fas fa-clock mr-1"></i>
+                                    @if ($session["note"])
+                                        <div class="text-sm text-orange-600" id="note-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                            <i class="fas fa-info-circle mb-2 mr-1"></i>
+                                            <span class="font-medium">รายละเอียด:</span> {{ $session["note"] }}
+                                        </div>
+                                    @endif
+                                    <div class="text-sm text-gray-600" id="time-schedule-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                        <i class="fas fa-clock mb-2 mr-1"></i>
                                         <span class="font-medium">เวลา:</span> {{ \Carbon\Carbon::parse($session["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($session["time"]->time_end)->format("H:i") }}
                                     </div>
-                                    <div class="text-xs text-green-600">
-                                        <i class="fas fa-sign-in-alt mr-1"></i>
+                                    <div class="text-sm text-green-600">
+                                        <i class="fas fa-sign-in-alt mb-2 mr-1"></i>
                                         <span class="font-medium">เช็คอินได้ตั้งแต่:</span> {{ \Carbon\Carbon::parse($session["time"]->time_start)->subMinutes(30)->format("H:i") }}
                                     </div>
                                 </div>
-
-                                <!-- Check-in Button -->
-                                <form class="checkin-form" id="checkin-form-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" action="{{ $session["checkInRoute"] }}" method="{{ $session["checkInMethod"] }}">
-                                    @csrf
-                                    @foreach ($session["checkInData"] as $key => $value)
-                                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                    @endforeach
-                                    <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="checkin-btn-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" type="submit">
-                                        <i class="fas fa-user-check mr-3 text-lg text-white"></i>
-                                        <div class="text-center">
-                                            <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
-                                            <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
+                                <!-- Check-in Button or Attendance Status -->
+                                @if ($session["canCheckIn"])
+                                    <form class="checkin-form" id="checkin-form-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" action="{{ $session["checkInRoute"] }}" method="{{ $session["checkInMethod"] }}">
+                                        @csrf
+                                        @foreach ($session["checkInData"] as $key => $value)
+                                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                        @endforeach
+                                        <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="checkin-btn-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" type="submit">
+                                            <i class="fas fa-user-check mr-3 text-lg text-white"></i>
+                                            <div class="text-center">
+                                                <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
+                                                <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
+                                            </div>
+                                        </button>
+                                    </form>
+                                @elseif ($session["hasAttended"] && $session["attendanceRecord"])
+                                    <div class="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4 text-center">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i class="fas fa-check-circle mr-2 text-lg text-blue-600"></i>
+                                            <span class="text-sm font-medium text-blue-800">เช็คอินเรียบร้อยแล้ว</span>
                                         </div>
-                                    </button>
-                                </form>
+                                        <div class="text-lg font-bold text-blue-900">
+                                            {{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("H:i") }}
+                                        </div>
+                                        <div class="text-xs text-blue-600 mt-1">
+                                            {{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("d/m/Y") }}
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     @endforeach

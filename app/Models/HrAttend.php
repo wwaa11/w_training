@@ -77,6 +77,11 @@ class HrAttend extends Model
             ->where('project_id', $this->project_id);
     }
 
+    public function note()
+    {
+        return $this->hasOne(HrAttendNote::class, 'attend_id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

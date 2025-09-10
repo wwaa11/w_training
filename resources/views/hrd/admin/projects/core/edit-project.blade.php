@@ -608,7 +608,7 @@
                     </div>
                 </div>
             </div>
-        `;
+            `;
             container.insertAdjacentHTML('beforeend', dateHtml);
             dateIndex++;
         }
@@ -738,7 +738,7 @@
                     </div>
                 </div>
             </div>
-        `;
+            `;
             container.insertAdjacentHTML('beforeend', timeHtml);
             // Set initial time title
             updateTimeTitle(dateIndex, timeIndex);
@@ -836,7 +836,7 @@
                     </div>
                 </div>
             </div>
-        `;
+            `;
             container.insertAdjacentHTML('beforeend', linkHtml);
             linkIndex++;
         }

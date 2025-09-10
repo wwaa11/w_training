@@ -96,6 +96,12 @@
                                         <span class="font-medium">สถานที่:</span> {{ $checkIn["date"]->date_location }}
                                     </div>
                                 @endif
+                                @if ($checkIn["note"])
+                                    <div class="text-xs text-orange-600" id="checkin-note-{{ $project->id }}-{{ $checkIn["time"]->id }}">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <span class="font-medium">รายละเอียด:</span> {{ $checkIn["note"] }}
+                                    </div>
+                                @endif
                                 <div class="text-xs text-gray-600" id="checkin-time-schedule-{{ $project->id }}-{{ $checkIn["time"]->id }}">
                                     <i class="fas fa-clock mr-1"></i>
                                     <span class="font-medium">เวลา:</span> {{ \Carbon\Carbon::parse($checkIn["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($checkIn["time"]->time_end)->format("H:i") }}
@@ -106,34 +112,94 @@
                                 </div>
                             </div>
 
-                            <!-- Check-in Button -->
-                            @if ($checkIn["projectType"] === "attendance")
-                                <form class="attendance-form-top" id="attendance-form-{{ $project->id }}-{{ $checkIn["time"]->id }}" action="{{ route("hrd.projects.attend.store", $project->id) }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="time_id" value="{{ $checkIn["time"]->id }}">
-                                    <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="attendance-btn-{{ $project->id }}-{{ $checkIn["time"]->id }}" type="submit">
-                                        <i class="fas fa-user-check mr-3 text-lg text-white"></i>
+                            <!-- Check-in Button or Attended Status -->
+                            @if ($checkIn["hasAttended"])
+                                <!-- Already Attended -->
+                                <div class="rounded-lg bg-gradient-to-r from-green-100 to-green-200 p-4 border border-green-300">
+                                    <div class="flex items-center justify-center">
+                                        <i class="fas fa-check-circle mr-3 text-lg text-green-600"></i>
                                         <div class="text-center">
-                                            <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
-                                            <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
+                                            <div class="text-sm font-medium text-green-700">เช็คอินแล้ว</div>
+                                            <div class="text-base font-bold text-green-800">
+                                                เมื่อ {{ \Carbon\Carbon::parse($checkIn["attendanceRecord"]->attend_datetime)->format("H:i") }}
+                                            </div>
+                                            <div class="text-xs text-green-600">
+                                                {{ \Carbon\Carbon::parse($checkIn["attendanceRecord"]->attend_datetime)->format("d M Y") }}
+                                            </div>
                                         </div>
-                                    </button>
-                                </form>
-                            @else
-                                <form class="stamp-form-top" id="stamp-form-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}" action="{{ route("hrd.projects.stamp.store", [$project->id, $checkIn["userRegistration"]->id]) }}" method="POST">
-                                    @csrf
-                                    <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="stamp-btn-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}" type="submit">
-                                        <i class="fas fa-stamp mr-3 text-lg text-white"></i>
-                                        <div class="text-center">
-                                            <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
-                                            <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
-                                        </div>
-                                    </button>
-                                </form>
+                                    </div>
+                                </div>
+                            @elseif ($checkIn["canCheckIn"])
+                                <!-- Can Check In -->
+                                @if ($checkIn["projectType"] === "attendance")
+                                    <form class="attendance-form-top" id="attendance-form-{{ $project->id }}-{{ $checkIn["time"]->id }}" action="{{ route("hrd.projects.attend.store", $project->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="time_id" value="{{ $checkIn["time"]->id }}">
+                                        <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="attendance-btn-{{ $project->id }}-{{ $checkIn["time"]->id }}" type="submit">
+                                            <i class="fas fa-user-check mr-3 text-lg text-white"></i>
+                                            <div class="text-center">
+                                                <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
+                                                <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
+                                            </div>
+                                        </button>
+                                    </form>
+                                @else
+                                    <form class="stamp-form-top" id="stamp-form-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}" action="{{ route("hrd.projects.stamp.store", [$project->id, $checkIn["userRegistration"]->id]) }}" method="POST">
+                                        @csrf
+                                        <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="stamp-btn-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}" type="submit">
+                                            <i class="fas fa-stamp mr-3 text-lg text-white"></i>
+                                            <div class="text-center">
+                                                <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
+                                                <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
+                                            </div>
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                         </div>
                     @endforeach
                 </div>
+            </div>
+        @endif
+
+        <!-- Show last Check-in -->
+        @if ($availableCheckIns->where('hasAttended', true)->isNotEmpty())
+            <div class="mb-4 rounded-lg bg-white p-4 shadow-sm sm:p-6">
+                <div class="mb-3 flex items-center">
+                    <i class="fas fa-history mr-2 text-green-500"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">การเช็คอินล่าสุด</h3>
+                </div>
+                
+                @foreach ($availableCheckIns->where('hasAttended', true) as $attendedSession)
+                    <div class="mb-3 rounded-lg bg-green-50 p-3 border border-green-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center mb-1">
+                                    <i class="fas fa-check-circle mr-2 text-green-600"></i>
+                                    <span class="text-sm font-medium text-green-800">{{ $attendedSession["date"]->date_title }}</span>
+                                </div>
+                                <div class="text-xs text-green-700 ml-6">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    เวลา: {{ \Carbon\Carbon::parse($attendedSession["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($attendedSession["time"]->time_end)->format("H:i") }}
+                                </div>
+                                @if ($attendedSession["date"]->date_location)
+                                    <div class="text-xs text-green-700 ml-6">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                        สถานที่: {{ $attendedSession["date"]->date_location }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-semibold text-green-800">
+                                    เช็คอินเมื่อ: {{ \Carbon\Carbon::parse($attendedSession["attendanceRecord"]->attend_datetime)->format("H:i") }}
+                                </div>
+                                <div class="text-xs text-green-600">
+                                    {{ \Carbon\Carbon::parse($attendedSession["attendanceRecord"]->attend_datetime)->format("d M Y") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         @endif
 
@@ -192,12 +258,7 @@
                             <div>
                                 <h3 class="font-medium text-red-800">ไม่สามารถลงทะเบียนได้</h3>
                                 <p class="mt-1 text-sm text-red-700">
-                                    โปรเจกต์นี้เต็มแล้ว ไม่สามารถลงทะเบียนเพิ่มเติมได้
-                                    @if ($project->project_type === "single")
-                                        ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
-                                    @elseif($project->project_type === "multiple")
-                                        ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
-                                    @endif
+                                    โปรเจกต์นี้เต็มแล้ว ไม่สามารถลงทะเบียนเพิ่มเติมได้ ทุกช่วงเวลามีผู้ลงทะเบียนครบแล้ว
                                 </p>
                                 <div class="mt-2 text-xs text-red-600">
                                     <i class="fas fa-info-circle mr-1"></i>
@@ -345,7 +406,6 @@
                                 @endif
                             </p>
                         </div>
-
                         <form id="registrationForm" action="{{ route("hrd.projects.register.store", $project->id) }}" method="POST">
                             @csrf
                             <input type="hidden" name="project_type" value="{{ $project->project_type }}">
@@ -490,7 +550,6 @@
                                 </button>
                             </div>
                         </form>
-
                     </div>
                 @endif
             </div>

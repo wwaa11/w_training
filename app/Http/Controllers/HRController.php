@@ -32,27 +32,7 @@ class HRController extends Controller
 {
     use HrLoggingTrait;
 
-    // ========================================================================
-    // PUBLIC USER INTERFACE METHODS
-    // ========================================================================
-
-    /**
-     * Display the main HRD index page with available projects
-     */
     public function Index()
-    {
-        $payload = $this->prepareDashboardPayload();
-        return view('hrd.dashboard', $payload);
-    }
-
-    // ========================================================================
-    // PRIVATE HELPER METHODS - USER INTERFACE
-    // ========================================================================
-
-    /**
-     * Aggregate all data for the dashboard page into one payload
-     */
-    private function prepareDashboardPayload(): array
     {
         $projects        = $this->fetchPaginatedProjectsWithRelations();
         $ongoingProjects = $this->getOngoingProjects($projects);
@@ -64,12 +44,99 @@ class HRController extends Controller
             ];
         });
 
-        return compact('projects', 'projectsWithStates', 'ongoingProjects');
+        return view('hrd.dashboard', compact('projects', 'projectsWithStates', 'ongoingProjects'));
     }
 
-    /**
-     * Common query to fetch public projects with required relations
-     */
+    public function userGuide()
+    {
+        return view('hrd.user-manual');
+    }
+
+    // ========================================================================
+    // PRIVATE HELPER METHODS - USER INTERFACE
+    // ========================================================================
+
+    private function calculateProjectRegistrationState($project)
+    {
+        $now    = now();
+        $userId = auth()->id();
+
+        // Check registration period
+        $canRegister = $project->project_active &&
+        ! $project->project_delete &&
+        $now >= $project->project_start_register &&
+        $now <= $project->project_end_register &&
+        $project->project_type !== 'attendance';
+
+        $isUpcoming = $now < $project->project_start_register;
+        $isExpired  = $now > $project->project_end_register;
+
+        // Get user registrations for this project
+        $userRegistrations = $project->attends
+            ->where('user_id', $userId)
+            ->where('attend_delete', false);
+
+        $registrationCount = $userRegistrations->count();
+        $attendedCount     = $userRegistrations->where('attend_datetime', '!=', null)->count();
+
+        // Calculate attendance status based on project type and user attendance
+        $attendanceStatus = $this->calculateAttendanceStatus($project, $userRegistrations);
+
+        return [
+            'canRegister'       => $canRegister,
+            'isUpcoming'        => $isUpcoming,
+            'isExpired'         => $isExpired,
+            'registrationCount' => $registrationCount,
+            'attendedCount'     => $attendedCount,
+            'projectType'       => $project->project_type,
+            'attendanceStatus'  => $attendanceStatus,
+        ];
+    }
+
+    private function calculateAttendanceStatus($project, $userRegistrations)
+    {
+        // If user has no registrations, return null
+        if ($userRegistrations->count() === 0) {
+            return null;
+        }
+
+        // For attendance type projects
+        if ($project->project_type === 'attendance') {
+            return 'มีการเข้าร่วมแล้ว';
+        }
+
+        // For single type projects
+        if ($project->project_type === 'single') {
+            return 'มีการลงทะเบียนแล้ว';
+        }
+
+        // For multiple type projects
+        if ($project->project_type === 'multiple') {
+            // Get all dates for this project
+            $projectDates = $project->dates->where('date_delete', false);
+            $totalDates   = $projectDates->count();
+
+            if ($totalDates === 0) {
+                return 'ลงทะเบียนแล้ว';
+            }
+
+            // Count how many dates the user has attended
+            $attendedDates = $userRegistrations
+                ->where('attend_delete', false)
+                ->pluck('date_id')
+                ->unique()
+                ->count();
+
+            if ($attendedDates === $totalDates) {
+                return 'ลงทะเบียนแล้ว';
+            } else {
+                return 'ลงทะเบียนแล้วบางส่วน';
+            }
+        }
+
+        return null;
+    }
+
     private function fetchPaginatedProjectsWithRelations()
     {
         return HrProject::availableForRegistration()
@@ -85,14 +152,12 @@ class HRController extends Controller
                 'attends'     => function ($query) {
                     $query->where('attend_delete', false);
                 },
+                'attends.note',
             ])
             ->orderBy('project_end_register', 'asc')
             ->paginate(12);
     }
 
-    /**
-     * Get ongoing projects that user can check in for
-     */
     private function getOngoingProjects($projects)
     {
         $now             = now();
@@ -100,10 +165,6 @@ class HRController extends Controller
         $ongoingProjects = collect();
 
         foreach ($projects as $project) {
-            // Skip attendance projects from ongoing section
-            if ($project->project_type === 'attendance') {
-                continue;
-            }
 
             $checkInSessions = $this->getCheckInSessions($project, $now, $userId);
 
@@ -118,9 +179,6 @@ class HRController extends Controller
         return $ongoingProjects;
     }
 
-    /**
-     * Get check-in sessions for a project
-     */
     private function getCheckInSessions($project, $now, $userId)
     {
         $sessions = collect();
@@ -128,14 +186,16 @@ class HRController extends Controller
 
         foreach ($project->dates as $date) {
             $dateString = $date->date_datetime->format('Y-m-d');
-
             if ($dateString === $today) {
                 foreach ($date->times as $time) {
                     if ($this->isWithinCheckInWindow($time, $now)) {
-                        $canCheckIn    = false;
-                        $checkInRoute  = '';
-                        $checkInMethod = 'POST';
-                        $checkInData   = [];
+                        $canCheckIn       = false;
+                        $hasAttended      = false;
+                        $attendanceRecord = null;
+                        $checkInRoute     = '';
+                        $checkInMethod    = 'POST';
+                        $checkInData      = [];
+                        $note             = null;
 
                         if ($project->project_type === 'attendance') {
                             $attendanceRecord = $project->attends
@@ -144,7 +204,9 @@ class HRController extends Controller
                                 ->where('attend_delete', false)
                                 ->first();
 
-                            if (! $attendanceRecord || ! $attendanceRecord->attend_datetime) {
+                            if ($attendanceRecord && $attendanceRecord->attend_datetime) {
+                                $hasAttended = true;
+                            } elseif (! $attendanceRecord || ! $attendanceRecord->attend_datetime) {
                                 $canCheckIn   = true;
                                 $checkInRoute = route('hrd.projects.attend.store', $project->id);
                                 $checkInData  = ['time_id' => $time->id];
@@ -156,20 +218,32 @@ class HRController extends Controller
                                 ->where('attend_delete', false)
                                 ->first();
 
-                            if ($userRegistration && ! $userRegistration->attend_datetime) {
-                                $canCheckIn   = true;
-                                $checkInRoute = route('hrd.projects.stamp.store', [$project->id, $userRegistration->id]);
+                            if ($userRegistration) {
+                                $attendanceRecord = $userRegistration;
+                                $note             = ($userRegistration->note) ? $userRegistration->note->attend_note : null;
+
+                                if ($userRegistration->attend_datetime) {
+                                    $hasAttended = true;
+                                } else {
+                                    $canCheckIn   = true;
+                                    $checkInRoute = route('hrd.projects.stamp.store', [$project->id, $userRegistration->id]);
+                                }
                             }
                         }
 
-                        if ($canCheckIn) {
+                        // Include session if user can check in OR has already attended
+                        if ($canCheckIn || $hasAttended) {
                             $sessions->push([
-                                'date'          => $date,
-                                'time'          => $time,
-                                'checkInRoute'  => $checkInRoute,
-                                'checkInMethod' => $checkInMethod,
-                                'checkInData'   => $checkInData,
-                                'userSeat'      => $this->getUserSeat($time, $userId),
+                                'canCheckIn'       => $canCheckIn,
+                                'hasAttended'      => $hasAttended,
+                                'attendanceRecord' => $attendanceRecord,
+                                'date'             => $date,
+                                'time'             => $time,
+                                'note'             => $note,
+                                'checkInRoute'     => $checkInRoute,
+                                'checkInMethod'    => $checkInMethod,
+                                'checkInData'      => $checkInData,
+                                'userSeat'         => $this->getUserSeat($time, $userId),
                             ]);
                         }
                     }
@@ -180,9 +254,6 @@ class HRController extends Controller
         return $sessions;
     }
 
-    /**
-     * Determine if the current time is within the check-in window (30m before start until end)
-     */
     private function isWithinCheckInWindow($time, Carbon $now): bool
     {
         $currentTime  = $now->format('H:i:s');
@@ -191,9 +262,6 @@ class HRController extends Controller
         return $currentTime >= $earlyCheckIn && $currentTime <= $timeEnd;
     }
 
-    /**
-     * Get user's assigned seat for a time slot
-     */
     private function getUserSeat($time, $userId)
     {
         return $time->seats()
@@ -235,6 +303,7 @@ class HRController extends Controller
             'links',
             'attends.user',
             'activeAttends',
+            'attends.note',
         ])->findOrFail($id);
 
         if (! $project->project_active || $project->project_delete) {
@@ -253,14 +322,6 @@ class HRController extends Controller
         $scheduleView          = $this->buildScheduleViewModel($project, $registrationData);
 
         return compact('project', 'registrationData', 'availableCheckIns', 'registrationTimeSlots', 'scheduleView');
-    }
-
-    /**
-     * Display user guide page
-     */
-    public function userGuide()
-    {
-        return view('hrd.user-manual');
     }
 
     /**
@@ -300,14 +361,21 @@ class HRController extends Controller
                                 ->where('attend_delete', false)
                                 ->first();
 
-                            if (! $attendanceRecord || ! $attendanceRecord->attend_datetime) {
+                            // Include session if user can check in OR has already attended
+                            $canCheckIn  = (! $attendanceRecord || ! $attendanceRecord->attend_datetime);
+                            $hasAttended = ($attendanceRecord && $attendanceRecord->attend_datetime);
+
+                            if ($canCheckIn || $hasAttended) {
                                 $availableCheckIns->push([
                                     'date'             => $date,
                                     'time'             => $time,
                                     'attendanceRecord' => $attendanceRecord,
+                                    'note'             => ($attendanceRecord && $attendanceRecord->note) ? $attendanceRecord->note->attend_note : null,
                                     'userSeat'         => $this->getUserSeat($time, $userId),
                                     'userGroup'        => $this->getUserGroup($project->id, $userId),
                                     'projectType'      => 'attendance',
+                                    'canCheckIn'       => $canCheckIn,
+                                    'hasAttended'      => $hasAttended,
                                 ]);
                             }
                         } else {
@@ -318,15 +386,25 @@ class HRController extends Controller
                                 ->where('attend_delete', false)
                                 ->first();
 
-                            if ($userRegistration && ! $userRegistration->attend_datetime) {
-                                $availableCheckIns->push([
-                                    'date'             => $date,
-                                    'time'             => $time,
-                                    'userRegistration' => $userRegistration,
-                                    'userSeat'         => $this->getUserSeat($time, $userId),
-                                    'userGroup'        => $this->getUserGroup($project->id, $userId),
-                                    'projectType'      => $project->project_type,
-                                ]);
+                            if ($userRegistration) {
+                                // Include session if user can check in OR has already attended
+                                $canCheckIn  = (! $userRegistration->attend_datetime);
+                                $hasAttended = ($userRegistration->attend_datetime);
+
+                                if ($canCheckIn || $hasAttended) {
+                                    $availableCheckIns->push([
+                                        'date'             => $date,
+                                        'time'             => $time,
+                                        'userRegistration' => $userRegistration,
+                                        'attendanceRecord' => $userRegistration,
+                                        'note'             => ($userRegistration->note) ? $userRegistration->note->attend_note : null,
+                                        'userSeat'         => $this->getUserSeat($time, $userId),
+                                        'userGroup'        => $this->getUserGroup($project->id, $userId),
+                                        'projectType'      => $project->project_type,
+                                        'canCheckIn'       => $canCheckIn,
+                                        'hasAttended'      => $hasAttended,
+                                    ]);
+                                }
                             }
                         }
                     }
@@ -875,8 +953,8 @@ class HRController extends Controller
 
             $sessionCount = count($request->time_ids);
             $message      = $sessionCount === 1
-            ? 'ลงทะเบียนเซสชันสำเร็จ!'
-            : "ลงทะเบียน {$sessionCount} เซสชันสำเร็จ!";
+                ? 'ลงทะเบียนเซสชันสำเร็จ!'
+                : "ลงทะเบียน {$sessionCount} เซสชันสำเร็จ!";
 
             return redirect()->route('hrd.projects.show', $id)
                 ->with('success', $message);
@@ -1188,7 +1266,7 @@ class HRController extends Controller
     {
         $userId            = auth()->id();
         $attendanceHistory = HrAttend::with([
-            'project', 'date', 'time', 'user',
+            'project', 'date', 'time', 'user', 'note',
         ])
             ->where('user_id', $userId)
             ->where('attend_delete', false)
@@ -1212,26 +1290,6 @@ class HRController extends Controller
         $statistics = $this->calculateCombinedHistoryStatistics($attendanceHistory, $legacyTransactions);
 
         return view('hrd.user-history', compact('attendanceHistory', 'statistics', 'legacyTransactions'));
-    }
-
-    /**
-     * Calculate statistics for user history
-     */
-    private function calculateHistoryStatistics($attendanceHistory)
-    {
-        $totalRegistrations   = $attendanceHistory->total();
-        $attendedCount        = $attendanceHistory->where('attend_datetime', '!=', null)->count();
-        $pendingCount         = $totalRegistrations - $attendedCount;
-        $approvedCount        = $attendanceHistory->where('approve_datetime', '!=', null)->count();
-        $pendingApprovalCount = $totalRegistrations - $approvedCount;
-
-        return [
-            'total'           => $totalRegistrations,
-            'attended'        => $attendedCount,
-            'pending'         => $pendingCount,
-            'approved'        => $approvedCount,
-            'pendingApproval' => $pendingApprovalCount,
-        ];
     }
 
     /**
@@ -1463,10 +1521,6 @@ class HRController extends Controller
         return view('hrd.admin.projects.core.edit-project', compact('project', 'editData'));
     }
 
-    // ========================================================================
-    // PRIVATE HELPER METHODS - ADMIN FUNCTIONS
-    // ========================================================================
-
     private function formatProjectDataForEdit($project)
     {
         // Format dates with properly formatted datetime and times
@@ -1675,6 +1729,9 @@ class HRController extends Controller
                     $existingDate->times()->update([
                         'time_active' => false,
                         'time_delete' => true,
+                    ]);
+                    $attendanceRecords = $existingDate->attends()->update([
+                        'attend_delete' => true,
                     ]);
                 }
             }
@@ -2334,7 +2391,7 @@ class HRController extends Controller
 
             return response()->json([
                 'success' => "Successfully approved {$updatedCount} registration(s).",
-                'count'   => $updatedCount,
+                'count' => $updatedCount,
             ]);
 
         } catch (\Exception $e) {
@@ -2732,8 +2789,8 @@ class HRController extends Controller
             ]);
 
             return response()->json([
-                'success'       => true,
-                'message'       => "ล้างที่นั่งทั้งหมดสำเร็จ ({$deletedCount} รายการ)",
+                'success' => true,
+                'message' => "ล้างที่นั่งทั้งหมดสำเร็จ ({$deletedCount} รายการ)",
                 'deleted_count' => $deletedCount,
             ]);
 
@@ -2836,93 +2893,6 @@ class HRController extends Controller
         $pdf = Pdf::loadView('hrd.admin.export.attendance-pdf', compact('time', 'registrations'));
 
         return $pdf->stream($time->time_title . '_' . date('Y-m-d') . '.pdf');
-    }
-
-    /**
-     * Calculate registration state for a project
-     */
-    private function calculateProjectRegistrationState($project)
-    {
-        $now    = now();
-        $userId = auth()->id();
-
-        // Check registration period
-        $canRegister = $project->project_active &&
-        ! $project->project_delete &&
-        $now >= $project->project_start_register &&
-        $now <= $project->project_end_register &&
-        $project->project_type !== 'attendance';
-
-        $isUpcoming = $now < $project->project_start_register;
-        $isExpired  = $now > $project->project_end_register;
-
-        // Get user registrations for this project
-        $userRegistrations = $project->attends
-            ->where('user_id', $userId)
-            ->where('attend_delete', false);
-
-        $registrationCount = $userRegistrations->count();
-        $attendedCount     = $userRegistrations->where('attend_datetime', '!=', null)->count();
-
-        // Calculate attendance status based on project type and user attendance
-        $attendanceStatus = $this->calculateAttendanceStatus($project, $userRegistrations);
-
-        return [
-            'canRegister'       => $canRegister,
-            'isUpcoming'        => $isUpcoming,
-            'isExpired'         => $isExpired,
-            'registrationCount' => $registrationCount,
-            'attendedCount'     => $attendedCount,
-            'projectType'       => $project->project_type,
-            'attendanceStatus'  => $attendanceStatus,
-        ];
-    }
-
-    /**
-     * Calculate attendance status message based on project type and user attendance
-     */
-    private function calculateAttendanceStatus($project, $userRegistrations)
-    {
-        // If user has no registrations, return null
-        if ($userRegistrations->count() === 0) {
-            return null;
-        }
-
-        // For attendance type projects
-        if ($project->project_type === 'attendance') {
-            return 'มีการเข้าร่วมแล้ว';
-        }
-
-        // For single type projects
-        if ($project->project_type === 'single') {
-            return 'มีการลงทะเบียนแล้ว';
-        }
-
-        // For multiple type projects
-        if ($project->project_type === 'multiple') {
-            // Get all dates for this project
-            $projectDates = $project->dates->where('date_delete', false);
-            $totalDates   = $projectDates->count();
-
-            if ($totalDates === 0) {
-                return 'ลงทะเบียนแล้ว';
-            }
-
-            // Count how many dates the user has attended
-            $attendedDates = $userRegistrations
-                ->where('attend_delete', false)
-                ->pluck('date_id')
-                ->unique()
-                ->count();
-
-            if ($attendedDates === $totalDates) {
-                return 'ลงทะเบียนแล้ว';
-            } else {
-                return 'ลงทะเบียนแล้วบางส่วน';
-            }
-        }
-
-        return null;
     }
 
     // ========================================================================
@@ -3195,8 +3165,8 @@ class HRController extends Controller
         ]);
 
         return response()->json([
-            'success'       => true,
-            'message'       => "Cleaned up {$cleanedCount} duplicate/conflicting seats",
+            'success' => true,
+            'message' => "Cleaned up {$cleanedCount} duplicate/conflicting seats",
             'cleaned_count' => $cleanedCount,
         ]);
     }
