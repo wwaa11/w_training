@@ -23,14 +23,12 @@ class ScoresImport implements ToCollection, WithCalculatedFormulas
         $id = $this->id;
         foreach ($rows as $rowIndex => $row) {
             if ($rowIndex == 0) {
-                $header = ScoreHeader::where('project_id', $id)->first();
-                if ($header == null) {
-                    $header             = new ScoreHeader;
-                    $header->project_id = $id;
-                }
-                for ($i = 6; $i <= 25; $i++) {
-                    $slot = 'title_' . ($i - 5);
-                    if ($row->has($i)) {
+                $header             = ScoreHeader::where('project_id', $id)->delete();
+                $header             = new ScoreHeader;
+                $header->project_id = $id;
+                for ($i = 5; $i <= 24; $i++) {
+                    $slot = 'title_' . ($i - 4);
+                    if ($row->has($i) && ! is_null($row[$i])) {
                         $header->$slot = $row[$i];
                     }
                 }
@@ -38,18 +36,18 @@ class ScoresImport implements ToCollection, WithCalculatedFormulas
             } else {
                 $transaction = Transaction::where('project_id', $id)
                     ->where('transaction_active', true)
-                    ->where('user', $row[1])
+                    ->where('user', $row[0])
                     ->first();
                 if ($transaction !== null) {
                     $score = Score::where('transaction_id', $transaction->id)->first();
                     if ($score == null) {
                         $score                 = new Score;
                         $score->transaction_id = $transaction->id;
-                        $score->user_id        = $row[1];
+                        $score->user_id        = $row[0];
                     }
-                    for ($i = 6; $i <= 25; $i++) {
-                        $slot = 'result_' . ($i - 5);
-                        if ($row->has($i)) {
+                    for ($i = 5; $i <= 24; $i++) {
+                        $slot = 'result_' . ($i - 4);
+                        if ($row->has($i) && ! is_null($row[$i])) {
                             $score->$slot = $row[$i];
                         }
                     }
