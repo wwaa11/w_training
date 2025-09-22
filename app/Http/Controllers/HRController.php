@@ -364,6 +364,7 @@ class HRController extends Controller
                             // Include session if user can check in OR has already attended
                             $canCheckIn  = (! $attendanceRecord || ! $attendanceRecord->attend_datetime);
                             $hasAttended = ($attendanceRecord && $attendanceRecord->attend_datetime);
+                            $hasApprove  = ($attendanceRecord && $attendanceRecord->approve_datetime != null);
 
                             if ($canCheckIn || $hasAttended) {
                                 $availableCheckIns->push([
@@ -376,6 +377,7 @@ class HRController extends Controller
                                     'projectType'      => 'attendance',
                                     'canCheckIn'       => $canCheckIn,
                                     'hasAttended'      => $hasAttended,
+                                    'hasApprove'       => $hasApprove,
                                 ]);
                             }
                         } else {
@@ -390,6 +392,7 @@ class HRController extends Controller
                                 // Include session if user can check in OR has already attended
                                 $canCheckIn  = (! $userRegistration->attend_datetime);
                                 $hasAttended = ($userRegistration->attend_datetime);
+                                $hasApprove  = ($userRegistration->approve_datetime == null) ? false : true;
 
                                 if ($canCheckIn || $hasAttended) {
                                     $availableCheckIns->push([
@@ -403,6 +406,7 @@ class HRController extends Controller
                                         'projectType'      => $project->project_type,
                                         'canCheckIn'       => $canCheckIn,
                                         'hasAttended'      => $hasAttended,
+                                        'hasApprove'       => $hasApprove,
                                     ]);
                                 }
                             }

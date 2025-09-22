@@ -115,7 +115,7 @@
                             <!-- Check-in Button or Attended Status -->
                             @if ($checkIn["hasAttended"])
                                 <!-- Already Attended -->
-                                <div class="rounded-lg bg-gradient-to-r from-green-100 to-green-200 p-4 border border-green-300">
+                                <div class="rounded-lg border border-green-300 bg-gradient-to-r from-green-100 to-green-200 p-4">
                                     <div class="flex items-center justify-center">
                                         <i class="fas fa-check-circle mr-3 text-lg text-green-600"></i>
                                         <div class="text-center">
@@ -163,27 +163,27 @@
         @endif
 
         <!-- Show last Check-in -->
-        @if ($availableCheckIns->where('hasAttended', true)->isNotEmpty())
+        @if ($availableCheckIns->where("hasAttended", true)->isNotEmpty())
             <div class="mb-4 rounded-lg bg-white p-4 shadow-sm sm:p-6">
                 <div class="mb-3 flex items-center">
                     <i class="fas fa-history mr-2 text-green-500"></i>
                     <h3 class="text-lg font-semibold text-gray-900">การเช็คอินล่าสุด</h3>
                 </div>
-                
-                @foreach ($availableCheckIns->where('hasAttended', true) as $attendedSession)
-                    <div class="mb-3 rounded-lg bg-green-50 p-3 border border-green-200">
+
+                @foreach ($availableCheckIns->where("hasAttended", true) as $attendedSession)
+                    <div class="mb-3 rounded-lg border border-green-200 bg-green-50 p-3">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="flex items-center mb-1">
+                                <div class="mb-1 flex items-center">
                                     <i class="fas fa-check-circle mr-2 text-green-600"></i>
                                     <span class="text-sm font-medium text-green-800">{{ $attendedSession["date"]->date_title }}</span>
                                 </div>
-                                <div class="text-xs text-green-700 ml-6">
+                                <div class="ml-6 text-xs text-green-700">
                                     <i class="fas fa-clock mr-1"></i>
                                     เวลา: {{ \Carbon\Carbon::parse($attendedSession["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($attendedSession["time"]->time_end)->format("H:i") }}
                                 </div>
                                 @if ($attendedSession["date"]->date_location)
-                                    <div class="text-xs text-green-700 ml-6">
+                                    <div class="ml-6 text-xs text-green-700">
                                         <i class="fas fa-map-marker-alt mr-1"></i>
                                         สถานที่: {{ $attendedSession["date"]->date_location }}
                                     </div>
@@ -694,35 +694,36 @@
                                                         </div>
                                                     @endif
 
-                                                    @if ($project->links->where("link_delete", false)->count() > 0 && $t["showLinks"])
-                                                        <div class="mt-3 border-t border-gray-200 pt-3">
-                                                            <div class="mb-2 text-xs font-medium text-blue-700">
-                                                                <i class="fas fa-link mr-1"></i>
-                                                                ทรัพยากรสำหรับเซสชัน
+                                                    @if ($checkIn["hasApprove"])
+                                                        @if ($project->links->where("link_delete", false)->count() > 0 && $t["showLinks"])
+                                                            <div class="mt-3 border-t border-gray-200 pt-3">
+                                                                <div class="mb-2 text-xs font-medium text-blue-700">
+                                                                    <i class="fas fa-link mr-1"></i>
+                                                                    ทรัพยากรสำหรับเซสชัน
+                                                                </div>
+                                                                <div class="space-y-2">
+                                                                    @foreach ($project->links->where("link_delete", false) as $link)
+                                                                        @php
+                                                                            $linkAvailable = true;
+                                                                            if ($link->link_limit) {
+                                                                                $now = now();
+                                                                                $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
+                                                                            }
+                                                                        @endphp
+                                                                        @if ($linkAvailable)
+                                                                            <div class="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-2">
+                                                                                <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
+                                                                                <a class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
+                                                                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                                                                    เปิด
+                                                                                </a>
+                                                                            </div>
+                                                                        @endif
+                                                                    @endforeach
+                                                                </div>
                                                             </div>
-                                                            <div class="space-y-2">
-                                                                @foreach ($project->links->where("link_delete", false) as $link)
-                                                                    @php
-                                                                        $linkAvailable = true;
-                                                                        if ($link->link_limit) {
-                                                                            $now = now();
-                                                                            $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
-                                                                        }
-                                                                    @endphp
-                                                                    @if ($linkAvailable)
-                                                                        <div class="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-2">
-                                                                            <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
-                                                                            <a class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
-                                                                                <i class="fas fa-external-link-alt mr-1"></i>
-                                                                                เปิด
-                                                                            </a>
-                                                                        </div>
-                                                                    @endif
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
+                                                        @endif
                                                     @endif
-
                                                     @if ($t["userRegistrationId"] && !$t["hasAttended"])
                                                         <div class="mt-2 text-xs font-medium text-yellow-700">
                                                             <i class="fas fa-user-check mr-1"></i>
@@ -739,6 +740,7 @@
                                                             </div>
                                                         @endif
                                                     @endif
+
                                                 </div>
                                             </div>
                                         @endforeach
