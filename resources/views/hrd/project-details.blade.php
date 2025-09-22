@@ -54,9 +54,12 @@
             <div class="mb-4 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 p-3 shadow-sm sm:p-6">
                 <div class="mb-3 flex items-center sm:mb-4">
                     <i class="fas fa-clock mr-2 text-xl text-blue-600 sm:mr-3 sm:text-2xl"></i>
-                    <div>
+                    <div class="flex-1">
                         <h2 class="text-lg font-bold text-blue-900 sm:text-xl lg:text-2xl">เช็คอินตอนนี้</h2>
                         <p class="text-xs text-blue-700 sm:text-sm lg:text-base">คุณสามารถเช็คอินสำหรับเซสชันต่อไปนี้ได้ตอนนี้:</p>
+                    </div>
+                    <div class="cursor-pointer" onclick="refresh()">
+                        <i class="fas fa-refresh me-6 text-2xl text-blue-600"></i>
                     </div>
                 </div>
 
@@ -127,8 +130,39 @@
                                                 {{ \Carbon\Carbon::parse($checkIn["attendanceRecord"]->attend_datetime)->format("d M Y") }}
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
+                                @if ($project->links->count() > 0 && $checkIn["hasApprove"])
+                                    <div class="mt-3 rounded-lg border border-blue-300 bg-gradient-to-r from-blue-100 to-blue-200 p-4">
+                                        <div class="mb-2 text-xs font-medium text-blue-700">
+                                            <i class="fas fa-link mr-1"></i>
+                                            ทรัพยากรสำหรับเซสชัน
+                                        </div>
+                                        <div class="">
+                                            @foreach ($project->links as $link)
+                                                @php
+                                                    $linkAvailable = true;
+                                                    if ($link->link_limit) {
+                                                        $now = now();
+                                                        $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
+                                                    }
+                                                @endphp
+                                                @if ($linkAvailable)
+                                                    <a href="{{ $link->link_url }}" target="_blank">
+                                                        <div class="mb-2 flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-2">
+                                                            <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
+                                                            <div class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800">
+                                                                <i class="fas fa-external-link-alt mr-1"></i>
+                                                                เปิด
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
                             @elseif ($checkIn["canCheckIn"])
                                 <!-- Can Check In -->
                                 @if ($checkIn["projectType"] === "attendance")
@@ -197,6 +231,7 @@
                                     {{ \Carbon\Carbon::parse($attendedSession["attendanceRecord"]->attend_datetime)->format("d M Y") }}
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 @endforeach
@@ -694,36 +729,6 @@
                                                         </div>
                                                     @endif
 
-                                                    @if ($checkIn["hasApprove"])
-                                                        @if ($project->links->where("link_delete", false)->count() > 0 && $t["showLinks"])
-                                                            <div class="mt-3 border-t border-gray-200 pt-3">
-                                                                <div class="mb-2 text-xs font-medium text-blue-700">
-                                                                    <i class="fas fa-link mr-1"></i>
-                                                                    ทรัพยากรสำหรับเซสชัน
-                                                                </div>
-                                                                <div class="space-y-2">
-                                                                    @foreach ($project->links->where("link_delete", false) as $link)
-                                                                        @php
-                                                                            $linkAvailable = true;
-                                                                            if ($link->link_limit) {
-                                                                                $now = now();
-                                                                                $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
-                                                                            }
-                                                                        @endphp
-                                                                        @if ($linkAvailable)
-                                                                            <div class="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-2">
-                                                                                <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
-                                                                                <a class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800" href="{{ $link->link_url }}" target="_blank">
-                                                                                    <i class="fas fa-external-link-alt mr-1"></i>
-                                                                                    เปิด
-                                                                                </a>
-                                                                            </div>
-                                                                        @endif
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                    @endif
                                                     @if ($t["userRegistrationId"] && !$t["hasAttended"])
                                                         <div class="mt-2 text-xs font-medium text-yellow-700">
                                                             <i class="fas fa-user-check mr-1"></i>
@@ -1167,5 +1172,9 @@
                 });
             });
         });
+
+        function refresh() {
+            location.reload();
+        }
     </script>
 @endsection

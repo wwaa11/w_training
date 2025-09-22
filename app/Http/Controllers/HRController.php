@@ -286,6 +286,7 @@ class HRController extends Controller
         if ($payload instanceof RedirectResponse) {
             return $payload;
         }
+
         return view('hrd.project-details', $payload);
     }
 

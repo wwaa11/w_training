@@ -49,7 +49,7 @@ class HrProject extends Model
 
     public function links()
     {
-        return $this->hasMany(HrLink::class, 'project_id')->active();
+        return $this->hasMany(HrLink::class, 'project_id')->where('link_delete', false)->active();
     }
 
     public function resultHeader()
