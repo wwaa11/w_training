@@ -14,6 +14,8 @@ class NurseProject extends Model
         'location',
         'register_start',
         'register_end',
+        'export_type',
+        'multiple',
     ];
 
     public function dateData()
@@ -23,7 +25,7 @@ class NurseProject extends Model
 
     public function mytransactions()
     {
-        return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('user_id', auth()->user()->userid)->where('active', true);
+        return $this->hasMany(NurseTransaction::class, 'nurse_project_id')->where('user_id', auth()->user()->userid)->where('active', true)->orderBy('date_time', 'asc');
     }
 
     public function transactionData()

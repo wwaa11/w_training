@@ -3,40 +3,79 @@
     <meta http-equiv="Refresh" content="60">
 @endsection
 @section("content")
-    <div class="m-auto w-full p-3 md:w-3/4">
-        <div class="mb-6 rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
-            <div class="flex text-3xl text-[#1a3f34]">
-                <div class="flex-1">รายการลงทะเบียนของฉัน</div>
-                <div class="cursor-pointer text-lg" onclick="refreshPage()"><i class="fa-solid fa-arrows-rotate"></i> อัพเดตข้อมูล</div>
+    <div class="container mx-auto px-3">
+        <!-- Header -->
+        <div class="mb-4">
+            <div class="flex items-center justify-between">
+                <div class="min-w-0 flex-1">
+                    <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">รายการลงทะเบียนของฉัน</h1>
+                    <p class="mt-1 text-xs text-gray-600 sm:text-sm">จัดการการลงทะเบียนและเช็คอินของคุณ</p>
+                </div>
+                <button class="ml-3 inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 sm:px-4 sm:text-sm" onclick="refreshPage()">
+                    <i class="fas fa-arrows-rotate mr-1.5 sm:mr-2"></i>
+                    อัพเดตข้อมูล
+                </button>
             </div>
-            <hr class="shadow">
-            <div class="text-sm text-red-600">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</div>
-            @foreach ($myTransaction as $transaction)
+        </div>
+
+        <!-- Info Notice -->
+        {{-- <div class="mb-4 rounded-xl bg-gradient-to-r from-yellow-50 to-yellow-100 p-3 shadow-sm sm:p-4">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle mr-2 mt-0.5 text-yellow-600"></i>
+                <p class="text-xs text-yellow-800 sm:text-sm">ต้องการเปลี่ยนวันที่ลงทะเบียน กรุณายกเลิกวันลงทะเบียนเดิมก่อน</p>
+            </div>
+        </div> --}}
+
+        <!-- My Transactions -->
+        <div class="mb-4 rounded-xl bg-white p-3 shadow-sm sm:p-4">
+            <div class="mb-2 flex items-center">
+                <i class="fas fa-clipboard-list mr-2 text-green-600"></i>
+                <h2 class="text-base font-semibold text-gray-900 sm:text-lg">รายการของฉัน</h2>
+            </div>
+            @forelse ($myTransaction as $transaction)
                 @if (date("Y-m-d") <= date("Y-m-d", strtotime($transaction->date_time)))
                     <x-nurse-transaction-item :transaction="$transaction" />
                 @endif
-            @endforeach
+            @empty
+                <div class="rounded border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 sm:text-sm">ยังไม่มีรายการลงทะเบียนของคุณ</div>
+            @endforelse
         </div>
-        <div class="rounded-lg border border-[#eaf7ab] bg-[#c1dccd] p-3 shadow">
-            <div class="text-3xl text-[#1a3f34]">รายการที่เปิดลงทะเบียน</div>
-            <hr class="border-[#eaf7ab] shadow">
-            @foreach ($projects as $project)
-                <a href="{{ route("nurse.project.show", $project->id) }}">
-                    <div class="m-3 cursor-pointer rounded border border-[#eaf7ab] bg-[#eeeeee] p-6">
-                        <div class="text-2xl">{{ $project->title }}</div>
-                        <div class="text-gray-500">
-                            <i class="fa-regular fa-calendar text-[#008387]"></i> {{ $project->detail }}
+
+        <!-- Open Projects -->
+        <div class="rounded-xl bg-white p-3 shadow-sm sm:p-4">
+            <div class="mb-2 flex items-center">
+                <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
+                <h2 class="text-base font-semibold text-gray-900 sm:text-lg">รายการที่เปิดลงทะเบียน</h2>
+            </div>
+            <div class="space-y-2">
+                @foreach ($projects as $project)
+                    <a class="block" href="{{ route("nurse.project.show", $project->id) }}">
+                        <div class="cursor-pointer rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4 shadow-sm transition-all duration-200 hover:scale-[1.01] hover:border-gray-300 hover:shadow-md">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500 sm:text-base">{{ $project->detail }}</div>
+                                    <div class="mt-1 text-lg font-bold text-gray-900 sm:text-xl">{{ $project->title }}</div>
+                                </div>
+                                <div class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 sm:text-sm">
+                                    <i class="fas fa-chevron-right mr-1"></i>
+                                    ดูรายละเอียด
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            @endforeach
+                    </a>
+                @endforeach
+            </div>
         </div>
     </div>
 @endsection
 @section("scripts")
     <script>
+        function refreshPage() {
+            window.location.reload();
+        }
+
         async function sign(id, project_name) {
-            alert = await Swal.fire({
+            const alert = await Swal.fire({
                 title: "ลงชื่อ : " + project_name,
                 icon: "warning",
                 allowOutsideClick: false,

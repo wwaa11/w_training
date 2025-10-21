@@ -16,25 +16,22 @@
 </head>
 
 <body class="prompt">
-    <div class="h-20"></div>
     <nav class="navbar">
         <div class="navbar-logo">
             <a href="{{ route("index") }}">
                 <img src="{{ url("images/Side Logo.png") }}" alt="Logo">
             </a>
-            <span class="navbar-title hidden lg:block">Nursing</span>
+            <span class="navbar-title hidden cursor-pointer lg:block">Nursing</span>
         </div>
         <button class="mobile-menu-btn lg:hidden" type="button" onclick="toggleMobileMenu()">
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="navbar-links hidden lg:flex">
-            <a href="{{ route("index") }}">หน้าหลัก</a>
-            <a href="{{ route("nurse.index") }}">รายการที่เปิดลงทะเบียน</a>
-            <a href="{{ route("nurse.history") }}">ประวัติการลงทะเบียน</a>
+            <a href="{{ route("index") }}"><i class="fa-solid fa-home mr-2"></i>หน้าหลัก</a>
+            <a href="{{ route("nurse.index") }}"><i class="fa-solid fa-list mr-2"></i>รายการที่เปิดลงทะเบียน</a>
+            <a href="{{ route("nurse.history") }}"><i class="fa-solid fa-history mr-2"></i>ประวัติการลงทะเบียน</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
-                <a href="{{ route("nurse.admin.index") }}">Training Management</a>
-                <a href="{{ route("nurse.admin.score.users") }}?department=null">Users Report</a>
-                <a href="{{ route("nurse.admin.users.index") }}">Users Management</a>
+                <a href="{{ route("nurse.admin.index") }}"><i class="fa-solid fa-gear mr-2"></i>Admin Panel</a>
             @endif
         </div>
         <div class="navbar-user hidden lg:flex">
@@ -48,14 +45,13 @@
             </div>
         </div>
     </nav>
+
     <div class="mobile-menu fade-in" id="mobileMenu">
         <a href="{{ route("index") }}">หน้าหลัก</a>
         <a href="{{ route("nurse.index") }}">รายการที่เปิดลงทะเบียน</a>
         <a href="{{ route("nurse.history") }}">ประวัติการลงทะเบียน</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
-            <a href="{{ route("nurse.admin.index") }}">Training Management</a>
-            <a href="{{ route("nurse.admin.score.users") }}?department=null">Users Report</a>
-            <a href="{{ route("nurse.admin.users.index") }}">Users Management</a>
+            <a href="{{ route("nurse.admin.index") }}">Management</a>
         @endif
         <div class="user-block">
             {{ Auth::user()->userid }} {{ session("name") }}

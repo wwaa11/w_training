@@ -359,6 +359,8 @@ Route::middleware([NurseAdmin::class])->group(function () {
         // Project Management
         Route::prefix('project')->name('project.')->group(function () {
             Route::get('/{project_id}', [NurseController::class, 'adminProjectManagement'])->name('management');
+            Route::get('/{project_id}/edit', [NurseController::class, 'adminProjectEdit'])->name('edit');
+            Route::post('/{project_id}/update', [NurseController::class, 'adminProjectUpdate'])->name('update');
             Route::post('/dateBetween', [NurseController::class, 'adminProjectDateBetween'])->name('dateBetween');
             Route::post('/deleteProject', [NurseController::class, 'adminProjectDelete'])->name('delete');
         });
@@ -373,6 +375,7 @@ Route::middleware([NurseAdmin::class])->group(function () {
         Route::prefix('transactions')->name('transactions.')->group(function () {
             Route::get('/{project_id}', [NurseController::class, 'adminProjectTransaction'])->name('index');
             Route::post('/create', [NurseController::class, 'adminProjectCreateTransaction'])->name('create');
+            Route::post('/update', [NurseController::class, 'adminProjectUpdateTransaction'])->name('update');
             Route::post('/delete', [NurseController::class, 'adminProjectDeleteTransaction'])->name('delete');
         });
 

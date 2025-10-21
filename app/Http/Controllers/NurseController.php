@@ -85,12 +85,12 @@ class NurseController extends Controller
         ];
 
         $time = NurseTime::find($request->time_id);
-        if ($time->max == 0) {
 
+        if ($time->max == 0) {
             $new                   = new NurseTransaction();
             $new->nurse_project_id = $request->project_id;
             $new->nurse_time_id    = $request->time_id;
-            $new->date_time        = $time->dateData->date;
+            $new->date_time        = $time->time_start;
             $new->user_id          = Auth::user()->userid;
             $new->save();
 
@@ -99,7 +99,7 @@ class NurseController extends Controller
                 'message' => 'ทำการลงทะเบียนสำเร็จ!',
             ];
 
-        } else if ($time->max != 0 && $time->free > 0) {
+        } else if ($time->max != 0 && count($time->transactionData) < $time->max) {
             $time->free -= 1;
             $time->save();
 
@@ -138,7 +138,7 @@ class NurseController extends Controller
 
         $response = [
             'status'  => 'success',
-            'message' => 'ทำการเปลี่ยนรอบการลงทะเบียนสำเร็จ!',
+            'message' => 'ยกเลิกการลงทะเบียนสำเร็จ!',
         ];
 
         return response()->json($response, 200);
@@ -157,13 +157,22 @@ class NurseController extends Controller
         return response()->json($response, 200);
     }
     // Admin
-    public function adminProjectIndex()
+    public function adminProjectIndex(Request $request)
     {
-        $projects = NurseProject::where('active', true)
-            ->orderBy('register_start', 'asc')
-            ->get();
+        $search = $request->input('q');
 
-        return view('nurse.admin.project_index', compact('projects'));
+        $query = NurseProject::query()
+            ->where('active', true)
+            ->orderBy('register_start', 'desc')
+            ->select(['id', 'title', 'detail', 'register_start', 'register_end']);
+
+        if (! empty($search)) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
+        $projects = $query->paginate(20)->withQueryString();
+
+        return view('nurse.admin.project_index', compact('projects', 'search'));
     }
     public function adminProjectCreate()
     {
@@ -249,13 +258,14 @@ class NurseController extends Controller
     public function adminProjectStore(Request $request)
     {
         $request->validate([
-            'title'          => 'required',
-            'location'       => 'required',
-            'register_start' => 'required|date',
-            'register_end'   => 'required|date|after_or_equal:register_start',
-            'time'           => 'required|array',
-            'date'           => 'required|array',
-            'export_type'    => 'required|in:1,2,3',
+            'title'             => 'required',
+            'location'          => 'required',
+            'register_start'    => 'required|date',
+            'register_end'      => 'required|date|after_or_equal:register_start',
+            'time'              => 'required|array',
+            'date'              => 'required|array',
+            'export_type'       => 'required|in:1,2,3',
+            'multiple_register' => 'required|in:0,1',
         ], [
             'time.required' => 'โปรดระบุรอบการลงทะเบียน',
         ]);
@@ -267,6 +277,7 @@ class NurseController extends Controller
             'register_start' => $request->register_start,
             'register_end'   => $request->register_end,
             'export_type'    => $request->export_type,
+            'multiple'       => $request->multiple_register,
         ]);
 
         foreach ($request->date as $date) {
@@ -289,6 +300,175 @@ class NurseController extends Controller
         }
 
         return redirect()->route('nurse.admin.index')->with('success', 'Project created successfully.');
+    }
+
+    public function adminProjectEdit($project_id)
+    {
+        $project = NurseProject::find($project_id);
+        if ($project !== null) {
+            return view('nurse.admin.project_edit', compact('project'));
+        }
+        return redirect()->back()->with('error', 'Project not found.');
+    }
+
+    public function adminProjectUpdate(Request $request, $project_id)
+    {
+        $request->validate([
+            'title'             => 'required',
+            'location'          => 'required',
+            'register_start'    => 'required|date',
+            'register_end'      => 'required|date|after_or_equal:register_start',
+            'export_type'       => 'required|in:1,2,3',
+            'multiple_register' => 'required|in:0,1',
+        ]);
+
+        $project = NurseProject::find($project_id);
+        if ($project === null) {
+            return redirect()->back()->with('error', 'Project not found.');
+        }
+
+        $project->title          = $request->title;
+        $project->detail         = $request->detail;
+        $project->location       = $request->location;
+        $project->register_start = $request->register_start;
+        $project->register_end   = $request->register_end;
+        $project->export_type    = $request->export_type;
+        $project->multiple       = $request->multiple_register;
+        $project->save();
+
+        // Schedule update: preserve existing, add new, deactivate removed (with transactions)
+        $requestedDates = $request->input('date', []);
+        $requestedTimes = $request->input('time', []);
+
+        if (! empty($requestedDates) || ! empty($requestedTimes)) {
+            // Map requested dates by date string
+            $dateReqMap = [];
+            foreach ($requestedDates as $d) {
+                if (! empty($d['date'])) {
+                    $dateReqMap[$d['date']] = $d;
+                }
+            }
+
+            // Existing active dates for the project
+            $existingDates   = $project->dateData()->get();
+            $existingDateMap = [];
+            foreach ($existingDates as $dModel) {
+                $existingDateMap[$dModel->date] = $dModel;
+            }
+
+            // Process existing dates
+            foreach ($existingDates as $dModel) {
+                $dateStr = $dModel->date;
+                if (isset($dateReqMap[$dateStr])) {
+                    // Keep and update date title
+                    $dModel->title = $dateReqMap[$dateStr]['title'] ?? $dModel->title;
+                    $dModel->save();
+
+                    // Build requested time keys for this date (start|end)
+                    $newTimeKeys = [];
+                    foreach ($requestedTimes as $t) {
+                        if (! empty($t['start']) && ! empty($t['end'])) {
+                            $start                                                                      = $t['start'];
+                            $end                                                                        = $t['end'];
+                            $newTimeKeys[date('H:i', strtotime($start)) . date('H:i', strtotime($end))] = $t;
+                        }
+                    }
+
+                    // Existing active times for the date
+                    $existingTimes = $dModel->timeData()->get();
+                    foreach ($existingTimes as $tModel) {
+                        $key = date('H:i', strtotime($tModel->time_start)) . date('H:i', strtotime($tModel->time_end));
+                        if (isset($newTimeKeys[$key])) {
+                            // Update matching time (keep free seats untouched)
+                            $tPayload      = $newTimeKeys[$key];
+                            $tModel->title = $tPayload['title'] ?? $tModel->title;
+                            $tModel->max   = isset($tPayload['max']) ? $tPayload['max'] : $tModel->max;
+                            $tModel->save();
+                            unset($newTimeKeys[$key]);
+                        } else {
+                            // Time removed -> deactivate and deactivate transactions too
+                            $tModel->active = false;
+                            $tModel->save();
+                            NurseTransaction::where('nurse_time_id', $tModel->id)
+                                ->where('active', true)
+                                ->update(['active' => false]);
+                        }
+                    }
+
+                    // Create any new times not present previously
+                    foreach ($newTimeKeys as $key => $tPayload) {
+                        $start = $dateStr . ' ' . $tPayload['start'];
+                        $end   = $dateStr . ' ' . $tPayload['end'];
+                        NurseTime::create([
+                            'nurse_date_id' => $dModel->id,
+                            'title'         => $tPayload['title'] ?? ($tPayload['start'] . ' - ' . $tPayload['end']),
+                            'time_start'    => $start,
+                            'time_end'      => $end,
+                            'max'           => $tPayload['max'] ?? 0,
+                            'free'          => $tPayload['max'] ?? 0,
+                        ]);
+                    }
+                } else {
+                    // Date removed -> deactivate date, its times, and related transactions
+                    $dModel->active = false;
+                    $dModel->save();
+
+                    // Deactivate Lectures
+                    $lectures   = NurseLecture::where('nurse_date_id', $dModel->id)->where('active', true)->get();
+                    $lectureIds = $lectures->pluck('id')->all();
+                    foreach ($lectures as $l) {
+                        $l->active = false;
+                        $l->save();
+                    }
+
+                    // Deactivate times
+                    $times   = NurseTime::where('nurse_date_id', $dModel->id)->where('active', true)->get();
+                    $timeIds = $times->pluck('id')->all();
+                    foreach ($times as $t) {
+                        $t->active = false;
+                        $t->save();
+                    }
+                    if (! empty($timeIds)) {
+                        NurseTransaction::whereIn('nurse_time_id', $timeIds)
+                            ->where('active', true)
+                            ->update(['active' => false]);
+                    }
+                }
+            }
+
+            // Create new dates (and their times) that don't exist yet
+            foreach ($requestedDates as $d) {
+                if (empty($d['date'])) {
+                    continue;
+                }
+
+                $dateStr = $d['date'];
+                if (! isset($existingDateMap[$dateStr])) {
+                    $dateCreate = \App\Models\NurseDate::create([
+                        'nurse_project_id' => $project->id,
+                        'title'            => $d['title'] ?? $dateStr,
+                        'date'             => $dateStr,
+                    ]);
+
+                    foreach ($requestedTimes as $t) {
+                        if (empty($t['start']) || empty($t['end'])) {
+                            continue;
+                        }
+
+                        \App\Models\NurseTime::create([
+                            'nurse_date_id' => $dateCreate->id,
+                            'title'         => $t['title'] ?? ($t['start'] . ' - ' . $t['end']),
+                            'time_start'    => $dateStr . ' ' . $t['start'],
+                            'time_end'      => $dateStr . ' ' . $t['end'],
+                            'max'           => $t['max'] ?? 0,
+                            'free'          => $t['max'] ?? 0,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('nurse.admin.project.management', $project->id)->with('success', 'Project updated successfully.');
     }
 
     public function adminProjectManagement($project_id)
@@ -317,6 +497,11 @@ class NurseController extends Controller
             $project->active = false;
             $project->save();
 
+            $project->transactionData()->update(['active' => false]);
+            foreach ($project->dateData as $d) {
+                $d->lecturesData()->update(['active' => false]);
+            }
+
             Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' delete project id: ' . $project->id);
 
             return redirect()->route('nurse.admin.index')->with('success', 'ลบโครงการสำเร็จ');
@@ -324,6 +509,7 @@ class NurseController extends Controller
 
         return redirect()->back()->with('error', 'ไม่พบโครงการนี้');
     }
+
     public function adminProjectTransaction($project_id)
     {
         $project = NurseProject::find($project_id);
@@ -384,11 +570,10 @@ class NurseController extends Controller
         if ($userData !== null) {
             $NurseTime = NurseTime::find($request->time_id);
             if ($NurseTime->max == 0) {
-
                 $new                   = new NurseTransaction();
                 $new->nurse_project_id = $request->project_id;
                 $new->nurse_time_id    = $request->time_id;
-                $new->date_time        = $NurseTime->dateData->date;
+                $new->date_time        = $NurseTime->time_start;
                 $new->user_id          = $request->user;
                 $new->save();
 
@@ -401,15 +586,14 @@ class NurseController extends Controller
                     'name'    => $userData->userid . ' ' . $userData->name,
                 ];
 
-            } else if ($NurseTime->max !== 0 && $NurseTime->free > 0) {
-
+            } else if ($NurseTime->max !== 0 && count($NurseTime->transactionData) < $NurseTime->max) {
                 $NurseTime->free -= 1;
                 $NurseTime->save();
 
                 $new                   = new NurseTransaction();
                 $new->nurse_project_id = $request->project_id;
                 $new->nurse_time_id    = $request->time_id;
-                $new->date_time        = $NurseTime->dateData->date;
+                $new->date_time        = $NurseTime->time_start;
                 $new->user_id          = $request->user;
                 $new->save();
 
@@ -448,12 +632,32 @@ class NurseController extends Controller
         return response()->json($data, 200);
     }
 
+    public function adminProjectUpdateTransaction(Request $request)
+    {
+        $transaction = NurseTransaction::find($request->transaction_id);
+        if ($transaction === null) {
+            return response()->json(['status' => 'failed', 'message' => 'ไม่พบข้อมูลการลงทะเบียน'], 404);
+        }
+
+        $userSign  = $request->user_sign;
+        $adminSign = $request->admin_sign;
+
+        $transaction->user_sign  = ! empty($userSign) ? date('Y-m-d H:i:s', strtotime($userSign)) : null;
+        $transaction->admin_sign = ! empty($adminSign) ? date('Y-m-d H:i:s', strtotime($adminSign)) : null;
+        $transaction->save();
+
+        Log::channel('nurse_delete')->info('Admin : ' . Auth::user()->userid . ' ' . Auth::user()->name . ' update transaction id: ' . $transaction->id . ' user_sign: ' . ($transaction->user_sign ?? 'null') . ' admin_sign: ' . ($transaction->admin_sign ?? 'null'));
+
+        return response()->json(['status' => 'success', 'message' => 'บันทึกข้อมูลสำเร็จ'], 200);
+    }
+
     public function adminProjectApprove(Request $request)
     {
         $query = [
             'sign' => false,
             'time' => null,
         ];
+
         foreach ($request->query as $q => $value) {
             if ($q == 'project') {
                 $project_id = $value;
@@ -466,6 +670,7 @@ class NurseController extends Controller
                 $query['time'] = $value;
             }
         }
+
         $optionTime = [];
         $project    = NurseProject::find($project_id);
         foreach ($project->dateData as $date) {
@@ -487,6 +692,7 @@ class NurseController extends Controller
                 } else {
                     $q->whereNotNull('admin_sign');
                 }
+
                 if ($query['time'] !== 'all') {
                     $q->whereTime('date_time', $query['time']);
                 }
@@ -701,6 +907,7 @@ class NurseController extends Controller
 
     public function UserScore(Request $request)
     {
+        $department = null;
         foreach ($request->query as $parameter => $value) {
             if ($parameter == 'department') {
                 $department = $value;
@@ -733,45 +940,71 @@ class NurseController extends Controller
             'แผนกการพยาบาลกลาง',
         ];
 
+        // Active projects
         $projects = NurseProject::where('active', true)
             ->orderBy('register_start', 'asc')
-            ->get();
+            ->get(['id', 'title', 'register_start']);
 
+        // Nurses in selected department
         $nurses = User::where('department', $department)
             ->orderBy('department', 'asc')
             ->orderBy('userid', 'asc')
-            ->get();
+            ->get(['userid', 'name', 'position', 'department']);
 
-        $transactions = NurseTransaction::where('active', true)
+        $userIds = $nurses->pluck('userid')->filter()->values();
+
+        // Aggregate lecture counts per user (only active)
+        $lectureCounts = NurseLecture::where('active', true)
+            ->whereIn('user_id', $userIds)
+            ->select('user_id', \DB::raw('COUNT(*) as cnt'))
+            ->groupBy('user_id')
+            ->pluck('cnt', 'user_id');
+
+        // Aggregate transaction counts per user per project (only signed and active)
+        $txRows = NurseTransaction::where('active', true)
             ->whereNotNull('user_sign')
             ->whereNotNull('admin_sign')
+            ->whereIn('user_id', $userIds)
+            ->select('user_id', 'nurse_project_id', \DB::raw('COUNT(*) as cnt'))
+            ->groupBy('user_id', 'nurse_project_id')
             ->get();
 
-        $lecture = NurseLecture::where('active', true)->get();
+        $txMap = [];
+        foreach ($txRows as $row) {
+            $uid               = $row->user_id;
+            $pid               = $row->nurse_project_id;
+            $txMap[$uid][$pid] = (int) $row->cnt;
+        }
 
+        // Build data structure for the view
         $data = [];
-        foreach ($nurses as $index => $nurse) {
-            $data[$nurse->department][$nurse->userid] = [
-                'user'     => $nurse->userid,
+        foreach ($nurses as $nurse) {
+            $deptKey = $nurse->department;
+            $uid     = $nurse->userid;
+            $score   = 0;
+
+            $data[$deptKey][$uid] = [
+                'user'     => $uid,
                 'name'     => $nurse->name,
                 'position' => $nurse->position,
                 'lecture'  => null,
             ];
-            $lectureCount = collect($lecture)->where('user_id', $nurse->userid)->count();
-            $score        = null;
-            if ($lectureCount > 0) {
-                $data[$nurse->department][$nurse->userid]['lecture'] = $lectureCount * 5;
-                $score                                               = $lectureCount * 5;
+
+            // Lecture score: count * 5
+            $lc = (int) ($lectureCounts[$uid] ?? 0);
+            if ($lc > 0) {
+                $data[$deptKey][$uid]['lecture'] = $lc * 5;
+                $score += $lc * 5;
             }
+
+            // Per-project transaction counts
             foreach ($projects as $project) {
-                $data[$nurse->department][$nurse->userid][$project->title] = null;
-                $countTransaction                                          = collect($transactions)->where('user_id', $nurse->userid)->where('nurse_project_id', $project->id)->count();
-                if ($countTransaction > 0) {
-                    $data[$nurse->department][$nurse->userid][$project->title] = $countTransaction;
-                    $score += $countTransaction;
-                }
+                $countTransaction                      = (int) ($txMap[$uid][$project->id] ?? 0);
+                $data[$deptKey][$uid][$project->title] = $countTransaction > 0 ? $countTransaction : null;
+                $score += $countTransaction;
             }
-            $data[$nurse->department][$nurse->userid]['total'] = $score;
+
+            $data[$deptKey][$uid]['total'] = $score;
         }
 
         return view('nurse.admin.user_reports', compact('projects', 'data', 'departmentArray', 'department'));
