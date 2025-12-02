@@ -25,6 +25,7 @@
             <th style="width: 150px;">DSDCertificateDate</th>
             <th style="width: 150px;">TrainingResults</th>
             <th style="width: 150px;">Remark</th>
+            <th style="width: 150px;">Approved Date</th>
         </tr>
         <tr style="display: none; height: 0px;">
             <th colspan="19"></th>
@@ -50,6 +51,7 @@
             <th>วันที่ออกใบรับรอง</th>
             <th>ผลการอบรม</th>
             <th>หมายเหตุ</th>
+            <th>วันที่ HR กดอนุมัติ</th>
         </tr>
         <tr>
             <th>Text(50)</th>
@@ -72,6 +74,7 @@
             <th>Date(dd/mm/yyyy)</th>
             <th>1 = ผ่าน<br>0 = ไม่ผ่าน</th>
             <th>Text (100)</th>
+            <th>Date (dd/mm/yyyy)</th>
         </tr>
     </thead>
     <tbody>
@@ -84,6 +87,27 @@
                         {{ date("d/m/Y", strtotime($attend->attend_datetime)) }}
                     @endif
                 </td>
+                <td>
+                    @if ($attend->approve_datetime)
+                        {{ $date["last"] }}
+                    @endif
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
                 <td>
                     @if ($attend->approve_datetime)
                         {{ date("d/m/Y", strtotime($attend->approve_datetime)) }}
