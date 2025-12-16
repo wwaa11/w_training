@@ -127,6 +127,8 @@ Route::middleware([HrAdmin::class])->group(function () {
                     Route::post('/', [HRController::class, 'adminRegistrationStore'])->name('store');
                     Route::put('/{registrationId}', [HRController::class, 'adminRegistrationUpdate'])->name('update');
                     Route::delete('/{registrationId}', [HRController::class, 'adminRegistrationDelete'])->name('delete');
+                    Route::post('/import', [HRController::class, 'adminRegistrationImport'])->name('import');
+                    Route::get('/template', [HRController::class, 'adminRegistrationTemplete'])->name('template');
                 });
 
                 // Approval Management

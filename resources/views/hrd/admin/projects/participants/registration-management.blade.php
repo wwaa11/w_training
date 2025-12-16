@@ -16,6 +16,25 @@
             <button class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700" onclick="openAddModal()">
                 <i class="fas fa-plus mr-2"></i>เพิ่มการลงทะเบียน
             </button>
+
+        </div>
+        <div class="mb-3 rounded bg-amber-100 p-3 shadow">
+            <form class="space-y-4" action="{{ route("hrd.admin.projects.registrations.import", $project->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <label class="block text-sm font-medium text-gray-700" for="excel_file">Import Excel</label>
+                <div class="flex gap-3">
+                    <input class="mt-1 block w-full flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="excel_file" type="file" name="import_file" accept=".xlsx,.xls" required>
+                    <button class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700" type="submit">
+                        <i class="fas fa-upload mr-2"></i>
+                        นำเข้าข้อมูล
+                    </button>
+                    <a class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-700" href="{{ route("hrd.admin.projects.registrations.template", $project->id) }}">
+                        <i class="fas fa-download mr-2"></i>
+                        ดาวน์โหลดเทมเพลต
+                    </a>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">รองรับไฟล์ .xlsx และ .xls เท่านั้น</p>
+            </form>
         </div>
 
         @if (session("success"))

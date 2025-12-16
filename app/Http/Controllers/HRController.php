@@ -5,8 +5,10 @@ use App\Exports\Hr\AllDateExport;
 use App\Exports\Hr\DateExport;
 use App\Exports\Hr\DBDExport;
 use App\Exports\Hr\HrGroupsTemplateExport;
+use App\Exports\Hr\HrRegisterTemplateExport;
 use App\Exports\Hr\OnebookExport;
 use App\Exports\Hr\ResultsTemplateExport;
+use App\Imports\HrAttendImport;
 use App\Imports\HrGroupsImport;
 use App\Imports\HrResultsImport;
 use App\Jobs\HrAssignSeatForAttendance;
@@ -2097,6 +2099,59 @@ class HRController extends Controller
             return redirect()->back()->with('error', 'Failed to create registration: ' . $e->getMessage());
         }
     }
+    public function adminRegistrationImport(Request $request, $projectId)
+    {
+        $request->validate([
+            'import_file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            $project = HrProject::findOrFail($projectId);
+
+            Excel::import(new HrAttendImport($projectId), $request->file('import_file'));
+
+            $importResults = session('import_results', []);
+
+            // Log import operation
+            $this->logImportOperation($project, 'groups',
+                $importResults['imported'] ?? 0,
+                $importResults['skipped'] ?? 0,
+                $importResults['errors'] ?? [],
+                [
+                    'file_name' => $request->file('import_file')->getClientOriginalName(),
+                ]
+            );
+
+            $message = "นำเข้าข้อมูลเสร็จสิ้น ";
+            $message .= "นำเข้า: {$importResults['imported']} รายการ, ";
+            $message .= "ข้าม: {$importResults['skipped']} รายการ";
+
+            if (! empty($importResults['errors'])) {
+                $message .= " มีข้อผิดพลาดเกิดขึ้นระหว่างการนำเข้า";
+                return redirect()->back()
+                    ->with('warning', $message)
+                    ->with('import_errors', $importResults['errors']);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            // Log import error
+            $project = HrProject::findOrFail($projectId);
+            $this->logImportOperation($project, 'groups', 0, 0, [$e->getMessage()], [
+                'file_name' => $request->file('import_file')->getClientOriginalName(),
+            ]);
+
+            return redirect()->back()->with('error', 'การนำเข้าล้มเหลว: ' . $e->getMessage());
+        }
+    }
+    public function adminRegistrationTemplete($projectId)
+    {
+        $project = HrProject::findOrFail($projectId);
+
+        return Excel::download(new HrRegisterTemplateExport($projectId),
+            'register_template_' . $project->project_name . '.xlsx');
+    }
 
     /**
      * Update an existing registration (admin function)
@@ -2815,6 +2870,9 @@ class HRController extends Controller
     {
         $project = HrProject::findOrFail($projectId);
 
+        // remove / \ from project name
+        $project->project_name = str_replace(['/', '\\'], '', $project->project_name);
+
         // Get all registrations for the project
         $registrations = HrAttend::with(['user', 'date', 'time'])
             ->where('project_id', $projectId)
@@ -2834,6 +2892,9 @@ class HRController extends Controller
     {
         $project = HrProject::findOrFail($projectId);
 
+        // remove / \ from project name
+        $project->project_name = str_replace(['/', '\\'], '', $project->project_name);
+
         // Log export operation
         $this->logExportOperation($project, 'dbd_format', 'excel');
 
@@ -2846,6 +2907,9 @@ class HRController extends Controller
     public function exportOnebook($projectId)
     {
         $project = HrProject::findOrFail($projectId);
+
+        // remove / \ from project name
+        $project->project_name = str_replace(['/', '\\'], '', $project->project_name);
 
         // Log export operation
         $this->logExportOperation($project, 'onebook_format', 'excel');
