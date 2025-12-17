@@ -1347,14 +1347,19 @@ class HRController extends Controller
     /**
      * Display admin index page with all projects
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
+        $search = $request->query('name');
+
         $projects = HrProject::with(['dates', 'attends'])
             ->orderBy('created_at', 'desc')
             ->where('project_delete', false)
+            ->when($search, function ($query, $search) {
+                return $query->where('project_name', 'LIKE', '%' . $search . '%');
+            })
             ->paginate(10);
 
-        return view('hrd.admin.dashboard', compact('projects'));
+        return view('hrd.admin.dashboard', compact('projects', 'search'));
     }
 
     /**

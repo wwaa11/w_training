@@ -69,6 +69,14 @@
                 </div>
             </div>
 
+            <form action="{{ route("hrd.admin.index") }}" method="GET">
+                <div class="flex flex-row gap-2 space-y-4">
+                    @csrf
+                    <input class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" value="{{ $search }}" type="text" placeholder="Press Enter to search..." name="name">
+                    <button class="hidden" type="submit"></button>
+                </div>
+            </form>
+
             <!-- Mobile Card Layout -->
             <div class="block space-y-4 sm:hidden">
                 @forelse($projects as $project)
