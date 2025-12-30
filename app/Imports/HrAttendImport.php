@@ -1,6 +1,7 @@
 <?php
 namespace App\Imports;
 
+use App\Models\HrAttend;
 use App\Models\HrDate;
 use App\Models\HrProject;
 use App\Models\HrTime;
@@ -34,68 +35,78 @@ class HrAttendImport implements ToCollection, WithHeadingRow
         $project = HrProject::find($this->projectId);
 
         foreach ($rows as $rowIndex => $row) {
+            $actualRowNumber = $rowIndex + 3;
             try {
-                // Skip empty rows
-                if (empty($row['user_id']) || empty($row['date'] || empty($row['time']))) {
-                    $error[] = "แถว " . ($rowIndex + 2) . ' ข้อมูลไม่สมบูรณ์';
+                // 1. Corrected empty check
+                if (empty($row['user_id']) || empty($row['date']) || empty($row['time'])) {
+                    $errors[] = "แถว {$actualRowNumber}: ข้อมูลไม่สมบูรณ์ (User ID, Date, or Time is missing)";
                     $skippedCount++;
                     continue;
                 }
 
-                $userId           = trim($row['user_id']);
-                $date             = trim($row['date']);
-                $time             = trim($row['time']);
-                $expoldeTime      = explode('-', $time);
-                $startTime        = date('H:i', strtotime($expoldeTime[0]));
-                $endTime          = date('H:i', strtotime($expoldeTime[1]));
-                $attendDateTime   = date('Y-m-d H:i:s', strtotime(trim($row['attend_datetime'])));
-                $approve_datetime = date('Y-m-d H:i:s', strtotime(trim($row['approve_datetime'])));
+                // 2. Parse Data
+                $timeRange = explode('-', $row['time']);
+                if (count($timeRange) < 2) {
+                    $errors[] = "แถว {$actualRowNumber}: รูปแบบเวลาไม่ถูกต้อง (ต้องเป็น H:i-H:i)";
+                    $skippedCount++;
+                    continue;
+                }
+                $startTime = date('H:i:s', strtotime(trim($timeRange[0])));
+                $endTime   = date('H:i:s', strtotime(trim($timeRange[1])));
+                $dateOnly  = date('Y-m-d', strtotime(trim($row['date'])));
 
-                // Find user by user_id
-                $user = User::where('userid', $userId)->first();
+                // 3. Find User
+                $user = User::where('userid', trim($row['user_id']))->first();
                 if (! $user) {
-                    $errors[] = "แถว " . ($rowIndex + 3) . ": ไม่พบผู้ใช้ที่มีรหัส '{$userId}'"; // +4 because we skipped 2 rows and rowIndex starts from 0
+                    $errors[] = "แถว {$actualRowNumber}: ไม่พบผู้ใช้รหัส '{$row['user_id']}'";
                     $skippedCount++;
                     continue;
                 }
 
-                // Check if user is already in a group for this project
+                // 4. Find Date (Scoped to Project)
                 $existingDate = HrDate::where('project_id', $this->projectId)
-                    ->whereDate('date_datetime', $date)
+                    ->whereDate('date_datetime', $dateOnly)
                     ->first();
+                if (! $existingDate) {
+                    $errors[] = "แถว {$actualRowNumber}: ไม่พบวันที่ {$dateOnly} ในโปรเจกต์นี้";
+                    $skippedCount++;
+                    continue;
+                }
 
-                $existingTime = HrTime::whereTime('time_start', $startTime)
+                // 5. Find Time (Scoped to the found Date)
+                $existingTime = HrTime::where('date_id', $existingDate->id)
+                    ->whereTime('time_start', $startTime)
                     ->whereTime('time_end', $endTime)
                     ->first();
 
-                if ($existingDate && $existingTime) {
-                    $existingRegistration = $project->attends()
-                        ->where('user_id', $user->id)
-                        ->where('time_id', $existingTime->id)
-                        ->where('attend_delete', false)
-                        ->first();
-
-                    if ($existingRegistration == null) {
-                        $importedCount++;
-                        $attendance = $project->attends()->create([
-                            'date_id'          => $existingDate->id,
-                            'time_id'          => $existingTime->id,
-                            'user_id'          => $user->id,
-                            'attend_datetime'  => $attendDateTime,
-                            'approve_datetime' => $approve_datetime,
-                            'attend_delete'    => false,
-                        ]);
-                    } else {
-                        $skippedCount++;
-                        $errors[] = "แถว " . ($rowIndex + 3) . ": มีข้อมูลการลงทะเบียนแล้ว";
-                    }
-                } else {
+                if (! $existingTime) {
+                    $errors[] = "แถว {$actualRowNumber}: ไม่พบช่วงเวลา {$row['time']} ในวันที่ระบุ";
                     $skippedCount++;
-                    $errors[] = "แถว " . ($rowIndex + 3) . ": ไม่พบวันที่ หรือ เวลาที่ระบุ";
+                    continue;
+                }
+
+                $attendance = HrAttend::updateOrCreate(
+                    [
+                        'project_id'    => $this->projectId,
+                        'time_id'       => $existingTime->id,
+                        'user_id'       => $user->id,
+                        'attend_delete' => false,
+                    ],
+                    [
+                        'date_id'          => $existingDate->id,
+                        'attend_datetime'  => ! empty($row['attend_datetime']) ? date('Y-m-d H:i:s', strtotime($row['attend_datetime'])) : now(),
+                        'approve_datetime' => ! empty($row['approve_datetime']) ? date('Y-m-d H:i:s', strtotime($row['approve_datetime'])) : null,
+                    ]
+                );
+
+                if ($attendance->wasRecentlyCreated) {
+                    $importedCount++;
+                } else {
+                    $updatedCount++;
                 }
 
             } catch (\Exception $e) {
-                $errors[] = "แถว " . ($rowIndex + 3) . ": " . $e->getMessage(); // +4 because we skipped 2 rows and rowIndex starts from 0
+                $errors[] = "แถว {$actualRowNumber}: " . $e->getMessage();
                 $skippedCount++;
             }
         }

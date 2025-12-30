@@ -39,6 +39,14 @@ class HrTime extends Model
         return $this->hasMany(HrAttend::class, 'time_id');
     }
 
+    public function activeAttendsCount($projectId)
+    {
+        return $this->attends()
+            ->where('attend_delete', false)
+            ->where('project_id', $projectId)
+            ->count();
+    }
+
     public function activeAttends()
     {
         return $this->hasMany(HrAttend::class, 'time_id')->where('attend_delete', false);

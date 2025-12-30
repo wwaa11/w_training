@@ -2909,6 +2909,24 @@ class HRController extends Controller
     /**
      * Export Onebook format for a project
      */
+    public function setOneBookExport(Request $request)
+    {
+        $request->validate([
+            'input' => 'required|numeric|min:0',
+        ]);
+
+        $hours     = $request->input ?? 0;
+        $projectId = $request->project_id;
+
+        $project = HrProject::findOrFail($projectId);
+        $project->onebook()->updateOrCreate(
+            ['project_id' => $projectId],
+            ['skip_hours' => $hours]
+        );
+
+        return redirect()->back();
+    }
+
     public function exportOnebook($projectId)
     {
         $project = HrProject::findOrFail($projectId);
@@ -2947,26 +2965,36 @@ class HRController extends Controller
     /**
      * Export time-specific registrations as PDF
      */
-    public function exportTimePDF($timeId)
+    public function exportTimePDF($projectId, $timeId)
     {
-        $time = HrTime::with(['date.project', 'attends.user'])->findOrFail($timeId);
+        // 1. Fetch time with project for validation
+        $time = HrTime::with(['date.project'])
+            ->whereHas('date', function ($query) use ($projectId) {
+                $query->where('project_id', $projectId);
+            })
+            ->findOrFail($timeId);
 
-        // Get all registrations for this specific time slot
+        // 2. Fetch registrations for this project AND this time slot
         $registrations = HrAttend::with(['user'])
+            ->where('project_id', $projectId)
             ->where('time_id', $timeId)
             ->where('attend_delete', false)
             ->get();
 
-        // Log export operation
+        // 3. Log the operation
         $this->logExportOperation($time->date->project, 'time_specific_attendance', 'pdf', [
+            'project_id'          => $projectId,
             'time_id'             => $timeId,
-            'time_title'          => $time->time_title,
             'registrations_count' => $registrations->count(),
         ]);
 
-        $pdf = Pdf::loadView('hrd.admin.export.attendance-pdf', compact('time', 'registrations'));
+        $pdf = Pdf::loadView('hrd.admin.export.attendance-pdf', [
+            'time'          => $time,
+            'registrations' => $registrations,
+            'project'       => $time->date->project,
+        ]);
 
-        return $pdf->stream($time->time_title . '_' . date('Y-m-d') . '.pdf');
+        return $pdf->stream($time->time_title . '.pdf');
     }
 
     // ========================================================================

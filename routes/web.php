@@ -179,9 +179,11 @@ Route::middleware([HrAdmin::class])->group(function () {
         Route::prefix('export')->name('export.')->group(function () {
             Route::get('/excel/all_date/{project_id}', [HRController::class, 'exportAllDateRegistrations'])->name('excel.all_date');
             Route::get('/excel/onebook/{project_id}', [HRController::class, 'exportOnebook'])->name('excel.onebook');
+            Route::post('/hours/onebook', [HRController::class, 'setOneBookExport'])->name('hours.onebook');
             Route::get('/excel/dbd/{project_id}', [HRController::class, 'exportDBD'])->name('excel.dbd');
             Route::get('/excel/date/{date_id}', [HRController::class, 'exportDateRegistrations'])->name('excel.date');
-            Route::get('/pdf/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
+            // Route::get('/pdf/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
+            Route::get('/pdf/view/{project_id}/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
         });
 
         // User Management Routes

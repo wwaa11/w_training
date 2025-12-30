@@ -78,26 +78,22 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($attends as $attend)
+        @foreach ($data as $user => $item)
             <tr>
-                <td>{{ $attend->user->userid }}</td>
-                <td>{{ $attend->user->name }}</td>
+                <td>{{ $user }}</td>
+                <td>{{ $item["name"] }}</td>
                 <td>
-                    @if ($attend->attend_datetime)
-                        {{ date("d/m/Y", strtotime($attend->attend_datetime)) }}
-                    @endif
+                    {{ $date["first"] }}
                 </td>
                 <td>
-                    @if ($attend->approve_datetime)
-                        {{ $date["last"] }}
-                    @endif
+                    {{ $date["last"] }}
                 </td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td></td>
+                <td>{{ $item["hours"] }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -109,9 +105,7 @@
                 <td></td>
                 <td></td>
                 <td>
-                    @if ($attend->approve_datetime)
-                        {{ date("d/m/Y", strtotime($attend->approve_datetime)) }}
-                    @endif
+                    {{ $item["approve"] }}
                 </td>
             </tr>
         @endforeach

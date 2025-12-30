@@ -67,6 +67,11 @@ class HrProject extends Model
         return $this->hasMany(HrGroup::class, 'project_id');
     }
 
+    public function onebook()
+    {
+        return $this->hasOne(HrOnebook::class, 'project_id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {
