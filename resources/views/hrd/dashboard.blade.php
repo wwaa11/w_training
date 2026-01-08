@@ -139,14 +139,14 @@
                                     </form>
                                 @elseif ($session["hasAttended"] && $session["attendanceRecord"])
                                     <div class="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4 text-center">
-                                        <div class="flex items-center justify-center mb-2">
+                                        <div class="mb-2 flex items-center justify-center">
                                             <i class="fas fa-check-circle mr-2 text-lg text-blue-600"></i>
                                             <span class="text-sm font-medium text-blue-800">เช็คอินเรียบร้อยแล้ว</span>
                                         </div>
                                         <div class="text-lg font-bold text-blue-900">
                                             {{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("H:i") }}
                                         </div>
-                                        <div class="text-xs text-blue-600 mt-1">
+                                        <div class="mt-1 text-xs text-blue-600">
                                             {{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("d/m/Y") }}
                                         </div>
                                     </div>
@@ -353,11 +353,11 @@
     </div>
 
     <!-- Pagination -->
-    @if ($projects->hasPages())
+    {{-- @if ($projects->hasPages())
         <div class="mt-6">
             {{ $projects->links() }}
         </div>
-    @endif
+    @endif --}}
 @endsection
 
 @section("scripts")

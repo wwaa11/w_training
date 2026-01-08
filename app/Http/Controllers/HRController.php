@@ -157,7 +157,7 @@ class HRController extends Controller
                 'attends.note',
             ])
             ->orderBy('project_end_register', 'asc')
-            ->paginate(12);
+            ->get();
     }
 
     private function getOngoingProjects($projects)
