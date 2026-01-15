@@ -2127,7 +2127,7 @@ class HRController extends Controller
                 ]
             );
 
-            $message = "นำเข้าข้อมูลเสร็จสิ้น ";
+            $message  = "นำเข้าข้อมูลเสร็จสิ้น ";
             $message .= "นำเข้า: {$importResults['imported']} รายการ, ";
             $message .= "ข้าม: {$importResults['skipped']} รายการ";
 
@@ -3240,7 +3240,7 @@ class HRController extends Controller
             }
 
             // Clean up user conflicts (same user assigned to multiple seats)
-            $userConflicts = HrSeat::where('time_id', $time->id)
+            $userConflicts  = HrSeat::where('time_id', $time->id)
                 ->select('user_id')
                 ->selectRaw('COUNT(*) as count')
                 ->groupBy('user_id')
@@ -3443,7 +3443,7 @@ class HRController extends Controller
                 ]
             );
 
-            $message = "นำเข้าข้อมูลเสร็จสิ้น ";
+            $message  = "นำเข้าข้อมูลเสร็จสิ้น ";
             $message .= "นำเข้า: {$importResults['imported']} รายการ, ";
             $message .= "ข้าม: {$importResults['skipped']} รายการ";
 
@@ -3478,4 +3478,141 @@ class HRController extends Controller
             'group_import_template_' . $project->project_name . '.xlsx');
     }
 
+    // API for outher application
+    private function api_checkKey(Request $request)
+    {
+        $token = $request->headers->get('Authorization');
+        if (env('Token_API') !== str_replace('Bearer ', '', $token)) {
+            return [
+                'code'    => 401,
+                'status'  => 'error',
+                'message' => 'Authorization token is invalid',
+            ];
+        }
+
+        return [
+            'code'    => 200,
+            'status'  => 'success',
+            'message' => 'Authorization token is valid',
+        ];
+    }
+    public function api_createProject(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $project = HrProject::create([
+            'project_type'           => $request->type,
+            'project_name'           => $request->name,
+            'project_detail'         => $request->detail,
+            'project_seat_assign'    => false,
+            'project_group_assign'   => false,
+            'project_start_register' => $request->start_date,
+            'project_end_register'   => $request->end_date,
+            'project_register_today' => false,
+        ]);
+
+        $dateStart = $request->start_date;
+        $dateEnd   = $request->end_date;
+        $startTime = $request->start_time;
+        $endTime   = $request->end_time;
+        $users     = $request->users;
+
+        // Create dates and times
+        foreach ($request->dates as $dateData) {
+            $date = $project->dates()->create([
+                'date_title'    => $dateData['date_title'],
+                'date_detail'   => $dateData['date_detail'] ?? null,
+                'date_location' => $dateData['date_location'] ?? null,
+                'date_datetime' => $dateData['date_datetime'],
+            ]);
+
+            $date->times()->create([
+                'time_title'  => $timeData['time_title'],
+                'time_detail' => $timeData['time_detail'] ?? null,
+                'time_start'  => $timeData['time_start'],
+                'time_end'    => $timeData['time_end'],
+                'time_limit'  => $timeData['time_limit'] ?? false,
+                'time_max'    => $timeData['time_limit'] ? ($timeData['time_max'] ?? 1) : 0,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Project created successfully!',
+            'project' => $project,
+        ]);
+    }
+
+    public function apt_getTransaction(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        if (! $request->has('project_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project ID is required!',
+            ]);
+        }
+
+        $project = HrProject::findOrFail($request->project_id);
+        $dates   = $project->dates;
+        $data    = [];
+
+        foreach ($dates as $date) {
+            $data[$date->date_title] = [];
+            $times                   = $date->times;
+
+            foreach ($times as $time) {
+                $attends                                    = $time->activeAttends;
+                $data[$date->date_title][$time->time_title] = [];
+
+                foreach ($attends as $attend) {
+                    $data[$date->date_title][$time->time_title][] = [
+                        'id'               => $attend->id,
+                        'name'             => $attend->user->name,
+                        'attend_datetime'  => $attend->attend_datetime,
+                        'approve_datetime' => $attend->approve_datetime,
+                    ];
+                }
+            }
+        }
+
+        return response()->json([
+            'success'     => true,
+            'message'     => 'Transaction retrieved successfully!',
+            'transaction' => $data,
+        ]);
+    }
+
+    public function api_approveTransaction(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        if (! $request->has('transaction_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction ID is required!',
+            ]);
+        }
+
+        $transaction = HrAttend::findOrFail($request->transaction_id);
+        $transaction->update([
+            'approve_datetime' => now(),
+        ]);
+
+        return response()->json([
+            'success'     => true,
+            'message'     => 'Transaction approved successfully!',
+            'transaction' => $transaction,
+        ]);
+    }
 }

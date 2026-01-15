@@ -821,6 +821,7 @@ class NurseController extends Controller
 
         $project = NurseProject::find($project_id);
         $name    = $project->title . '_ผู้ฝึกอบรม';
+        $name    = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseUserExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -831,6 +832,7 @@ class NurseController extends Controller
 
         $date = NurseDate::find($date_id);
         $name = $date->projectData->title . '_' . $date->title;
+        $name = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseDateExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -841,6 +843,7 @@ class NurseController extends Controller
 
         $project = NurseProject::find($project_id);
         $name    = $project->title . '_วิทยากร';
+        $name    = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseLectureExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -851,6 +854,7 @@ class NurseController extends Controller
 
         $date = NurseDate::find($date_id);
         $name = $date->projectData->title . '_' . $date->title;
+        $name = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseDateLectureExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -862,6 +866,7 @@ class NurseController extends Controller
         $date = NurseDate::find($date_id);
         $date = NurseDate::find($date_id);
         $name = $date->projectData->title . '_' . $date->title . '_DBD';
+        $name = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseDateDBDExport($date_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -872,6 +877,7 @@ class NurseController extends Controller
 
         $project = NurseProject::find($project_id);
         $name    = $project->title . '_DBD';
+        $name    = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseDBDExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -884,12 +890,15 @@ class NurseController extends Controller
         switch ($project->export_type) {
             case 1:
                 $name = $project->title . '_ใบบันทึกฝึกอบรม ภาคปฐมนิเทศ';
+                $name = str_replace(['/', '\\'], '', $name);
                 return Excel::download(new NurseType1Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
             case 2:
                 $name = $project->title . '_ใบบันทึกฝึกอบรม  ส่วนกลางโรงพยาบาล';
+                $name = str_replace(['/', '\\'], '', $name);
                 return Excel::download(new NurseType2Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
             case 3:
                 $name = $project->title . '_ใบบันทึกการฝึกอบรมภาคอิสระ';
+                $name = str_replace(['/', '\\'], '', $name);
                 return Excel::download(new NurseType3Export($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
         }
 
@@ -901,6 +910,7 @@ class NurseController extends Controller
 
         $project = NurseProject::find($project_id);
         $name    = $project->title . '_onebook';
+        $name    = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseOnebookExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
@@ -1015,6 +1025,7 @@ class NurseController extends Controller
         ini_set('max_execution_time', 600);
 
         $name = 'nurseScore_' . $department;
+        $name = str_replace(['/', '\\'], '', $name);
 
         return Excel::download(new NurseScoreExport($department), $name . date('d-m-Y') . '.xlsx');
     }
