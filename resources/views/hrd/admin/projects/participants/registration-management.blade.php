@@ -224,9 +224,6 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         <div>
                                             <div class="font-medium">{{ $registration->time->time_title ?? "N/A" }}</div>
-                                            <div class="text-xs text-gray-500">
-                                                {{ $registration->time->time_start ?? "N/A" }} - {{ $registration->time->time_end ?? "N/A" }}
-                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">

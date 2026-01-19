@@ -25,6 +25,7 @@ use App\Models\User;
 use App\Traits\HrLoggingTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -3564,11 +3565,9 @@ class HRController extends Controller
             return response()->json($response, $response['code']);
         }
 
-        dd($request);
-
         $project = HrProject::create([
             'project_type'           => $request->type,
-            'project_name'           => $request->name,
+            'project_name'           => $request->title,
             'project_detail'         => $request->detail,
             'project_seat_assign'    => false,
             'project_group_assign'   => false,
@@ -3582,24 +3581,35 @@ class HRController extends Controller
         $startTime = $request->start_time;
         $endTime   = $request->end_time;
         $users     = $request->users;
+        $periods   = CarbonPeriod::create($dateStart, $dateEnd);
+        $allUsers  = User::whereIn('userid', $users)->get();
 
-        // Create dates and times
-        foreach ($request->dates as $dateData) {
-            $date = $project->dates()->create([
-                'date_title'    => $dateData['date_title'],
-                'date_detail'   => $dateData['date_detail'] ?? null,
-                'date_location' => $dateData['date_location'] ?? null,
-                'date_datetime' => $dateData['date_datetime'],
+        foreach ($periods as $date) {
+
+            $createDate = $project->dates()->create([
+                'date_title'    => $this->FulldateTH($date->format('Y-m-d')),
+                'date_detail'   => null,
+                'date_location' => null,
+                'date_datetime' => $date->format('Y-m-d'),
             ]);
 
-            $date->times()->create([
-                'time_title'  => $timeData['time_title'],
-                'time_detail' => $timeData['time_detail'] ?? null,
-                'time_start'  => $timeData['time_start'],
-                'time_end'    => $timeData['time_end'],
-                'time_limit'  => $timeData['time_limit'] ?? false,
-                'time_max'    => $timeData['time_limit'] ? ($timeData['time_max'] ?? 1) : 0,
+            $createTime = $createDate->times()->create([
+                'time_title'  => $startTime . ' - ' . $endTime,
+                'time_detail' => null,
+                'time_start'  => $startTime,
+                'time_end'    => $endTime,
+                'time_limit'  => true,
+                'time_max'    => count($users),
             ]);
+
+            foreach ($allUsers as $user) {
+                $newAttend = HrAttend::create([
+                    'project_id' => $project->id,
+                    'date_id'    => $createDate->id,
+                    'time_id'    => $createTime->id,
+                    'user_id'    => $user->id,
+                ]);
+            }
         }
 
         return response()->json([
@@ -3608,7 +3618,6 @@ class HRController extends Controller
             'project' => $project,
         ]);
     }
-
     public function apt_getTransaction(Request $request)
     {
         $response = $this->api_checkKey($request);
@@ -3652,7 +3661,6 @@ class HRController extends Controller
             'transaction' => $data,
         ]);
     }
-
     public function api_approveTransaction(Request $request)
     {
         $response = $this->api_checkKey($request);
