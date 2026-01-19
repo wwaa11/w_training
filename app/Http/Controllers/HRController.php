@@ -1422,9 +1422,12 @@ class HRController extends Controller
 
         try {
             // Create project
+            $search      = ["'", '"', '/', '\\'];
+            $cleanedName = str_replace($search, '', $request->project_name);
+
             $project = HrProject::create([
                 'project_type'           => $request->project_type,
-                'project_name'           => $request->project_name,
+                'project_name'           => $cleanedName,
                 'project_detail'         => $request->project_detail,
                 'project_seat_assign'    => $request->boolean('project_seat_assign'),
                 'project_group_assign'   => $request->boolean('project_group_assign'),
@@ -1629,9 +1632,12 @@ class HRController extends Controller
 
         try {
             // Update project basic information
+            $search      = ["'", '"', '/', '\\'];
+            $cleanedName = str_replace($search, '', $request->project_name);
+
             $project->update([
                 'project_type'           => $request->project_type,
-                'project_name'           => $request->project_name,
+                'project_name'           => $cleanedName,
                 'project_detail'         => $request->project_detail,
                 'project_seat_assign'    => $request->boolean('project_seat_assign'),
                 'project_group_assign'   => $request->boolean('project_group_assign'),
@@ -3479,6 +3485,61 @@ class HRController extends Controller
     }
 
     // API for outher application
+    private function FulldateTH($date)
+    {
+        $dateTime = strtotime($date);
+        $day      = date('d', $dateTime);
+        $month    = date('m', $dateTime);
+        $year     = date('Y', $dateTime);
+
+        switch ($month) {
+            case '01':
+                $fullmonth = 'มกราคม';
+                break;
+            case '02':
+                $fullmonth = 'กุมภาพันธ์';
+                break;
+            case '03':
+                $fullmonth = 'มีนาคม';
+                break;
+            case '04':
+                $fullmonth = 'เมษายน';
+                break;
+            case '05':
+                $fullmonth = 'พฤษภาคม';
+                break;
+            case '06':
+                $fullmonth = 'มิถุนายน';
+                break;
+            case '07':
+                $fullmonth = 'กรกฎาคม';
+                break;
+            case '08':
+                $fullmonth = 'สิงหาคม';
+                break;
+            case '09':
+                $fullmonth = 'กันยายน';
+                break;
+            case '10':
+                $fullmonth = 'ตุลาคม';
+                break;
+            case '11':
+                $fullmonth = 'พฤศจิกายน';
+                break;
+            case '12':
+                $fullmonth = 'ธันวาคม';
+                break;
+        }
+        $year = $year + 543;
+
+        $birthDate = date_create($date);
+        $nowDate   = date_create(date('Y-m-d'));
+        $diff      = $birthDate->diff($nowDate);
+
+        $data = $day . ' ' . $fullmonth . ' ' . $year;
+
+        return $data;
+    }
     private function api_checkKey(Request $request)
     {
         $token = $request->headers->get('Authorization');
@@ -3502,6 +3563,8 @@ class HRController extends Controller
         if ($response['code'] !== 200) {
             return response()->json($response, $response['code']);
         }
+
+        dd($request);
 
         $project = HrProject::create([
             'project_type'           => $request->type,

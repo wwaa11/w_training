@@ -270,8 +270,11 @@ class NurseController extends Controller
             'time.required' => 'โปรดระบุรอบการลงทะเบียน',
         ]);
 
+        $search       = ["'", '"', '/', '\\'];
+        $cleanedTitle = str_replace($search, '', $request->title);
+
         $project = NurseProject::create([
-            'title'          => $request->title,
+            'title'          => $cleanedTitle,
             'detail'         => $request->detail,
             'location'       => $request->location,
             'register_start' => $request->register_start,
@@ -327,7 +330,10 @@ class NurseController extends Controller
             return redirect()->back()->with('error', 'Project not found.');
         }
 
-        $project->title          = $request->title;
+        $search       = ["'", '"', '/', '\\'];
+        $cleanedTitle = str_replace($search, '', $request->title);
+
+        $project->title          = $cleanedTitle;
         $project->detail         = $request->detail;
         $project->location       = $request->location;
         $project->register_start = $request->register_start;
@@ -1003,15 +1009,15 @@ class NurseController extends Controller
             // Lecture score: count * 5
             $lc = (int) ($lectureCounts[$uid] ?? 0);
             if ($lc > 0) {
-                $data[$deptKey][$uid]['lecture'] = $lc * 5;
-                $score += $lc * 5;
+                $data[$deptKey][$uid]['lecture']  = $lc * 5;
+                $score                           += $lc * 5;
             }
 
             // Per-project transaction counts
             foreach ($projects as $project) {
-                $countTransaction                      = (int) ($txMap[$uid][$project->id] ?? 0);
-                $data[$deptKey][$uid][$project->title] = $countTransaction > 0 ? $countTransaction : null;
-                $score += $countTransaction;
+                $countTransaction                       = (int) ($txMap[$uid][$project->id] ?? 0);
+                $data[$deptKey][$uid][$project->title]  = $countTransaction > 0 ? $countTransaction : null;
+                $score                                 += $countTransaction;
             }
 
             $data[$deptKey][$uid]['total'] = $score;
