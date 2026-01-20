@@ -3571,8 +3571,8 @@ class HRController extends Controller
             'project_detail'         => $request->detail,
             'project_seat_assign'    => false,
             'project_group_assign'   => false,
-            'project_start_register' => $request->start_date,
-            'project_end_register'   => $request->end_date,
+            'project_start_register' => date('Y-m-d H:i:s', strtotime($request->start_date . ' ' . $request->start_time)),
+            'project_end_register'   => date('Y-m-d H:i:s', strtotime($request->end_date . ' ' . $request->end_time)),
             'project_register_today' => false,
         ]);
 
