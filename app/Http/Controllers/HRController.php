@@ -3585,8 +3585,8 @@ class HRController extends Controller
             // New format: iterate over dates array
             foreach ($request->dates as $dateItem) {
                 $dateString = $dateItem['dateString'];
-                $startTime  = $dateItem['start_time'];
-                $endTime    = $dateItem['end_time'];
+                $startTime  = date("H:i", strtotime($dateItem['start_time']));
+                $endTime    = date("H:i", strtotime($dateItem['end_time']));
 
                 $createDate = $project->dates()->create([
                     'date_title'    => $this->FulldateTH($dateString),
