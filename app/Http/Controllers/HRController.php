@@ -157,7 +157,8 @@ class HRController extends Controller
                 },
                 'attends.note',
             ])
-            ->orderBy('project_end_register', 'asc')
+            ->withMin('dates', 'date_datetime')
+            ->orderBy('dates_min_date_datetime', 'asc')
             ->get();
     }
 
@@ -3566,51 +3567,53 @@ class HRController extends Controller
         }
 
         $project = HrProject::create([
+            'dms_id'                 => $request->document_id,
             'project_type'           => $request->type,
             'project_name'           => $request->title,
             'project_detail'         => $request->detail,
             'project_seat_assign'    => false,
             'project_group_assign'   => false,
-            'project_start_register' => date('Y-m-d H:i:s', strtotime($request->start_date . ' ' . $request->start_time)),
-            'project_end_register'   => date('Y-m-d H:i:s', strtotime($request->end_date . ' ' . $request->end_time)),
+            'project_start_register' => $request->project_start_register,
+            'project_end_register'   => $request->project_end_register,
             'project_register_today' => false,
         ]);
 
-        $dateStart = $request->start_date;
-        $dateEnd   = $request->end_date;
-        $startTime = $request->start_time;
-        $endTime   = $request->end_time;
-        $users     = $request->users;
-        $periods   = CarbonPeriod::create($dateStart, $dateEnd);
-        $allUsers  = User::whereIn('userid', $users)->get();
+        $users    = $request->users;
+        $allUsers = User::whereIn('userid', $users)->get();
 
-        foreach ($periods as $date) {
+        if ($request->has('dates') && is_array($request->dates)) {
+            // New format: iterate over dates array
+            foreach ($request->dates as $dateItem) {
+                $dateString = $dateItem['dateString'];
+                $startTime  = $dateItem['start_time'];
+                $endTime    = $dateItem['end_time'];
 
-            $createDate = $project->dates()->create([
-                'date_title'    => $this->FulldateTH($date->format('Y-m-d')),
-                'date_detail'   => null,
-                'date_location' => null,
-                'date_datetime' => $date->format('Y-m-d'),
-            ]);
-
-            $createTime = $createDate->times()->create([
-                'time_title'  => $startTime . ' - ' . $endTime,
-                'time_detail' => null,
-                'time_start'  => $startTime,
-                'time_end'    => $endTime,
-                'time_limit'  => true,
-                'time_max'    => count($users),
-            ]);
-
-            foreach ($allUsers as $user) {
-                $newAttend = HrAttend::create([
-                    'project_id' => $project->id,
-                    'date_id'    => $createDate->id,
-                    'time_id'    => $createTime->id,
-                    'user_id'    => $user->id,
+                $createDate = $project->dates()->create([
+                    'date_title'    => $this->FulldateTH($dateString),
+                    'date_detail'   => null,
+                    'date_location' => null,
+                    'date_datetime' => $dateString,
                 ]);
+
+                $createTime = $createDate->times()->create([
+                    'time_title'  => $startTime . ' - ' . $endTime,
+                    'time_detail' => null,
+                    'time_start'  => $startTime,
+                    'time_end'    => $endTime,
+                    'time_limit'  => true,
+                    'time_max'    => count($users),
+                ]);
+
+                foreach ($allUsers as $user) {
+                    HrAttend::create([
+                        'project_id' => $project->id,
+                        'date_id'    => $createDate->id,
+                        'time_id'    => $createTime->id,
+                        'user_id'    => $user->id,
+                    ]);
+                }
             }
-        }
+        } 
 
         return response()->json([
             'success' => true,
@@ -3647,9 +3650,10 @@ class HRController extends Controller
                 foreach ($attends as $attend) {
                     $data[$date->date_title][$time->time_title][] = [
                         'id'               => $attend->id,
+                        'userid'           => $attend->user->userid,
                         'name'             => $attend->user->name,
-                        'attend_datetime'  => $attend->attend_datetime,
-                        'approve_datetime' => $attend->approve_datetime,
+                        'attend_datetime'  => $attend->attend_datetime ? $attend->attend_datetime->format('H:i') : null,
+                        'approve_datetime' => $attend->approve_datetime ? $attend->approve_datetime->format('H:i') : null,
                     ];
                 }
             }

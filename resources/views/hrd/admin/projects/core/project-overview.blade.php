@@ -309,6 +309,21 @@
                                 </p>
                             </div>
                         </div>
+
+                        @if ($project->dms_id !== null)
+                            <a class="group flex items-center rounded-lg bg-yellow-50 p-4 transition-colors duration-200 hover:bg-yellow-100" href="https://pr9web.praram9.com/dms/training/download-pdf/{{ $project->dms_id }}">
+                                <div class="flex-shrink-0">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 transition-colors duration-200 group-hover:bg-yellow-200">
+                                        <i class="fas fa-file-excel text-yellow-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <p class="font-semibold text-yellow-900">ใบบันทึกการฝึกอบรมภาคอิสระ</p>
+                                    <p class="text-sm text-yellow-700">ดาวน์โหลดใบบันทึกการฝึกอบรมภาคอิสระ</p>
+                                </div>
+                                <i class="fas fa-download me-3 text-yellow-600 transition-transform duration-200 group-hover:translate-x-1"></i>
+                            </a>
+                        @endif
                     </div>
 
                     <!-- Dates and Times Section -->

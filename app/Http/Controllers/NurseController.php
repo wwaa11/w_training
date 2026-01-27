@@ -32,7 +32,8 @@ class NurseController extends Controller
         $projects = NurseProject::where('active', true)
             ->whereDate('register_start', '<=', date('Y-m-d'))
             ->whereDate('register_end', '>=', date('Y-m-d'))
-            ->orderBy('register_start', 'asc')
+            ->withMin('dateData', 'date')
+            ->orderBy('date_data_min_date', 'asc')
             ->get();
 
         $myTransaction = NurseTransaction::where('user_id', Auth::user()->userid)

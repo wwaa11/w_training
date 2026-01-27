@@ -19,6 +19,7 @@ class HrProject extends Model
         'project_register_today',
         'project_active',
         'project_delete',
+        'dms_id',
     ];
 
     protected $casts = [
