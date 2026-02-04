@@ -3690,4 +3690,74 @@ class HRController extends Controller
             'transaction' => $transaction,
         ]);
     }
+    public function api_cancelProject(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        if (! $request->has('project_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project ID is required!',
+            ]);
+        }
+
+        $project = HrProject::with([
+            'dates.times.seats',
+            'attends',
+            'results',
+            'resultHeader',
+            'links',
+        ])->findOrFail($request->project_id);
+
+        DB::beginTransaction();
+        $projectData = [
+            'id'            => $project->id,
+            'name'          => $project->project_name,
+            'type'          => $project->project_type,
+            'dates_count'   => $project->dates->count(),
+            'attends_count' => $project->attends->count(),
+            'results_count' => $project->results->count(),
+            'links_count'   => $project->links->count(),
+        ];
+
+        try {
+            $project->results()->forceDelete();
+            if ($project->resultHeader) {
+                $project->resultHeader->forceDelete();
+            }
+
+            $project->attends()->delete();
+
+            $timeIds = $project->dates->pluck('times')->flatten()->pluck('id');
+            if ($timeIds->isNotEmpty()) {
+                HrSeat::whereIn('time_id', $timeIds)->delete();
+            }
+
+            $dateIds = $project->dates->pluck('id');
+            if ($dateIds->isNotEmpty()) {
+                HrTime::whereIn('date_id', $dateIds)->delete();
+            }
+            $project->dates()->delete();
+            $project->links()->forceDelete();
+            $project->groups()->forceDelete();
+            $project->delete();
+        } catch (\Exception $e) {
+            $projectId = $project->id;
+        }
+
+        $this->logProjectDeleted($projectData, [
+            'deleted_by_admin' => true,
+            'deletion_reason'  => 'api_request',
+        ]);
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Project cancelled successfully!',
+            'project' => $project,
+        ]);
+    }
 }
