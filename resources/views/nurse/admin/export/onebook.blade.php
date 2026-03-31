@@ -77,7 +77,7 @@
     <tbody>
         @foreach ($transactions as $transaction)
             <tr>
-                <td>{{ $transaction->user }}</td>
+                <td>{{ $transaction->user_id }}</td>
                 <td>{{ $transaction->userData->name }}</td>
                 <td>
                     {{ date("d/m/Y", strtotime($transaction->admin_sign)) }}

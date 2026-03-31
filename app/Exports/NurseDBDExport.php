@@ -67,7 +67,7 @@ class NurseDBDExport implements FromView, WithDrawings, WithColumnFormatting
             ->where('active', true)
             ->orderby('date_time', 'ASC')
             ->get();
-
+            
         $project_date = "";
         $project_time = [];
         foreach ($project->dateData as $date) {
