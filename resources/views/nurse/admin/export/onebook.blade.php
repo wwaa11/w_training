@@ -2,7 +2,8 @@
     <thead style="word-wrap: break-word;">
         <tr>
             <th>TR2_EmployeeTrainingHistory</th>
-            <th colspan="18">หมายเหตุ 1) Column สีแดงตัวอักษรขาว หมายถึง เป็นข้อมูลที่จำเป็นต้องบันทึก 2) ข้อมูลที่นำเข้าระบบเริ่มตั้งแต่ Row #6 3) บรรทัดตัวอย่างให้ลบทิ้ง</th>
+            <th colspan="18">หมายเหตุ 1) Column สีแดงตัวอักษรขาว หมายถึง เป็นข้อมูลที่จำเป็นต้องบันทึก 2)
+                ข้อมูลที่นำเข้าระบบเริ่มตั้งแต่ Row #6 3) บรรทัดตัวอย่างให้ลบทิ้ง</th>
         </tr>
         <tr>
             <th style="width: 150px; background: red; color: white">EmployeeID</th>
@@ -75,15 +76,34 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($transactions as $transaction)
+        @foreach ($data as $user => $item)
             <tr>
-                <td>{{ $transaction->user_id }}</td>
-                <td>{{ $transaction->userData->name }}</td>
+                <td>{{ $user }}</td>
+                <td>{{ $item['name'] }}</td>
                 <td>
-                    {{ date("d/m/Y", strtotime($transaction->admin_sign)) }}
+                    {{ date('d/m/Y', strtotime($first)) }}
                 </td>
                 <td>
-                    {{ date("d/m/Y", strtotime($transaction->admin_sign)) }}
+                    {{ date('d/m/Y', strtotime($last)) }}
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{ $item['hours'] }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                    {{ $item['approve'] }}
                 </td>
             </tr>
         @endforeach
