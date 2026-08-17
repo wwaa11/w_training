@@ -924,11 +924,24 @@ class NurseController extends Controller
 
     public function UserScore(Request $request)
     {
-        $department = null;
-        foreach ($request->query as $parameter => $value) {
-            if ($parameter == 'department') {
-                $department = $value;
-            }
+        $department = $request->query('department');
+
+        $years = NurseProject::where('active', true)
+            ->whereNotNull('register_start')
+            ->selectRaw('DISTINCT YEAR(register_start) as year')
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->filter()
+            ->map(fn ($y) => (int) $y)
+            ->values();
+
+        $year = $request->query('year');
+        $year = $year !== null && $year !== ''
+            ? (int) $year
+            : (int) ($years->first() ?? date('Y'));
+
+        if ($years->isNotEmpty() && ! $years->contains($year)) {
+            $years = $years->push($year)->unique()->sortDesc()->values();
         }
 
         $departmentArray = [
@@ -957,10 +970,13 @@ class NurseController extends Controller
             'แผนกการพยาบาลกลาง',
         ];
 
-        // Active projects
+        // Active projects in selected year
         $projects = NurseProject::where('active', true)
+            ->whereYear('register_start', $year)
             ->orderBy('register_start', 'asc')
             ->get(['id', 'title', 'register_start']);
+
+        $projectIds = $projects->pluck('id');
 
         // Nurses in selected department
         $nurses = User::where('department', $department)
@@ -970,9 +986,12 @@ class NurseController extends Controller
 
         $userIds = $nurses->pluck('userid')->filter()->values();
 
-        // Aggregate lecture counts per user (only active)
+        // Aggregate lecture counts per user (only active, for projects in selected year)
         $lectureCounts = NurseLecture::where('active', true)
             ->whereIn('user_id', $userIds)
+            ->whereHas('dateData', function ($q) use ($projectIds) {
+                $q->whereIn('nurse_project_id', $projectIds);
+            })
             ->select('user_id', \DB::raw('COUNT(*) as cnt'))
             ->groupBy('user_id')
             ->pluck('cnt', 'user_id');
@@ -982,6 +1001,7 @@ class NurseController extends Controller
             ->whereNotNull('user_sign')
             ->whereNotNull('admin_sign')
             ->whereIn('user_id', $userIds)
+            ->whereIn('nurse_project_id', $projectIds)
             ->select('user_id', 'nurse_project_id', \DB::raw('COUNT(*) as cnt'))
             ->groupBy('user_id', 'nurse_project_id')
             ->get();
@@ -1024,7 +1044,11 @@ class NurseController extends Controller
             $data[$deptKey][$uid]['total'] = $score;
         }
 
-        return view('nurse.admin.user_reports', compact('projects', 'data', 'departmentArray', 'department'));
+        foreach ($data as $deptKey => $users) {
+            uasort($data[$deptKey], fn ($a, $b) => ($b['total'] ?? 0) <=> ($a['total'] ?? 0));
+        }
+
+        return view('nurse.admin.user_reports', compact('projects', 'data', 'departmentArray', 'department', 'years', 'year'));
     }
     public function UserScoreExport($department)
     {

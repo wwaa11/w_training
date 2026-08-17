@@ -270,7 +270,6 @@ class CoreController extends Controller
             $user->password         = Hash::make($password);
             $user->password_changed = true;
             $user->refNo            = $request->refno;
-            $user->sign             = $request->sign;
             $user->save();
 
             Auth::logout();
@@ -299,9 +298,16 @@ class CoreController extends Controller
     }
     public function UpdateSign(Request $request)
     {
-        $user       = Auth::user();
-        $user->sign = $request->sign;
-        $user->save();
+        $user = Auth::user();
+
+        if ($request->filled('sign')) {
+            $user->sign = $request->sign;
+            $user->save();
+        }
+
+        if ($request->headers->get('referer') && str_contains($request->headers->get('referer'), '/profile')) {
+            return redirect()->route('profile.index')->with('success', 'บันทึกลายเซ็นต์สำเร็จ');
+        }
 
         return redirect('/');
     }
@@ -431,13 +437,11 @@ class CoreController extends Controller
      */
     public function checkSession(Request $request)
     {
-        // Check if user is authenticated
-        if (! Auth::check()) {
-            return response()->json(['valid' => false], 200);
-        }
-
-        // Session is valid
-        return response()->json(['valid' => true], 200);
+        // The token lets a long-open page renew an expired CSRF token without a reload
+        return response()->json([
+            'valid' => Auth::check(),
+            'token' => csrf_token(),
+        ], 200);
     }
 
     public function TEST_FUNCTION()

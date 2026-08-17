@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield("meta")
     <title inertia>PR9 Nurse Training</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
@@ -12,6 +13,26 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // The XSRF-TOKEN cookie expires with the session, so send the token rendered with the page.
+        window.setCsrfToken = function(token) {
+            if (!token) {
+                return;
+            }
+
+            window.csrfToken = token;
+            document.querySelector('meta[name="csrf-token"]').setAttribute('content', token);
+            axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': token
+                }
+            });
+        };
+
+        window.setCsrfToken(document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    </script>
     @vite("resources/css/app.css")
 </head>
 
@@ -82,6 +103,8 @@
                     timeout: 5000
                 })
                 .then((response) => {
+                    window.setCsrfToken(response.data.token);
+
                     if (response.data.valid === false) {
                         console.log('Session expired, refreshing page...');
                         window.location.reload();

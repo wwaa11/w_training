@@ -6,6 +6,7 @@ use App\Exports\Hr\DateExport;
 use App\Exports\Hr\DBDExport;
 use App\Exports\Hr\HrGroupsTemplateExport;
 use App\Exports\Hr\HrRegisterTemplateExport;
+use App\Exports\Hr\LectureExport;
 use App\Exports\Hr\OnebookExport;
 use App\Exports\Hr\ResultsTemplateExport;
 use App\Imports\HrAttendImport;
@@ -16,6 +17,7 @@ use App\Jobs\HrProjectSeatAssignment;
 use App\Models\HrAttend;
 use App\Models\HrDate;
 use App\Models\HrGroup;
+use App\Models\HrLecture;
 use App\Models\HrProject;
 use App\Models\HrResult;
 use App\Models\HrSeat;
@@ -29,6 +31,8 @@ use Carbon\CarbonPeriod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 
 class HRController extends Controller
@@ -1503,6 +1507,7 @@ class HRController extends Controller
     {
         $project = HrProject::with([
             'dates.times',
+            'dates.lectures.user',
             'links',
             'resultHeader',
             'attends' => function ($query) {
@@ -1513,6 +1518,123 @@ class HRController extends Controller
         ])->findOrFail($id);
 
         return view('hrd.admin.projects.core.project-overview', compact('project'));
+    }
+
+    /**
+     * Add lecturer to a project date
+     */
+    public function adminAddLecture(Request $request, $id)
+    {
+        $request->validate([
+            'date_id' => 'required|integer|exists:hr_dates,id',
+            'user'    => 'required|string',
+        ]);
+
+        $response = [
+            'status'  => 'failed',
+            'message' => 'Error!',
+        ];
+
+        $project = HrProject::findOrFail($id);
+        $date    = HrDate::where('id', $request->date_id)
+            ->where('project_id', $project->id)
+            ->where('date_delete', false)
+            ->first();
+
+        if (! $date) {
+            return response()->json([
+                'status'  => 'failed',
+                'message' => 'ไม่พบวันที่ในโปรเจกต์นี้',
+            ], 200);
+        }
+
+        $userid = trim($request->user);
+
+        $userData = User::where('userid', $userid)->first();
+        if ($userData == null) {
+            $responseAPI = Http::withHeaders(['token' => env('API_KEY')])
+                ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                    'userid' => $userid,
+                ])
+                ->json();
+
+            $response['message'] = 'ไม่พบรหัสพนักงานนี้';
+
+            if (isset($responseAPI['status']) && $responseAPI['status'] == 1) {
+                $userData              = new User();
+                $userData->userid      = $userid;
+                $userData->password    = Hash::make($userid);
+                $userData->name        = $responseAPI['user']['name'];
+                $userData->position    = $responseAPI['user']['position'];
+                $userData->department  = $responseAPI['user']['department'];
+                $userData->division    = $responseAPI['user']['division'];
+                $userData->hn          = $responseAPI['user']['HN'];
+                $userData->last_update = date('Y-m-d H:i:s');
+                $userData->save();
+            }
+        }
+
+        if ($userData == null) {
+            return response()->json($response, 200);
+        }
+
+        $lecture = HrLecture::where('date_id', $date->id)
+            ->where('user_id', $userData->id)
+            ->where('active', true)
+            ->first();
+
+        if ($lecture == null) {
+            HrLecture::create([
+                'date_id' => $date->id,
+                'user_id' => $userData->id,
+                'active'  => true,
+            ]);
+
+            $response = [
+                'status'  => 'success',
+                'message' => 'ทำการเพิ่มวิทยากรสำเร็จ!',
+            ];
+        } else {
+            $response = [
+                'status'  => 'success',
+                'message' => 'มีวิทยากรท่านนี้อยู่แล้ว!',
+            ];
+        }
+
+        return response()->json($response, 200);
+    }
+
+    /**
+     * Soft-delete lecturer from a project date
+     */
+    public function adminDeleteLecture(Request $request, $id)
+    {
+        $request->validate([
+            'lecture_id' => 'required|integer|exists:hr_lecturers,id',
+        ]);
+
+        $project = HrProject::findOrFail($id);
+        $lecture = HrLecture::where('id', $request->lecture_id)
+            ->where('active', true)
+            ->whereHas('date', function ($query) use ($project) {
+                $query->where('project_id', $project->id);
+            })
+            ->first();
+
+        if (! $lecture) {
+            return response()->json([
+                'status'  => 'failed',
+                'message' => 'ไม่พบวิทยากร',
+            ], 200);
+        }
+
+        $lecture->active = false;
+        $lecture->save();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'ลบวิทยากรสำเร็จ!',
+        ], 200);
     }
 
     /**
@@ -2971,6 +3093,42 @@ class HRController extends Controller
     }
 
     /**
+     * Export all lecturers of a project
+     */
+    public function exportLectures($projectId)
+    {
+        $project = HrProject::findOrFail($projectId);
+
+        // remove / \ from project name
+        $projectName = str_replace(['/', '\\'], '', $project->project_name);
+
+        $this->logExportOperation($project, 'project_lecturers', 'excel');
+
+        return Excel::download(new LectureExport($projectId), 'LectureExport_' . $projectName . '_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Export lecturers of a specific date
+     */
+    public function exportDateLectures($dateId)
+    {
+        $date = HrDate::with('project')->findOrFail($dateId);
+
+        // remove / \ from date title
+        $dateTitle = str_replace(['/', '\\'], '', $date->date_title);
+
+        $this->logExportOperation($date->project, 'date_lecturers', 'excel', [
+            'date_id'    => $dateId,
+            'date_title' => $date->date_title,
+        ]);
+
+        return Excel::download(
+            new LectureExport($date->project_id, $dateId),
+            'LectureExport_' . $dateTitle . '_' . date('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
      * Export time-specific registrations as PDF
      */
     public function exportTimePDF($projectId, $timeId)
@@ -3566,6 +3724,18 @@ class HRController extends Controller
             return response()->json($response, $response['code']);
         }
 
+        $users      = is_array($request->users) ? $request->users : [];
+        $lecturers  = is_array($request->lecturers) ? $request->lecturers : [];
+        $allUsers   = User::whereIn('userid', $users)->get();
+        $allLecturers = [];
+
+        foreach ($lecturers as $lecturerUserid) {
+            $lecturerUser = $this->api_resolveUserByUserid(trim((string) $lecturerUserid));
+            if ($lecturerUser) {
+                $allLecturers[] = $lecturerUser;
+            }
+        }
+
         $project = HrProject::create([
             'dms_id'                 => $request->document_id,
             'project_type'           => $request->type,
@@ -3578,15 +3748,25 @@ class HRController extends Controller
             'project_register_today' => false,
         ]);
 
-        $users    = $request->users;
-        $allUsers = User::whereIn('userid', $users)->get();
+        $createdDates = [];
 
         if ($request->has('dates') && is_array($request->dates)) {
-            // New format: iterate over dates array
             foreach ($request->dates as $dateItem) {
                 $dateString = $dateItem['dateString'];
-                $startTime  = date("H:i", strtotime($dateItem['start_time']));
-                $endTime    = date("H:i", strtotime($dateItem['end_time']));
+                $startTime  = date('H:i', strtotime($dateItem['start_time']));
+                $endTime    = date('H:i', strtotime($dateItem['end_time']));
+
+                // Per-date lecturers override top-level lecturers when provided
+                $dateLecturers = $allLecturers;
+                if (isset($dateItem['lecturers']) && is_array($dateItem['lecturers'])) {
+                    $dateLecturers = [];
+                    foreach ($dateItem['lecturers'] as $lecturerUserid) {
+                        $lecturerUser = $this->api_resolveUserByUserid(trim((string) $lecturerUserid));
+                        if ($lecturerUser) {
+                            $dateLecturers[] = $lecturerUser;
+                        }
+                    }
+                }
 
                 $createDate = $project->dates()->create([
                     'date_title'    => $this->FulldateTH($dateString),
@@ -3612,14 +3792,79 @@ class HRController extends Controller
                         'user_id'    => $user->id,
                     ]);
                 }
+
+                $createdLecturers = [];
+                foreach ($dateLecturers as $lecturerUser) {
+                    $lecture = HrLecture::create([
+                        'date_id' => $createDate->id,
+                        'user_id' => $lecturerUser->id,
+                        'active'  => true,
+                    ]);
+
+                    $createdLecturers[] = [
+                        'lecture_id' => $lecture->id,
+                        'userid'     => $lecturerUser->userid,
+                        'name'       => $lecturerUser->name,
+                    ];
+                }
+
+                $createdDates[] = [
+                    'date_id'       => $createDate->id,
+                    'date_title'    => $createDate->date_title,
+                    'date_datetime' => $dateString,
+                    'time_id'       => $createTime->id,
+                    'time_title'    => $createTime->time_title,
+                    'time_start'    => $startTime,
+                    'time_end'      => $endTime,
+                    'lecturers'     => $createdLecturers,
+                ];
             }
-        } 
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Project created successfully!',
             'project' => $project,
+            'dates'   => $createdDates,
         ]);
+    }
+
+    /**
+     * Resolve user by employee id, create from staff API if missing
+     */
+    private function api_resolveUserByUserid(string $userid)
+    {
+        if ($userid === '') {
+            return null;
+        }
+
+        $user = User::where('userid', $userid)->first();
+        if ($user) {
+            return $user;
+        }
+
+        $responseAPI = Http::withHeaders(['token' => env('API_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                'userid' => $userid,
+            ])
+            ->json();
+
+        if (! isset($responseAPI['status']) || $responseAPI['status'] != 1) {
+            return null;
+        }
+
+        $user              = new User();
+        $user->userid      = $userid;
+        $user->password    = Hash::make($userid);
+        $user->name        = $responseAPI['user']['name'];
+        $user->position    = $responseAPI['user']['position'];
+        $user->department  = $responseAPI['user']['department'];
+        $user->division    = $responseAPI['user']['division'];
+        $user->hn          = $responseAPI['user']['HN'] ?? null;
+        $user->last_update = date('Y-m-d H:i:s');
+        $user->save();
+
+        return $user;
     }
     public function apt_getTransaction(Request $request)
     {
@@ -3667,29 +3912,16 @@ class HRController extends Controller
     }
     public function api_approveTransaction(Request $request)
     {
-        $response = $this->api_checkKey($request);
-        if ($response['code'] !== 200) {
-            return response()->json($response, $response['code']);
-        }
-
-        if (! $request->has('transaction_id')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Transaction ID is required!',
+        // Backward-compatible alias: normalize single id into bulk approve
+        if ($request->filled('transaction_id') && ! $request->filled('transaction_ids')) {
+            $request->merge([
+                'transaction_ids' => [(int) $request->transaction_id],
             ]);
         }
 
-        $transaction = HrAttend::findOrFail($request->transaction_id);
-        $transaction->update([
-            'approve_datetime' => now(),
-        ]);
-
-        return response()->json([
-            'success'     => true,
-            'message'     => 'Transaction approved successfully!',
-            'transaction' => $transaction,
-        ]);
+        return $this->api_approveTransactions($request);
     }
+
     public function api_cancelProject(Request $request)
     {
         $response = $this->api_checkKey($request);
@@ -3758,6 +3990,986 @@ class HRController extends Controller
             'success' => true,
             'message' => 'Project cancelled successfully!',
             'project' => $project,
+        ]);
+    }
+
+    /**
+     * Get full project detail (dates, times, participants)
+     */
+    public function api_getProjectDetail(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        if (! $request->has('project_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project ID is required!',
+            ], 422);
+        }
+
+        $project = HrProject::with([
+            'dates' => function ($query) {
+                $query->where('date_delete', false)->orderBy('date_datetime', 'asc');
+            },
+            'dates.times' => function ($query) {
+                $query->where('time_delete', false)->orderBy('time_start', 'asc');
+            },
+            'dates.times.activeAttends.user',
+            'dates.lectures.user',
+        ])->find($request->project_id);
+
+        if (! $project || $project->project_delete) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project not found!',
+            ], 404);
+        }
+
+        $dates = [];
+        foreach ($project->dates as $date) {
+            $times = [];
+            foreach ($date->times as $time) {
+                $participants = [];
+                foreach ($time->activeAttends as $attend) {
+                    $participants[] = [
+                        'attend_id'        => $attend->id,
+                        'userid'           => $attend->user->userid ?? null,
+                        'name'             => $attend->user->name ?? null,
+                        'position'         => $attend->user->position ?? null,
+                        'department'       => $attend->user->department ?? null,
+                        'attend_datetime'  => $attend->attend_datetime ? $attend->attend_datetime->format('Y-m-d H:i:s') : null,
+                        'approve_datetime' => $attend->approve_datetime ? $attend->approve_datetime->format('Y-m-d H:i:s') : null,
+                    ];
+                }
+
+                $times[] = [
+                    'time_id'      => $time->id,
+                    'time_title'   => $time->time_title,
+                    'time_detail'  => $time->time_detail,
+                    'time_start'   => $time->time_start ? \Carbon\Carbon::parse($time->time_start)->format('H:i') : null,
+                    'time_end'     => $time->time_end ? \Carbon\Carbon::parse($time->time_end)->format('H:i') : null,
+                    'time_limit'   => (bool) $time->time_limit,
+                    'time_max'     => (int) $time->time_max,
+                    'time_active'  => (bool) $time->time_active,
+                    'participants' => $participants,
+                ];
+            }
+
+            $lecturers = [];
+            foreach ($date->lectures as $lecture) {
+                $lecturers[] = [
+                    'lecture_id' => $lecture->id,
+                    'userid'     => $lecture->user->userid ?? null,
+                    'name'       => $lecture->user->name ?? null,
+                    'position'   => $lecture->user->position ?? null,
+                    'department' => $lecture->user->department ?? null,
+                ];
+            }
+
+            $dates[] = [
+                'date_id'       => $date->id,
+                'date_title'    => $date->date_title,
+                'date_detail'   => $date->date_detail,
+                'date_location' => $date->date_location,
+                'date_datetime' => $date->date_datetime ? $date->date_datetime->format('Y-m-d') : null,
+                'date_active'   => (bool) $date->date_active,
+                'times'         => $times,
+                'lecturers'     => $lecturers,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Project detail retrieved successfully!',
+            'project' => [
+                'project_id'             => $project->id,
+                'dms_id'                 => $project->dms_id,
+                'project_type'           => $project->project_type,
+                'project_name'           => $project->project_name,
+                'project_detail'         => $project->project_detail,
+                'project_seat_assign'    => (bool) $project->project_seat_assign,
+                'project_group_assign'   => (bool) $project->project_group_assign,
+                'project_start_register' => $project->project_start_register ? $project->project_start_register->format('Y-m-d H:i:s') : null,
+                'project_end_register'   => $project->project_end_register ? $project->project_end_register->format('Y-m-d H:i:s') : null,
+                'project_register_today' => (bool) $project->project_register_today,
+                'project_active'         => (bool) $project->project_active,
+                'dates'                  => $dates,
+            ],
+        ]);
+    }
+
+    /**
+     * Add a date (optionally with times) to a project
+     */
+    public function api_addDate(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'project_id'    => 'required|integer|exists:hr_projects,id',
+            'date_datetime' => 'required|date_format:Y-m-d',
+            'date_title'    => 'nullable|string|max:255',
+            'date_detail'   => 'nullable|string|max:255',
+            'date_location' => 'nullable|string|max:255',
+            'times'         => 'nullable|array',
+            'times.*.time_start' => 'required_with:times|date_format:H:i',
+            'times.*.time_end'   => 'required_with:times|date_format:H:i',
+            'times.*.time_title' => 'nullable|string|max:255',
+            'times.*.time_detail'=> 'nullable|string|max:255',
+            'times.*.time_limit' => 'nullable|boolean',
+            'times.*.time_max'   => 'nullable|integer|min:0',
+        ]);
+
+        $project = HrProject::find($request->project_id);
+        if (! $project || $project->project_delete) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project not found!',
+            ], 404);
+        }
+
+        $dateTitle = $request->date_title ?: $this->FulldateTH($request->date_datetime);
+
+        $date = $project->dates()->create([
+            'date_title'    => $dateTitle,
+            'date_detail'   => $request->date_detail,
+            'date_location' => $request->date_location,
+            'date_datetime' => $request->date_datetime,
+            'date_active'   => true,
+            'date_delete'   => false,
+        ]);
+
+        $createdTimes = [];
+        if ($request->has('times') && is_array($request->times)) {
+            foreach ($request->times as $timeData) {
+                $start = date('H:i', strtotime($timeData['time_start']));
+                $end   = date('H:i', strtotime($timeData['time_end']));
+                $limit = (bool) ($timeData['time_limit'] ?? false);
+
+                $time = $date->times()->create([
+                    'time_title'  => $timeData['time_title'] ?? ($start . ' - ' . $end),
+                    'time_detail' => $timeData['time_detail'] ?? null,
+                    'time_start'  => $start,
+                    'time_end'    => $end,
+                    'time_limit'  => $limit,
+                    'time_max'    => $limit ? (int) ($timeData['time_max'] ?? 0) : 0,
+                    'time_active' => true,
+                    'time_delete' => false,
+                ]);
+
+                $createdTimes[] = [
+                    'time_id'    => $time->id,
+                    'time_title' => $time->time_title,
+                    'time_start' => $start,
+                    'time_end'   => $end,
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Date added successfully!',
+            'date'    => [
+                'date_id'       => $date->id,
+                'date_title'    => $date->date_title,
+                'date_detail'   => $date->date_detail,
+                'date_location' => $date->date_location,
+                'date_datetime' => $request->date_datetime,
+                'times'         => $createdTimes,
+            ],
+        ]);
+    }
+
+    /**
+     * Edit an existing date
+     */
+    public function api_editDate(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'date_id'       => 'required|integer|exists:hr_dates,id',
+            'date_title'    => 'nullable|string|max:255',
+            'date_detail'   => 'nullable|string|max:255',
+            'date_location' => 'nullable|string|max:255',
+            'date_datetime' => 'nullable|date_format:Y-m-d',
+            'date_active'   => 'nullable|boolean',
+        ]);
+
+        $date = HrDate::where('id', $request->date_id)->where('date_delete', false)->first();
+        if (! $date) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Date not found!',
+            ], 404);
+        }
+
+        $payload = [];
+        if ($request->filled('date_title')) {
+            $payload['date_title'] = $request->date_title;
+        }
+        if ($request->has('date_detail')) {
+            $payload['date_detail'] = $request->date_detail;
+        }
+        if ($request->has('date_location')) {
+            $payload['date_location'] = $request->date_location;
+        }
+        if ($request->filled('date_datetime')) {
+            $payload['date_datetime'] = $request->date_datetime;
+            if (! $request->filled('date_title')) {
+                $payload['date_title'] = $this->FulldateTH($request->date_datetime);
+            }
+        }
+        if ($request->has('date_active')) {
+            $payload['date_active'] = $request->boolean('date_active');
+        }
+
+        if (empty($payload)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No fields to update!',
+            ], 422);
+        }
+
+        $date->update($payload);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Date updated successfully!',
+            'date'    => [
+                'date_id'       => $date->id,
+                'date_title'    => $date->date_title,
+                'date_detail'   => $date->date_detail,
+                'date_location' => $date->date_location,
+                'date_datetime' => $date->date_datetime ? $date->date_datetime->format('Y-m-d') : null,
+                'date_active'   => (bool) $date->date_active,
+            ],
+        ]);
+    }
+
+    /**
+     * Soft-remove a date (and its times / participants)
+     */
+    public function api_removeDate(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'date_id' => 'required|integer|exists:hr_dates,id',
+        ]);
+
+        $date = HrDate::where('id', $request->date_id)->where('date_delete', false)->first();
+        if (! $date) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Date not found!',
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $date->update([
+                'date_active' => false,
+                'date_delete' => true,
+            ]);
+            $date->times()->update([
+                'time_active' => false,
+                'time_delete' => true,
+            ]);
+            $date->attends()->update([
+                'attend_delete' => true,
+            ]);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove date: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Date removed successfully!',
+            'date_id' => $date->id,
+        ]);
+    }
+
+    /**
+     * Add a time slot to a date
+     */
+    public function api_addTime(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'date_id'     => 'required|integer|exists:hr_dates,id',
+            'time_start'  => 'required|date_format:H:i',
+            'time_end'    => 'required|date_format:H:i',
+            'time_title'  => 'nullable|string|max:255',
+            'time_detail' => 'nullable|string|max:255',
+            'time_limit'  => 'nullable|boolean',
+            'time_max'    => 'nullable|integer|min:0',
+        ]);
+
+        $date = HrDate::where('id', $request->date_id)->where('date_delete', false)->first();
+        if (! $date) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Date not found!',
+            ], 404);
+        }
+
+        $start = date('H:i', strtotime($request->time_start));
+        $end   = date('H:i', strtotime($request->time_end));
+        $limit = $request->boolean('time_limit');
+
+        $time = $date->times()->create([
+            'time_title'  => $request->time_title ?: ($start . ' - ' . $end),
+            'time_detail' => $request->time_detail,
+            'time_start'  => $start,
+            'time_end'    => $end,
+            'time_limit'  => $limit,
+            'time_max'    => $limit ? (int) ($request->time_max ?? 0) : 0,
+            'time_active' => true,
+            'time_delete' => false,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Time added successfully!',
+            'time'    => [
+                'time_id'    => $time->id,
+                'date_id'    => $date->id,
+                'time_title' => $time->time_title,
+                'time_detail'=> $time->time_detail,
+                'time_start' => $start,
+                'time_end'   => $end,
+                'time_limit' => (bool) $time->time_limit,
+                'time_max'   => (int) $time->time_max,
+            ],
+        ]);
+    }
+
+    /**
+     * Edit an existing time slot
+     */
+    public function api_editTime(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'time_id'     => 'required|integer|exists:hr_times,id',
+            'time_title'  => 'nullable|string|max:255',
+            'time_detail' => 'nullable|string|max:255',
+            'time_start'  => 'nullable|date_format:H:i',
+            'time_end'    => 'nullable|date_format:H:i',
+            'time_limit'  => 'nullable|boolean',
+            'time_max'    => 'nullable|integer|min:0',
+            'time_active' => 'nullable|boolean',
+        ]);
+
+        $time = HrTime::where('id', $request->time_id)->where('time_delete', false)->first();
+        if (! $time) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Time not found!',
+            ], 404);
+        }
+
+        $payload = [];
+        if ($request->filled('time_title')) {
+            $payload['time_title'] = $request->time_title;
+        }
+        if ($request->has('time_detail')) {
+            $payload['time_detail'] = $request->time_detail;
+        }
+        if ($request->filled('time_start')) {
+            $payload['time_start'] = date('H:i', strtotime($request->time_start));
+        }
+        if ($request->filled('time_end')) {
+            $payload['time_end'] = date('H:i', strtotime($request->time_end));
+        }
+        if ($request->has('time_limit')) {
+            $payload['time_limit'] = $request->boolean('time_limit');
+            if (! $request->boolean('time_limit')) {
+                $payload['time_max'] = 0;
+            }
+        }
+        if ($request->has('time_max')) {
+            $payload['time_max'] = (int) $request->time_max;
+        }
+        if ($request->has('time_active')) {
+            $payload['time_active'] = $request->boolean('time_active');
+        }
+
+        // Auto-update title if start/end changed and title was not provided
+        if (! $request->filled('time_title') && ($request->filled('time_start') || $request->filled('time_end'))) {
+            $start = $payload['time_start'] ?? date('H:i', strtotime($time->time_start));
+            $end   = $payload['time_end'] ?? date('H:i', strtotime($time->time_end));
+            $payload['time_title'] = $start . ' - ' . $end;
+        }
+
+        if (empty($payload)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No fields to update!',
+            ], 422);
+        }
+
+        $time->update($payload);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Time updated successfully!',
+            'time'    => [
+                'time_id'    => $time->id,
+                'date_id'    => $time->date_id,
+                'time_title' => $time->time_title,
+                'time_detail'=> $time->time_detail,
+                'time_start' => $time->time_start ? \Carbon\Carbon::parse($time->time_start)->format('H:i') : null,
+                'time_end'   => $time->time_end ? \Carbon\Carbon::parse($time->time_end)->format('H:i') : null,
+                'time_limit' => (bool) $time->time_limit,
+                'time_max'   => (int) $time->time_max,
+                'time_active'=> (bool) $time->time_active,
+            ],
+        ]);
+    }
+
+    /**
+     * Soft-remove a time slot (and its participants)
+     */
+    public function api_removeTime(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'time_id' => 'required|integer|exists:hr_times,id',
+        ]);
+
+        $time = HrTime::where('id', $request->time_id)->where('time_delete', false)->first();
+        if (! $time) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Time not found!',
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $time->update([
+                'time_active' => false,
+                'time_delete' => true,
+            ]);
+            $time->attends()->update([
+                'attend_delete' => true,
+            ]);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove time: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Time removed successfully!',
+            'time_id' => $time->id,
+        ]);
+    }
+
+    /**
+     * Add participant(s) to a time slot
+     */
+    public function api_addParticipant(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'time_id' => 'required|integer|exists:hr_times,id',
+            'users'   => 'required|array|min:1',
+            'users.*' => 'required|string',
+        ]);
+
+        $time = HrTime::with('date')->where('id', $request->time_id)->where('time_delete', false)->first();
+        if (! $time || ! $time->date || $time->date->date_delete) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Time not found!',
+            ], 404);
+        }
+
+        $project = HrProject::find($time->date->project_id);
+        if (! $project || $project->project_delete) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project not found!',
+            ], 404);
+        }
+
+        $added   = [];
+        $skipped = [];
+        $failed  = [];
+
+        foreach ($request->users as $userid) {
+            $userid = trim((string) $userid);
+            if ($userid === '') {
+                continue;
+            }
+
+            $user = User::where('userid', $userid)->first();
+            if (! $user) {
+                $responseAPI = Http::withHeaders(['token' => env('API_KEY')])
+                    ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                        'userid' => $userid,
+                    ])
+                    ->json();
+
+                if (isset($responseAPI['status']) && $responseAPI['status'] == 1) {
+                    $user              = new User();
+                    $user->userid      = $userid;
+                    $user->password    = Hash::make($userid);
+                    $user->name        = $responseAPI['user']['name'];
+                    $user->position    = $responseAPI['user']['position'];
+                    $user->department  = $responseAPI['user']['department'];
+                    $user->division    = $responseAPI['user']['division'];
+                    $user->hn          = $responseAPI['user']['HN'] ?? null;
+                    $user->last_update = date('Y-m-d H:i:s');
+                    $user->save();
+                }
+            }
+
+            if (! $user) {
+                $failed[] = [
+                    'userid'  => $userid,
+                    'message' => 'User not found',
+                ];
+                continue;
+            }
+
+            $existing = HrAttend::where('project_id', $project->id)
+                ->where('time_id', $time->id)
+                ->where('user_id', $user->id)
+                ->where('attend_delete', false)
+                ->first();
+
+            if ($existing) {
+                $skipped[] = [
+                    'userid'  => $userid,
+                    'message' => 'Already registered for this time slot',
+                ];
+                continue;
+            }
+
+            if ($time->time_limit) {
+                $currentCount = $time->attends()->where('attend_delete', false)->count();
+                if ($currentCount >= $time->time_max) {
+                    $failed[] = [
+                        'userid'  => $userid,
+                        'message' => 'Time slot is full',
+                    ];
+                    continue;
+                }
+            }
+
+            $attend = HrAttend::create([
+                'project_id'    => $project->id,
+                'date_id'       => $time->date_id,
+                'time_id'       => $time->id,
+                'user_id'       => $user->id,
+                'attend_delete' => false,
+            ]);
+
+            if ($project->project_seat_assign) {
+                HrAssignSeatForAttendance::dispatch($attend->id);
+            }
+
+            $added[] = [
+                'attend_id' => $attend->id,
+                'userid'    => $user->userid,
+                'name'      => $user->name,
+            ];
+        }
+
+        return response()->json([
+            'success' => count($failed) === 0,
+            'message' => 'Participant processing completed!',
+            'added'   => $added,
+            'skipped' => $skipped,
+            'failed'  => $failed,
+        ]);
+    }
+
+    /**
+     * Remove a participant from a time slot (soft delete)
+     */
+    public function api_removeParticipant(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'attend_id' => 'nullable|integer|exists:hr_attends,id',
+            'time_id'   => 'nullable|integer|exists:hr_times,id',
+            'userid'    => 'nullable|string',
+        ]);
+
+        $attend = null;
+
+        if ($request->filled('attend_id')) {
+            $attend = HrAttend::where('id', $request->attend_id)
+                ->where('attend_delete', false)
+                ->first();
+        } elseif ($request->filled('time_id') && $request->filled('userid')) {
+            $user = User::where('userid', $request->userid)->first();
+            if ($user) {
+                $attend = HrAttend::where('time_id', $request->time_id)
+                    ->where('user_id', $user->id)
+                    ->where('attend_delete', false)
+                    ->first();
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Provide attend_id, or time_id + userid!',
+            ], 422);
+        }
+
+        if (! $attend) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Participant registration not found!',
+            ], 404);
+        }
+
+        $attend->update([
+            'attend_delete' => true,
+        ]);
+
+        $attend->removeSeatAssignment();
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Participant removed successfully!',
+            'attend_id' => $attend->id,
+        ]);
+    }
+
+    /**
+     * Approve multiple transactions at once
+     */
+    public function api_approveTransactions(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'transaction_id'    => 'nullable|integer|exists:hr_attends,id',
+            'transaction_ids'   => 'nullable|array|min:1',
+            'transaction_ids.*' => 'integer|exists:hr_attends,id',
+            'time_id'           => 'nullable|integer|exists:hr_times,id',
+            'project_id'        => 'nullable|integer|exists:hr_projects,id',
+            'approve_all'       => 'nullable|boolean',
+        ]);
+
+        // Allow single transaction_id as an alias of transaction_ids: [id]
+        if ($request->filled('transaction_id') && ! $request->filled('transaction_ids')) {
+            $request->merge([
+                'transaction_ids' => [(int) $request->transaction_id],
+            ]);
+        }
+
+        $now      = now();
+        $approved = [];
+        $skipped  = [];
+        $failed   = [];
+
+        // Option A: explicit transaction id(s)
+        if ($request->filled('transaction_ids')) {
+            foreach ($request->transaction_ids as $transactionId) {
+                $attend = HrAttend::where('id', $transactionId)
+                    ->where('attend_delete', false)
+                    ->first();
+
+                if (! $attend) {
+                    $failed[] = [
+                        'transaction_id' => $transactionId,
+                        'message'        => 'Transaction not found or deleted',
+                    ];
+                    continue;
+                }
+
+                if ($attend->approve_datetime !== null) {
+                    $skipped[] = [
+                        'transaction_id' => $attend->id,
+                        'message'        => 'Already approved',
+                    ];
+                    continue;
+                }
+
+                $attend->update([
+                    'approve_datetime' => $now,
+                ]);
+
+                $approved[] = [
+                    'transaction_id'   => $attend->id,
+                    'approve_datetime' => $attend->approve_datetime->format('Y-m-d H:i:s'),
+                ];
+            }
+        }
+        // Option B: approve all pending under a time
+        elseif ($request->filled('time_id') && $request->boolean('approve_all', true)) {
+            $attends = HrAttend::where('time_id', $request->time_id)
+                ->where('attend_delete', false)
+                ->get();
+
+            if ($attends->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No transactions found for this time!',
+                    'approved'=> [],
+                    'skipped' => [],
+                    'failed'  => [],
+                ], 404);
+            }
+
+            foreach ($attends as $attend) {
+                if ($attend->approve_datetime !== null) {
+                    $skipped[] = [
+                        'transaction_id' => $attend->id,
+                        'message'        => 'Already approved',
+                    ];
+                    continue;
+                }
+
+                $attend->update([
+                    'approve_datetime' => $now,
+                ]);
+
+                $approved[] = [
+                    'transaction_id'   => $attend->id,
+                    'approve_datetime' => $attend->approve_datetime->format('Y-m-d H:i:s'),
+                ];
+            }
+        }
+        // Option C: approve all pending under a project
+        elseif ($request->filled('project_id') && $request->boolean('approve_all', true)) {
+            $attends = HrAttend::where('project_id', $request->project_id)
+                ->where('attend_delete', false)
+                ->get();
+
+            if ($attends->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No transactions found for this project!',
+                    'approved'=> [],
+                    'skipped' => [],
+                    'failed'  => [],
+                ], 404);
+            }
+
+            foreach ($attends as $attend) {
+                if ($attend->approve_datetime !== null) {
+                    $skipped[] = [
+                        'transaction_id' => $attend->id,
+                        'message'        => 'Already approved',
+                    ];
+                    continue;
+                }
+
+                $attend->update([
+                    'approve_datetime' => $now,
+                ]);
+
+                $approved[] = [
+                    'transaction_id'   => $attend->id,
+                    'approve_datetime' => $attend->approve_datetime->format('Y-m-d H:i:s'),
+                ];
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Provide transaction_id, transaction_ids, or time_id/project_id with approve_all!',
+            ], 422);
+        }
+
+        return response()->json([
+            'success'  => count($failed) === 0,
+            'message'  => 'Bulk approve completed!',
+            'approved' => $approved,
+            'skipped'  => $skipped,
+            'failed'   => $failed,
+        ]);
+    }
+
+    /**
+     * Add lecturer(s) to a date
+     */
+    public function api_addLecturer(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'date_id' => 'required|integer|exists:hr_dates,id',
+            'users'   => 'required|array|min:1',
+            'users.*' => 'required|string',
+        ]);
+
+        $date = HrDate::where('id', $request->date_id)->where('date_delete', false)->first();
+        if (! $date) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Date not found!',
+            ], 404);
+        }
+
+        $project = HrProject::find($date->project_id);
+        if (! $project || $project->project_delete) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project not found!',
+            ], 404);
+        }
+
+        $added   = [];
+        $skipped = [];
+        $failed  = [];
+
+        foreach ($request->users as $userid) {
+            $userid = trim((string) $userid);
+            if ($userid === '') {
+                continue;
+            }
+
+            $user = $this->api_resolveUserByUserid($userid);
+            if (! $user) {
+                $failed[] = [
+                    'userid'  => $userid,
+                    'message' => 'User not found',
+                ];
+                continue;
+            }
+
+            $existing = HrLecture::where('date_id', $date->id)
+                ->where('user_id', $user->id)
+                ->where('active', true)
+                ->first();
+
+            if ($existing) {
+                $skipped[] = [
+                    'userid'     => $userid,
+                    'lecture_id' => $existing->id,
+                    'message'    => 'Already added as lecturer for this date',
+                ];
+                continue;
+            }
+
+            $lecture = HrLecture::create([
+                'date_id' => $date->id,
+                'user_id' => $user->id,
+                'active'  => true,
+            ]);
+
+            $added[] = [
+                'lecture_id' => $lecture->id,
+                'userid'     => $user->userid,
+                'name'       => $user->name,
+            ];
+        }
+
+        return response()->json([
+            'success' => count($failed) === 0,
+            'message' => 'Lecturer processing completed!',
+            'added'   => $added,
+            'skipped' => $skipped,
+            'failed'  => $failed,
+        ]);
+    }
+
+    /**
+     * Remove lecturer from a date (soft delete)
+     */
+    public function api_removeLecturer(Request $request)
+    {
+        $response = $this->api_checkKey($request);
+        if ($response['code'] !== 200) {
+            return response()->json($response, $response['code']);
+        }
+
+        $request->validate([
+            'lecture_id' => 'nullable|integer|exists:hr_lecturers,id',
+            'date_id'    => 'nullable|integer|exists:hr_dates,id',
+            'userid'     => 'nullable|string',
+        ]);
+
+        $lecture = null;
+
+        if ($request->filled('lecture_id')) {
+            $lecture = HrLecture::where('id', $request->lecture_id)
+                ->where('active', true)
+                ->first();
+        } elseif ($request->filled('date_id') && $request->filled('userid')) {
+            $user = User::where('userid', $request->userid)->first();
+            if ($user) {
+                $lecture = HrLecture::where('date_id', $request->date_id)
+                    ->where('user_id', $user->id)
+                    ->where('active', true)
+                    ->first();
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Provide lecture_id, or date_id + userid!',
+            ], 422);
+        }
+
+        if (! $lecture) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lecturer not found!',
+            ], 404);
+        }
+
+        $lecture->active = false;
+        $lecture->save();
+
+        return response()->json([
+            'success'    => true,
+            'message'    => 'Lecturer removed successfully!',
+            'lecture_id' => $lecture->id,
         ]);
     }
 }

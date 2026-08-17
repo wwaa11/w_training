@@ -140,6 +140,12 @@ Route::middleware([HrAdmin::class])->group(function () {
                 Route::post('/approve-registration', [HRController::class, 'adminApproveRegistration'])->name('approve_registration');
                 Route::post('/unapprove-registration', [HRController::class, 'adminUnapproveRegistration'])->name('unapprove_registration');
 
+                // Lecturer Management
+                Route::prefix('lecture')->name('lecture.')->group(function () {
+                    Route::post('/add', [HRController::class, 'adminAddLecture'])->name('add');
+                    Route::post('/delete', [HRController::class, 'adminDeleteLecture'])->name('delete');
+                });
+
                 // Seat Assignment Management
                 Route::prefix('seat')->name('seat.')->group(function () {
                     Route::get('/management', [HRController::class, 'adminProjectSeatManagement'])->name('management');
@@ -182,6 +188,8 @@ Route::middleware([HrAdmin::class])->group(function () {
             Route::post('/hours/onebook', [HRController::class, 'setOneBookExport'])->name('hours.onebook');
             Route::get('/excel/dbd/{project_id}', [HRController::class, 'exportDBD'])->name('excel.dbd');
             Route::get('/excel/date/{date_id}', [HRController::class, 'exportDateRegistrations'])->name('excel.date');
+            Route::get('/excel/lectures/{project_id}', [HRController::class, 'exportLectures'])->name('excel.lectures');
+            Route::get('/excel/datelecture/{date_id}', [HRController::class, 'exportDateLectures'])->name('excel.datelecture');
             // Route::get('/pdf/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
             Route::get('/pdf/view/{project_id}/time/{time_id}', [HRController::class, 'exportTimePDF'])->name('pdf.time');
         });

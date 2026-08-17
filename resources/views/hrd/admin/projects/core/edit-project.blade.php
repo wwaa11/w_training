@@ -84,11 +84,11 @@
                                 <textarea class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" name="project_detail" rows="3" placeholder="รายละเอียดโปรเจกต์">{{ old("project_detail", $project->project_detail) }}</textarea>
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-semibold text-gray-700">เริ่มลงทะเบียน *</label>
+                                <label class="mb-2 block text-sm font-semibold text-gray-700">เริ่มต้นการฝึกอบรม *</label>
                                 <input class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" type="datetime-local" name="project_start_register" value="{{ old("project_start_register", $project->project_start_register ? $project->project_start_register->format("Y-m-d\TH:i") : "") }}" required>
                             </div>
                             <div>
-                                <label class="mb-2 block text-sm font-semibold text-gray-700">สิ้นสุดลงทะเบียน *</label>
+                                <label class="mb-2 block text-sm font-semibold text-gray-700">สิ้นสุดการฝึกอบรม *</label>
                                 <input class="w-full rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200" type="datetime-local" name="project_end_register" value="{{ old("project_end_register", $project->project_end_register ? $project->project_end_register->format("Y-m-d\TH:i") : "") }}" required>
                             </div>
                         </div>

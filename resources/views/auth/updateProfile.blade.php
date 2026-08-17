@@ -7,7 +7,7 @@
                     <i class="fa-solid fa-user-edit"></i>
                 </div>
                 <h1 class="auth-title">แก้ไขข้อมูลส่วนตัว</h1>
-                <p class="auth-subtitle">อัปเดตข้อมูลส่วนตัวและรหัสผ่านของคุณ</p>
+                <p class="auth-subtitle">อัปเดตลายเซ็นต์หรือรหัสผ่านได้แยกกันตามต้องการ</p>
             </div>
 
             @if ($errors->any())
@@ -17,64 +17,89 @@
                 </div>
             @endif
 
-            <form class="auth-form" id="changePassword" action="{{ route("profile.changePassword") }}" method="POST">
-                @csrf
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fa-solid fa-signature mr-2"></i>ลายเซ็นต์
-                    </label>
-                    <div class="signature-section">
-                        <div class="signature-controls">
-                            <span class="signature-label">ลายเซ็นต์ปัจจุบัน</span>
-                            <button class="clear-signature-btn" type="button" onclick="clearSign()">
-                                <i class="fa-solid fa-eraser mr-1"></i>เซ็นต์ใหม่
-                            </button>
-                        </div>
-                        <input id="sign" type="hidden" name="sign">
-                        @if (Auth::user()->sign)
-                            <img class="current-signature" id="old_sign" src="{{ Auth::user()->sign }}" alt="ลายเซ็นต์ปัจจุบัน">
-                        @endif
-                        <canvas class="signature-canvas" id="sign_Canvas" width="300" height="150"></canvas>
-                    </div>
+            @if (session("success"))
+                <div class="success-message">
+                    <i class="fa-solid fa-check-circle mr-2"></i>
+                    {{ session("success") }}
                 </div>
+            @endif
 
-                <div class="form-group">
-                    <label class="form-label" for="refno">
-                        <i class="fa-solid fa-id-card mr-2"></i>เลขบัตรประจำตัวประชาชน
-                    </label>
-                    <input class="form-input" id="refno" name="refno" type="text" placeholder="กรุณากรอกเลขบัตรประจำตัวประชาชน 13 หลัก" autocomplete="off" value="{{ Auth::user()->refNo }}" required>
-                </div>
-
-                @if (!Auth::user()->password_changed)
-                    <input id="password_old" name="old_password" type="hidden" value="{{ Auth::user()->userid }}">
-                @else
+            {{-- Signature form (independent) --}}
+            <div class="section-block">
+                <h2 class="section-heading">
+                    <i class="fa-solid fa-signature mr-2"></i>ลายเซ็นต์
+                </h2>
+                <form class="auth-form" id="changeSign" action="{{ route("profile.updateSign") }}" method="POST">
+                    @csrf
                     <div class="form-group">
-                        <label class="form-label" for="password_old">
-                            <i class="fa-solid fa-lock mr-2"></i>รหัสผ่านปัจจุบัน
-                        </label>
-                        <input class="form-input" id="password_old" name="old_password" type="password" placeholder="กรุณากรอกรหัสผ่านปัจจุบัน" autocomplete="current-password" required>
+                        <div class="signature-section">
+                            <div class="signature-controls">
+                                <span class="signature-label">ลายเซ็นต์ปัจจุบัน</span>
+                                <button class="clear-signature-btn" type="button" onclick="clearSign()">
+                                    <i class="fa-solid fa-eraser mr-1"></i>เซ็นต์ใหม่
+                                </button>
+                            </div>
+                            <input id="sign" type="hidden" name="sign">
+                            @if (Auth::user()->sign)
+                                <img class="current-signature" id="old_sign" src="{{ Auth::user()->sign }}" alt="ลายเซ็นต์ปัจจุบัน">
+                            @endif
+                            <canvas class="signature-canvas" id="sign_Canvas" width="300" height="150"></canvas>
+                        </div>
                     </div>
-                @endif
 
-                <div class="form-group">
-                    <label class="form-label" for="password">
-                        <i class="fa-solid fa-key mr-2"></i>รหัสผ่านใหม่
-                    </label>
-                    <input class="form-input" id="password" name="password" type="password" placeholder="กรุณากรอกรหัสผ่านใหม่" autocomplete="new-password" required>
-                </div>
+                    <button class="auth-button" type="button" onclick="saveSign()">
+                        <i class="fa-solid fa-save mr-2"></i>บันทึกลายเซ็นต์
+                    </button>
+                </form>
+            </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="password_check">
-                        <i class="fa-solid fa-check-circle mr-2"></i>ยืนยันรหัสผ่านใหม่
-                    </label>
-                    <input class="form-input" id="password_check" name="password_check" type="password" placeholder="กรุณากรอกรหัสผ่านใหม่อีกครั้ง" autocomplete="new-password" required>
-                </div>
+            <div class="section-divider"></div>
 
-                <button class="auth-button" type="button" onclick="changePassword()">
-                    <i class="fa-solid fa-save mr-2"></i>บันทึกการเปลี่ยนแปลง
-                </button>
-            </form>
+            {{-- Password form (independent) --}}
+            <div class="section-block">
+                <h2 class="section-heading">
+                    <i class="fa-solid fa-key mr-2"></i>รหัสผ่านและเลขบัตรประชาชน
+                </h2>
+                <form class="auth-form" id="changePassword" action="{{ route("profile.changePassword") }}" method="POST">
+                    @csrf
+
+                    <div class="form-group">
+                        <label class="form-label" for="refno">
+                            <i class="fa-solid fa-id-card mr-2"></i>เลขบัตรประจำตัวประชาชน
+                        </label>
+                        <input class="form-input" id="refno" name="refno" type="text" placeholder="กรุณากรอกเลขบัตรประจำตัวประชาชน 13 หลัก" autocomplete="off" value="{{ Auth::user()->refNo }}" required>
+                    </div>
+
+                    @if (!Auth::user()->password_changed)
+                        <input id="password_old" name="old_password" type="hidden" value="{{ Auth::user()->userid }}">
+                    @else
+                        <div class="form-group">
+                            <label class="form-label" for="password_old">
+                                <i class="fa-solid fa-lock mr-2"></i>รหัสผ่านปัจจุบัน
+                            </label>
+                            <input class="form-input" id="password_old" name="old_password" type="password" placeholder="กรุณากรอกรหัสผ่านปัจจุบัน" autocomplete="current-password" required>
+                        </div>
+                    @endif
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">
+                            <i class="fa-solid fa-key mr-2"></i>รหัสผ่านใหม่
+                        </label>
+                        <input class="form-input" id="password" name="password" type="password" placeholder="กรุณากรอกรหัสผ่านใหม่" autocomplete="new-password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password_check">
+                            <i class="fa-solid fa-check-circle mr-2"></i>ยืนยันรหัสผ่านใหม่
+                        </label>
+                        <input class="form-input" id="password_check" name="password_check" type="password" placeholder="กรุณากรอกรหัสผ่านใหม่อีกครั้ง" autocomplete="new-password" required>
+                    </div>
+
+                    <button class="auth-button secondary-btn" type="button" onclick="changePassword()">
+                        <i class="fa-solid fa-save mr-2"></i>บันทึกรหัสผ่าน
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -146,6 +171,37 @@
             font-weight: 500;
             display: flex;
             align-items: center;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            color: #15803d;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-block {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .section-heading {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 var(--spacing-lg);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: var(--spacing-xl) 0;
         }
 
         .auth-form {
@@ -262,9 +318,17 @@
             margin-top: var(--spacing-md);
         }
 
+        .auth-button.secondary-btn {
+            background: linear-gradient(135deg, #475569 0%, #334155 100%);
+        }
+
         .auth-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .auth-button.secondary-btn:hover {
+            box-shadow: 0 8px 25px rgba(51, 65, 85, 0.35);
         }
 
         .auth-button:active {
@@ -359,6 +423,28 @@
             signaturePad.clear();
         }
 
+        function saveSign() {
+            const hasExistingSign = '{{ Auth::user()->sign }}' !== '';
+
+            if (signaturePad.isEmpty() && !hasExistingSign) {
+                Swal.fire({
+                    title: 'กรุณาเซ็นต์ลายเซ็นต์',
+                    icon: 'warning',
+                    confirmButtonColor: 'var(--primary-color)',
+                    confirmButtonText: 'ตกลง'
+                });
+                return;
+            }
+
+            if (!signaturePad.isEmpty()) {
+                $('#sign').val(signaturePad.toDataURL());
+            } else if (hasExistingSign) {
+                $('#sign').val(img.src);
+            }
+
+            $('#changeSign').submit();
+        }
+
         function changePassword() {
             const old_password = $('#password_old').val().trim();
             const ref = $('#refno').val().trim();
@@ -368,7 +454,6 @@
             let cansend = true;
             let errorMessages = [];
 
-            // Validation
             if (ref === '') {
                 cansend = false;
                 errorMessages.push('เลขบัตรประจำตัวประชาชน');
@@ -377,11 +462,6 @@
             if (ref.length !== 13 && ref !== '-') {
                 cansend = false;
                 errorMessages.push('เลขบัตรประจำตัวประชาชนไม่ถูกต้อง (ต้องมี 13 หลัก)');
-            }
-
-            if (signaturePad.isEmpty() && '{{ Auth::user()->sign }}' === '') {
-                cansend = false;
-                errorMessages.push('ลายเซ็นต์');
             }
 
             if (old_password === '') {
@@ -406,7 +486,6 @@
                 return;
             }
 
-            $('#sign').val(signaturePad.toDataURL());
             $('#changePassword').submit();
         }
     </script>

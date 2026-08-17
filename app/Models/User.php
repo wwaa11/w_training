@@ -70,4 +70,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(HrGroup::class, 'user_id', 'userid');
     }
+
+    public function hrLectures(): HasMany
+    {
+        return $this->hasMany(HrLecture::class, 'user_id');
+    }
 }

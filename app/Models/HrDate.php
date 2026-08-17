@@ -45,6 +45,11 @@ class HrDate extends Model
         return $this->hasMany(HrAttend::class, 'date_id')->where('attend_delete', false);
     }
 
+    public function lectures()
+    {
+        return $this->hasMany(HrLecture::class, 'date_id')->where('active', true)->orderBy('user_id', 'asc');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

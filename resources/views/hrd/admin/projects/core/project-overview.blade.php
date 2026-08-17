@@ -98,11 +98,11 @@
                     @endif
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                            <h3 class="mb-2 text-sm font-medium text-gray-700">เริ่มลงทะเบียน</h3>
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">เริ่มต้นการฝึกอบรม</h3>
                             <p class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($project->project_start_register)->format("d/m/Y H:i") }}</p>
                         </div>
                         <div>
-                            <h3 class="mb-2 text-sm font-medium text-gray-700">สิ้นสุดลงทะเบียน</h3>
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">สิ้นสุดการฝึกอบรม</h3>
                             <p class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($project->project_end_register)->format("d/m/Y H:i") }}</p>
                         </div>
                     </div>
@@ -324,113 +324,177 @@
                                 <i class="fas fa-download me-3 text-yellow-600 transition-transform duration-200 group-hover:translate-x-1"></i>
                             </a>
                         @endif
+                        <a class="group flex items-center rounded-lg bg-indigo-50 p-4 transition-colors duration-200 hover:bg-indigo-100" href="{{ route("hrd.admin.export.excel.lectures", $project->id) }}">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 transition-colors duration-200 group-hover:bg-indigo-200">
+                                    <i class="fas fa-chalkboard-teacher text-indigo-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="font-semibold text-indigo-900">รายชื่อวิทยากรทั้งหมด</p>
+                                <p class="text-sm text-indigo-700">ดาวน์โหลดรายชื่อวิทยากรทุกวันที่</p>
+                            </div>
+                            <i class="fas fa-download me-3 text-indigo-600 transition-transform duration-200 group-hover:translate-x-1"></i>
+                        </a>
                     </div>
+                </div>
 
-                    <!-- Dates and Times Section -->
-                    <div class="rounded-xl bg-white p-6 shadow-sm">
-                        <h2 class="mb-6 flex items-center text-lg font-semibold text-gray-900">
+                <!-- Dates and Times Section -->
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
+                        <h2 class="flex items-center text-lg font-semibold text-gray-900">
                             <i class="fas fa-calendar-alt mr-3 text-blue-600"></i>
                             วันที่และเวลา
                         </h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">วันที่</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">สถานะ</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">เวลา</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">สถานที่</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">รายละเอียด</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">การดำเนินการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 bg-white">
-                                    @foreach ($project->dates->where("date_delete", false) as $date)
-                                        <tr class="bg-gray-50">
-                                            <td class="whitespace-nowrap px-6 py-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $date->date_title }}</div>
-                                                <div class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($date->date_datetime)->format("l, d F Y") }}</div>
-                                            </td>
-                                            <td class="whitespace-nowrap px-6 py-4">
-                                                <span class="{{ $date->date_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                        <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+                            <i class="fas fa-calendar-check mr-2"></i>
+                            {{ $project->dates->where("date_delete", false)->count() }} วัน
+                        </span>
+                    </div>
+
+                    <div class="space-y-8 p-6">
+                        @forelse ($project->dates->where("date_delete", false)->sortBy("date_datetime") as $date)
+                            @php
+                                $dateTimes = $date->times->where("time_delete", false);
+                            @endphp
+                            <section class="overflow-hidden rounded-xl border-2 border-gray-200 transition-shadow duration-200 hover:shadow-md">
+                                <!-- Date Header -->
+                                <div class="flex flex-wrap items-start justify-between gap-4 border-b-2 border-gray-200 bg-gradient-to-r from-blue-50 to-white px-5 py-4">
+                                    <div class="flex min-w-0 items-start gap-4">
+                                        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white">
+                                            {{ $loop->iteration }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h3 class="break-words text-base font-bold text-gray-900">{{ $date->date_title }}</h3>
+                                            <p class="mt-1 flex items-center text-sm text-gray-600">
+                                                <i class="fas fa-calendar-day mr-2 text-gray-400"></i>
+                                                {{ \Carbon\Carbon::parse($date->date_datetime)->format("l, d F Y") }}
+                                            </p>
+                                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                                <span class="{{ $date->date_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium">
                                                     <i class="fas fa-{{ $date->date_active ? "check-circle" : "times-circle" }} mr-1"></i>
                                                     {{ $date->date_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
                                                 </span>
-                                            </td>
-                                            <td class="whitespace-nowrap px-6 py-4">
-                                                @if ($date->times->where("time_delete", false)->count() > 0)
-                                                    <div class="text-sm text-gray-900">
-                                                        {{ $date->times->where("time_delete", false)->count() }} ช่วงเวลา
-                                                    </div>
-                                                @else
-                                                    <div class="text-sm text-gray-500">ไม่มีช่วงเวลา</div>
-                                                @endif
-                                            </td>
-                                            <td class="whitespace-nowrap px-6 py-4">
-                                                @if ($date->date_location)
-                                                    <div class="text-sm text-gray-900">{{ $date->date_location }}</div>
-                                                @else
-                                                    <div class="text-sm text-gray-500">ไม่ระบุ</div>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                @if ($date->date_detail)
-                                                    <div class="max-w-xs truncate text-sm text-gray-900" title="{{ $date->date_detail }}">{{ $date->date_detail }}</div>
-                                                @else
-                                                    <div class="text-sm text-gray-500">ไม่มีรายละเอียด</div>
-                                                @endif
-                                            </td>
-                                            <td class="whitespace-nowrap px-6 py-4">
-                                                <a class="inline-flex items-center rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-orange-700" href="{{ route("hrd.admin.export.excel.date", $date->id) }}">
-                                                    <i class="fas fa-file-excel mr-2"></i>
-                                                    Export
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        @if ($date->times->where("time_delete", false)->count() > 0)
-                                            @foreach ($date->times->where("time_delete", false) as $time)
-                                                <tr class="hover:bg-gray-50">
-                                                    <td class="whitespace-nowrap px-6 py-4">
-                                                        <div class="ml-6 text-sm font-medium text-gray-900">{{ $time->time_title }}</div>
-                                                        <div class="ml-6 text-sm text-gray-500">{{ $time->time_start }} - {{ $time->time_end }}</div>
-                                                    </td>
-                                                    <td class="whitespace-nowrap px-6 py-4">
-                                                        <span class="{{ $time->time_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                                                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                                                    <i class="fas fa-location-dot mr-1 text-gray-400"></i>
+                                                    {{ $date->date_location ?: "ไม่ระบุสถานที่" }}
+                                                </span>
+                                                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                                                    <i class="fas fa-clock mr-1 text-gray-400"></i>
+                                                    {{ $dateTimes->count() }} ช่วงเวลา
+                                                </span>
+                                                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                                                    <i class="fas fa-chalkboard-teacher mr-1 text-gray-400"></i>
+                                                    {{ $date->lectures->count() }} วิทยากร
+                                                </span>
+                                            </div>
+                                            @if ($date->date_detail)
+                                                <p class="mt-2 text-sm text-gray-600">{{ $date->date_detail }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button class="inline-flex h-11 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700" type="button" onclick="addLecturer('{{ $date->id }}', '{{ addslashes($date->date_title) }}')">
+                                            <i class="fas fa-user-plus mr-2"></i>
+                                            เพิ่มวิทยากร
+                                        </button>
+                                        <a class="inline-flex h-11 items-center rounded-lg bg-orange-600 px-4 text-sm font-medium text-white transition-colors duration-200 hover:bg-orange-700" href="{{ route("hrd.admin.export.excel.date", $date->id) }}">
+                                            <i class="fas fa-file-excel mr-2"></i>
+                                            ผู้ลงทะเบียน
+                                        </a>
+                                        <a class="inline-flex h-11 items-center rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700" href="{{ route("hrd.admin.export.excel.datelecture", $date->id) }}">
+                                            <i class="fas fa-file-excel mr-2"></i>
+                                            รายชื่อวิทยากร
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Date Content -->
+                                <div class="grid grid-cols-1 gap-5 p-5 lg:grid-cols-2">
+                                    <!-- Time Slots -->
+                                    <div>
+                                        <h4 class="mb-3 flex items-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                            <i class="fas fa-clock mr-2 text-green-600"></i>
+                                            ช่วงเวลา ({{ $dateTimes->count() }})
+                                        </h4>
+                                        <div class="space-y-3">
+                                            @forelse ($dateTimes as $time)
+                                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                                    <div class="flex flex-wrap items-start justify-between gap-2">
+                                                        <div>
+                                                            <p class="text-sm font-semibold text-gray-900">{{ $time->time_title }}</p>
+                                                            <p class="mt-0.5 text-sm text-gray-600">{{ $time->time_start }} - {{ $time->time_end }}</p>
+                                                        </div>
+                                                        <span class="{{ $time->time_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium">
                                                             <i class="fas fa-{{ $time->time_active ? "check-circle" : "times-circle" }} mr-1"></i>
                                                             {{ $time->time_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
                                                         </span>
-                                                    </td>
-                                                    <td class="whitespace-nowrap px-6 py-4">
+                                                    </div>
+                                                    <div class="mt-2 flex flex-wrap items-center gap-2">
                                                         @if ($time->time_limit)
-                                                            <div class="text-sm text-gray-900">สูงสุด: {{ $time->time_max }} คน</div>
-                                                            <div class="text-sm text-gray-500">ลงทะเบียนแล้ว: {{ $time->activeAttendsCount($project->id) }} คน</div>
+                                                            <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
+                                                                <i class="fas fa-users mr-1"></i>
+                                                                ลงทะเบียน {{ $time->activeAttendsCount($project->id) }} / {{ $time->time_max }} คน
+                                                            </span>
                                                         @else
-                                                            <div class="text-sm text-gray-500">ไม่จำกัด</div>
+                                                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                                                                <i class="fas fa-infinity mr-1"></i>
+                                                                ไม่จำกัดจำนวน
+                                                            </span>
                                                         @endif
-                                                    </td>
-                                                    <td class="whitespace-nowrap px-6 py-4">
-                                                        <div class="text-sm text-gray-500">-</div>
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        @if ($time->time_detail)
-                                                            <div class="max-w-xs truncate text-sm text-gray-900" title="{{ $time->time_detail }}">{{ $time->time_detail }}</div>
-                                                        @else
-                                                            <div class="text-sm text-gray-500">ไม่มีรายละเอียด</div>
-                                                        @endif
-                                                    </td>
-                                                    <td class="whitespace-nowrap px-6 py-4">
-                                                        <a class="inline-flex items-center rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-700" href="{{ route("hrd.admin.export.pdf.time", ["project_id" => $project->id, "time_id" => $time->id]) }}">
-                                                            <i class="fas fa-file-pdf mr-2"></i>
-                                                            ใบลงทะเบียน
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                                    </div>
+                                                    @if ($time->time_detail)
+                                                        <p class="mt-2 text-sm text-gray-600">{{ $time->time_detail }}</p>
+                                                    @endif
+                                                    <a class="mt-3 inline-flex h-10 items-center rounded-lg bg-red-600 px-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-700" href="{{ route("hrd.admin.export.pdf.time", ["project_id" => $project->id, "time_id" => $time->id]) }}">
+                                                        <i class="fas fa-file-pdf mr-2"></i>
+                                                        ใบลงทะเบียน
+                                                    </a>
+                                                </div>
+                                            @empty
+                                                <div class="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                                    ยังไม่มีช่วงเวลาสำหรับวันนี้
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+
+                                    <!-- Lecturers -->
+                                    <div>
+                                        <h4 class="mb-3 flex items-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                            <i class="fas fa-chalkboard-teacher mr-2 text-indigo-600"></i>
+                                            วิทยากร ({{ $date->lectures->count() }})
+                                        </h4>
+                                        <div class="space-y-3">
+                                            @forelse ($date->lectures as $lecture)
+                                                <div class="flex items-center justify-between gap-3 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+                                                    <div class="min-w-0">
+                                                        <p class="truncate text-sm font-semibold text-gray-900">
+                                                            {{ $lecture->user->userid }} {{ $lecture->user->name }}
+                                                        </p>
+                                                        <p class="truncate text-sm text-gray-600">
+                                                            {{ $lecture->user->position }} · {{ $lecture->user->department }}
+                                                        </p>
+                                                    </div>
+                                                    <button class="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-700 transition-colors duration-200 hover:bg-red-200" type="button" aria-label="ลบวิทยากร {{ $lecture->user->name }}" onclick="deleteLecture('{{ $lecture->id }}', '{{ addslashes($lecture->user->name) }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            @empty
+                                                <div class="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                                                    ยังไม่มีวิทยากรสำหรับวันนี้
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-gray-300 p-8 text-center">
+                                <i class="fas fa-calendar-xmark mb-3 text-3xl text-gray-400"></i>
+                                <p class="text-gray-500">ยังไม่มีวันที่ในโปรเจกต์นี้</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 
@@ -744,6 +808,113 @@
                 }
 
                 projectNameElement.style.fontSize = fontSize;
+            }
+
+            async function addLecturer(dateId, title) {
+                const alert = await Swal.fire({
+                    title: 'ยืนยัน วิทยากร',
+                    html: 'วันที่ ' + title + '<br>',
+                    input: 'text',
+                    inputPlaceholder: 'รหัสพนักงาน',
+                    icon: 'question',
+                    showConfirmButton: true,
+                    confirmButtonColor: 'green',
+                    confirmButtonText: 'ยืนยัน',
+                    showCancelButton: true,
+                    cancelButtonColor: 'gray',
+                    cancelButtonText: 'ยกเลิก',
+                });
+
+                if (!alert.isConfirmed) {
+                    return;
+                }
+
+                if (alert.value === '') {
+                    Swal.fire({
+                        title: 'โปรดใส่รหัสพนักงาน',
+                        icon: 'error',
+                        showConfirmButton: true,
+                        confirmButtonColor: 'red',
+                        confirmButtonText: 'ยืนยัน',
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'กรุณารอสักครู่',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                });
+
+                axios.post('{{ route("hrd.admin.projects.lecture.add", $project->id) }}', {
+                    date_id: dateId,
+                    user: alert.value
+                }).then((res) => {
+                    if (res.data.status === 'success') {
+                        Swal.fire({
+                            title: res.data.message,
+                            icon: 'success',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: 'green'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: res.data.message,
+                            icon: 'error',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: 'red'
+                        });
+                    }
+                }).catch(() => {
+                    Swal.fire({
+                        title: 'เกิดข้อผิดพลาดในการเพิ่มวิทยากร',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: 'red'
+                    });
+                });
+            }
+
+            async function deleteLecture(lectureId, name) {
+                const alert = await Swal.fire({
+                    title: 'ยืนยันลบวิทยากร ' + name,
+                    icon: 'warning',
+                    showConfirmButton: true,
+                    confirmButtonColor: 'red',
+                    confirmButtonText: 'ยืนยัน',
+                    showCancelButton: true,
+                    cancelButtonColor: 'gray',
+                    cancelButtonText: 'ยกเลิก',
+                });
+
+                if (!alert.isConfirmed) {
+                    return;
+                }
+
+                axios.post('{{ route("hrd.admin.projects.lecture.delete", $project->id) }}', {
+                    lecture_id: lectureId
+                }).then((res) => {
+                    Swal.fire({
+                        title: res.data.message,
+                        icon: res.data.status === 'success' ? 'success' : 'error',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: res.data.status === 'success' ? 'green' : 'red'
+                    }).then(() => {
+                        if (res.data.status === 'success') {
+                            window.location.reload();
+                        }
+                    });
+                }).catch(() => {
+                    Swal.fire({
+                        title: 'เกิดข้อผิดพลาดในการลบวิทยากร',
+                        icon: 'error',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: 'red'
+                    });
+                });
             }
 
             function confirmDelete() {

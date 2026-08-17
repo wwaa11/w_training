@@ -20,10 +20,15 @@
                     <label class="form-label" for="password">
                         <i class="fa-solid fa-lock mr-2"></i>รหัสผ่าน
                     </label>
-                    <input class="form-input" id="password" name="password" type="password" placeholder="กรุณากรอกรหัสผ่าน" autocomplete="current-password" required>
+                    <div class="password-field">
+                        <input class="form-input" id="password" name="password" type="password" placeholder="กรุณากรอกรหัสผ่าน" autocomplete="current-password" required>
+                        <button class="password-toggle" id="passwordToggle" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                            <i class="fa-solid fa-eye" id="passwordToggleIcon"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <button class="auth-button" type="button" onclick="login()">
+                <button class="auth-button" id="loginButton" type="button">
                     <i class="fa-solid fa-sign-in-alt mr-2"></i>เข้าสู่ระบบ
                 </button>
             </form>
@@ -128,6 +133,39 @@
             color: var(--text-muted);
         }
 
+        .password-field {
+            position: relative;
+            display: flex;
+        }
+
+        .password-field .form-input {
+            width: 100%;
+            padding-right: 3.25rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: var(--spacing-xs);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 1rem;
+            transition: color var(--transition-normal);
+        }
+
+        .password-toggle:hover,
+        .password-toggle:focus-visible {
+            color: var(--primary-color);
+        }
+
         .auth-button {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
@@ -152,6 +190,13 @@
 
         .auth-button:active {
             transform: translateY(0);
+        }
+
+        .auth-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         @keyframes fadeInUp {
@@ -229,26 +274,106 @@
 
 @section("scripts")
     <script>
-        function login() {
+        const CSRF_EXPIRED_STATUS = 419;
+
+        function themeColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        function showError(title) {
+            Swal.fire({
+                title: title,
+                icon: 'error',
+                confirmButtonColor: themeColor('--danger-color'),
+                confirmButtonText: 'ตกลง'
+            });
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('passwordToggleIcon');
+            const button = document.getElementById('passwordToggle');
+            const showPassword = input.type === 'password';
+
+            input.type = showPassword ? 'text' : 'password';
+            icon.className = showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+            button.setAttribute('aria-label', showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
+            button.setAttribute('aria-pressed', showPassword ? 'true' : 'false');
+            input.focus();
+        }
+
+        async function refreshCsrfToken() {
+            const res = await axios.get('{{ route("session.check") }}');
+            window.setCsrfToken(res.data.token);
+        }
+
+        function sendLogin(payload) {
+            return axios.post('{{ route("login.post") }}', payload);
+        }
+
+        // A login page left open longer than the session lifetime submits an expired CSRF token,
+        // so renew it once and resend instead of forcing the user to reload the page.
+        async function sendLoginWithTokenRetry(payload) {
+            try {
+                return await sendLogin(payload);
+            } catch (error) {
+                if (error.response && error.response.status === CSRF_EXPIRED_STATUS) {
+                    await refreshCsrfToken();
+                    return sendLogin(payload);
+                }
+
+                throw error;
+            }
+        }
+
+        function connectionErrorMessage(error) {
+            if (error.response && error.response.status === CSRF_EXPIRED_STATUS) {
+                return 'เซสชันหมดอายุ กรุณารีเฟรชหน้าเว็บแล้วเข้าสู่ระบบใหม่อีกครั้ง';
+            }
+
+            if (error.response) {
+                return 'ระบบไม่สามารถดำเนินการได้ กรุณาลองใหม่อีกครั้ง';
+            }
+
+            return 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+        }
+
+        function handleLoginResult(data) {
+            if (data.status != 'success') {
+                showError(data.message);
+                return;
+            }
+
+            Swal.fire({
+                title: 'เข้าสู่ระบบสำเร็จ',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = '{{ route("index") }}';
+            });
+        }
+
+        async function login() {
             const userid = $('#userid').val().trim();
             const password = $('#password').val().trim();
+            const loginButton = document.getElementById('loginButton');
 
-            // Get CSS variables
-            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-            const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--danger-color').trim();
-
-            // Validation
             if (!userid || !password) {
                 Swal.fire({
                     title: 'กรุณากรอกข้อมูลให้ครบถ้วน',
                     icon: 'warning',
-                    confirmButtonColor: primaryColor,
+                    confirmButtonColor: themeColor('--primary-color'),
                     confirmButtonText: 'ตกลง'
                 });
                 return;
             }
 
-            // Show loading state
+            if (loginButton.disabled) {
+                return;
+            }
+
+            loginButton.disabled = true;
             Swal.fire({
                 title: 'กำลังเข้าสู่ระบบ',
                 allowOutsideClick: false,
@@ -259,36 +384,30 @@
                 }
             });
 
-            axios.post('{{ route("login") }}', {
-                'userid': userid,
-                'password': password,
-            }).then((res) => {
-                if (res.data.status == 'success') {
-                    Swal.fire({
-                        title: 'เข้าสู่ระบบสำเร็จ',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '{{ route("index") }}';
-                    });
-                } else {
-                    Swal.fire({
-                        title: res.data.message,
-                        icon: 'error',
-                        confirmButtonColor: dangerColor,
-                        confirmButtonText: 'ตกลง'
-                    });
-                }
-            }).catch((error) => {
-                Swal.fire({
-                    title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
-                    icon: 'error',
-                    confirmButtonColor: dangerColor,
-                    confirmButtonText: 'ตกลง'
+            try {
+                const res = await sendLoginWithTokenRetry({
+                    'userid': userid,
+                    'password': password,
                 });
-            });
+                handleLoginResult(res.data);
+            } catch (error) {
+                showError(connectionErrorMessage(error));
+            } finally {
+                loginButton.disabled = false;
+            }
         }
+
+        document.getElementById('passwordToggle').addEventListener('click', togglePassword);
+        document.getElementById('loginButton').addEventListener('click', login);
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            login();
+        });
+
+        // Keep the CSRF token (and the session behind it) alive while the page stays open.
+        setInterval(() => {
+            refreshCsrfToken().catch(() => {});
+        }, 10 * 60 * 1000);
 
         // Enter key support
         $('#password').keyup(function(e) {
