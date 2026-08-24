@@ -10,7 +10,7 @@
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="{{ asset("js/axios.min.js") }}"></script>
     <script src="{{ asset("js/jquery.min.js") }}"></script>
     <script src="{{ asset("js/sweetalert2.js") }}"></script>
     <script>
