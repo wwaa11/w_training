@@ -355,8 +355,10 @@
         }
 
         async function login() {
-            const userid = $('#userid').val().trim();
-            const password = $('#password').val().trim();
+            const useridInput = document.getElementById('userid');
+            const passwordInput = document.getElementById('password');
+            const userid = useridInput.value.trim();
+            const password = passwordInput.value.trim();
             const loginButton = document.getElementById('loginButton');
 
             if (!userid || !password) {
@@ -409,16 +411,17 @@
             refreshCsrfToken().catch(() => {});
         }, 10 * 60 * 1000);
 
-        // Enter key support
-        $('#password').keyup(function(e) {
-            if (e.keyCode === 13) {
+        document.getElementById('password').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
                 login();
             }
         });
 
-        $('#userid').keyup(function(e) {
-            if (e.keyCode === 13) {
-                $('#password').focus();
+        document.getElementById('userid').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('password').focus();
             }
         });
 

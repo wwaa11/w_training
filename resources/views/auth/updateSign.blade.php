@@ -213,11 +213,14 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script>
         const canvas = document.getElementById('sign_Canvas');
-        const ctx = canvas.getContext('2d');
         const signaturePad = new SignaturePad(canvas, {
             penColor: "rgb(59, 130, 246)",
             backgroundColor: "rgb(255, 255, 255)"
         });
+
+        function themeColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
 
         function clearSign() {
             signaturePad.clear();
@@ -226,15 +229,16 @@
         function saveSign() {
             if (signaturePad.isEmpty()) {
                 Swal.fire({
-                    title: "กรุณาเซ็นต์ลายเซ็นต์",
+                    title: 'กรุณาเซ็นต์ลายเซ็นต์',
                     icon: 'warning',
-                    confirmButtonColor: var (--primary - color),
+                    confirmButtonColor: themeColor('--primary-color'),
                     confirmButtonText: 'ตกลง'
                 });
-            } else {
-                $('#sign').val(signaturePad.toDataURL());
-                $('#saveSign').submit();
+                return;
             }
+
+            $('#sign').val(signaturePad.toDataURL());
+            $('#saveSign').submit();
         }
     </script>
 @endsection

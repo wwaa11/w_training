@@ -11,8 +11,8 @@
     <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset("js/jquery.min.js") }}"></script>
+    <script src="{{ asset("js/sweetalert2.js") }}"></script>
     <script>
         // The XSRF-TOKEN cookie expires with the session, so send the token rendered with the page.
         window.setCsrfToken = function(token) {
@@ -23,11 +23,13 @@
             window.csrfToken = token;
             document.querySelector('meta[name="csrf-token"]').setAttribute('content', token);
             axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': token
-                }
-            });
+            if (window.jQuery) {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+            }
         };
 
         window.setCsrfToken(document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
