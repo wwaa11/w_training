@@ -1,22 +1,22 @@
 <?php
 namespace App\Exports\Hr;
 
-use App\Models\HrLecture;
-use Maatwebsite\Excel\Concerns\FromArray;
+use App\Models\HrDate;
+use App\Models\HrProject;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithDrawings;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
-class LectureExport implements FromArray, ShouldAutoSize, WithDrawings, WithEvents, WithHeadings
+class LectureExport implements FromView, ShouldAutoSize, WithDrawings
 {
     protected $project_id;
 
     protected $date_id;
 
-    protected $lectures;
+    protected $dates;
 
     public function __construct($project_id, $date_id = null)
     {
@@ -24,150 +24,92 @@ class LectureExport implements FromArray, ShouldAutoSize, WithDrawings, WithEven
         $this->date_id    = $date_id;
     }
 
-    public function headings(): array
-    {
-        return [
-            'ลำดับ',
-            'วันที่',
-            'รหัสพนักงาน',
-            'ชื่อ - นามสกุล',
-            'ตำแหน่ง',
-            'แผนก',
-            'ลายเซ็นต์',
-        ];
-    }
-
     /**
-     * Row order must stay identical between the data rows and the signature
+     * Row order must stay identical between the view rows and the signature
      * drawings, so both read from this single cached query.
      */
-    protected function lectures()
+    protected function dates()
     {
-        if ($this->lectures === null) {
-            $query = HrLecture::with(['user', 'date'])
-                ->where('active', true)
-                ->whereHas('date', function ($dateQuery) {
-                    $dateQuery->where('project_id', $this->project_id)
-                        ->where('date_delete', false);
-                });
+        if ($this->dates === null) {
+            $query = HrDate::with(['lectures.user', 'times'])
+                ->active()
+                ->where('project_id', $this->project_id);
 
             if ($this->date_id) {
-                $query->where('date_id', $this->date_id);
+                $query->where('id', $this->date_id);
             }
 
-            $this->lectures = $query->orderBy('date_id', 'ASC')
-                ->orderBy('user_id', 'ASC')
-                ->get();
+            $this->dates = $query->orderBy('id', 'ASC')->get();
         }
 
-        return $this->lectures;
+        return $this->dates;
     }
 
     public function drawings()
     {
         $drawings = [];
 
-        foreach ($this->lectures() as $index => $lecture) {
-            if (! $lecture->user || $lecture->user->sign === null) {
-                continue;
+        $drawing = new Drawing();
+        $drawing->setDescription('This is my logo');
+        $drawing->setPath(public_path('/images/Side Logo.png'));
+        $drawing->setHeight(50);
+        $drawing->setCoordinates('A1');
+        $drawings[] = $drawing;
+
+        $row = 0;
+        foreach ($this->dates() as $date) {
+            foreach ($date->lectures as $lecture) {
+                if ($lecture->user && $lecture->user->sign !== null) {
+                    $base64 = explode(',', $lecture->user->sign, 2);
+                    if (count($base64) >= 2) {
+                        $sign = imagecreatefromstring(base64_decode($base64[1]));
+                        if ($sign !== false) {
+                            imagesavealpha($sign, true);
+
+                            $drawing = new MemoryDrawing();
+                            $drawing->setImageResource($sign);
+                            $drawing->setHeight(15);
+                            $drawing->setWidth(120);
+                            $drawing->setCoordinates('G' . ($row + 5));
+                            $drawings[] = $drawing;
+                        }
+                    }
+                }
+
+                $row += 1;
             }
-
-            $base64 = explode(',', $lecture->user->sign, 2);
-            if (count($base64) < 2) {
-                continue;
-            }
-
-            $sign = imagecreatefromstring(base64_decode($base64[1]));
-            if (! $sign) {
-                continue;
-            }
-
-            imagesavealpha($sign, true);
-
-            // Width is left to scale proportionally so signatures stay legible
-            $drawing = new MemoryDrawing();
-            $drawing->setImageResource($sign);
-            $drawing->setHeight(30);
-            $drawing->setOffsetX(10);
-            $drawing->setOffsetY(3);
-            $drawing->setCoordinates('G' . ($index + 2));
-            $drawings[] = $drawing;
         }
 
         return $drawings;
     }
 
-    public function array(): array
+    public function view(): View
     {
-        $lectureArray = [];
+        $project          = HrProject::find($this->project_id);
+        $dates            = $this->dates();
+        $project_date     = '';
+        $project_time     = [];
+        $project_locations = [];
 
-        foreach ($this->lectures() as $index => $lecture) {
-            $lectureArray[] = [
-                $index + 1,
-                $lecture->date ? $lecture->date->date_title : 'N/A',
-                $lecture->user ? $lecture->user->userid : 'N/A',
-                $lecture->user ? $lecture->user->name : 'N/A',
-                $lecture->user ? $lecture->user->position : 'N/A',
-                $lecture->user ? $lecture->user->department : 'N/A',
-                null,
-            ];
+        foreach ($dates as $date) {
+            $project_date .= $date->date_title . ' - ';
+            foreach ($date->times as $time) {
+                $project_time[] = $time->time_title;
+            }
+            if ($date->date_location) {
+                $project_locations[] = $date->date_location;
+            }
         }
 
-        return $lectureArray;
-    }
+        $project_date     = rtrim($project_date, ' - ');
+        $project_location = implode(' , ', array_unique($project_locations));
 
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet $event) {
-                $event->sheet->getColumnDimension('A')->setWidth(8);  // ลำดับ
-                $event->sheet->getColumnDimension('B')->setWidth(25); // วันที่
-                $event->sheet->getColumnDimension('C')->setWidth(15); // รหัสพนักงาน
-                $event->sheet->getColumnDimension('D')->setWidth(25); // ชื่อ - นามสกุล
-                $event->sheet->getColumnDimension('E')->setWidth(20); // ตำแหน่ง
-                $event->sheet->getColumnDimension('F')->setWidth(20); // แผนก
-
-                // Signature images are placed here, so keep a fixed width
-                $event->sheet->getColumnDimension('G')->setAutoSize(false);
-                $event->sheet->getColumnDimension('G')->setWidth(30);
-
-                $event->sheet->getStyle('A1:G1')->applyFromArray([
-                    'font'      => [
-                        'bold'  => true,
-                        'color' => ['rgb' => 'FFFFFF'],
-                    ],
-                    'fill'      => [
-                        'fillType'   => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => '4472C4'],
-                    ],
-                    'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-                    ],
-                ]);
-
-                $highestRow = $event->sheet->getHighestRow();
-
-                $event->sheet->getStyle('A1:G' . $highestRow)->applyFromArray([
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                            'color'       => ['rgb' => '000000'],
-                        ],
-                    ],
-                ]);
-
-                $event->sheet->getStyle('A2:G' . $highestRow)->applyFromArray([
-                    'alignment' => [
-                        'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-                    ],
-                ]);
-
-                // Signature images need room to render inside their row
-                for ($row = 2; $row <= $highestRow; $row++) {
-                    $event->sheet->getRowDimension($row)->setRowHeight(35);
-                }
-            },
-        ];
+        return view('hr.admin.export.Lecturer')->with(compact(
+            'project',
+            'dates',
+            'project_date',
+            'project_time',
+            'project_location'
+        ));
     }
 }
