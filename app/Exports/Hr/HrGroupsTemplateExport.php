@@ -1,7 +1,8 @@
 <?php
-namespace App\Exports;
+namespace App\Exports\Hr;
 
-use App\Models\User;
+use App\Models\HrGroup;
+use App\Models\HrProject;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -18,26 +19,45 @@ class HrGroupsTemplateExport implements FromCollection, WithHeadings, WithStyles
 
     public function collection()
     {
-                                       // Get all users from the system to provide sample data
-        $users = User::take(5)->get(); // Only show first 5 as examples
+        $project = HrProject::findOrFail($this->projectId);
 
-        $sampleData = collect();
+        $groupAssignments = HrGroup::where('project_id', $this->projectId)
+            ->get()
+            ->keyBy('user_id');
 
-        // Add instruction row
-        $sampleData->push([
+        $participants = $project->activeAttends()
+            ->with('user')
+            ->get()
+            ->groupBy('user_id')
+            ->map(function ($userAttends) {
+                return $userAttends->first();
+            })
+            ->sortBy(function ($attend) {
+                return $attend->user->userid ?? '';
+            })
+            ->values();
+
+        $rows = collect();
+
+        $rows->push([
             'user_id'    => 'คำแนะนำ: กรอกรหัสพนักงานในระบบ',
             'group_name' => 'คำแนะนำ: กรอกชื่อกลุ่มที่ต้องการจัด',
         ]);
 
-        // Add sample data
-        foreach ($users as $user) {
-            $sampleData->push([
+        foreach ($participants as $attend) {
+            $user = $attend->user;
+
+            if (! $user || ! $user->userid) {
+                continue;
+            }
+
+            $rows->push([
                 'user_id'    => $user->userid,
-                'group_name' => 'กลุ่ม A',
+                'group_name' => $groupAssignments->get($user->id)?->group ?? '',
             ]);
         }
 
-        return $sampleData;
+        return $rows;
     }
 
     public function headings(): array
