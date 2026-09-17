@@ -32,7 +32,7 @@ class HrDate extends Model
 
     public function times()
     {
-        return $this->hasMany(HrTime::class, 'date_id')->active();
+        return $this->hasMany(HrTime::class, 'date_id')->active()->orderBy('time_start', 'asc');
     }
 
     public function attends()

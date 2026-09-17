@@ -153,8 +153,7 @@ class HRController extends Controller
                         ->orderBy('date_datetime', 'asc');
                 },
                 'dates.times' => function ($query) {
-                    $query->where('time_delete', false)
-                        ->orderBy('time_start', 'asc');
+                    $query->where('time_delete', false);
                 },
                 'attends'     => function ($query) {
                     $query->where('attend_delete', false);
@@ -1647,7 +1646,7 @@ class HRController extends Controller
                 $query->withoutGlobalScope('active')->orderBy('date_datetime', 'asc');
             },
             'dates.times' => function ($query) {
-                $query->withoutGlobalScope('active')->orderBy('time_start', 'asc');
+                $query->withoutGlobalScope('active');
             },
             'links'       => function ($query) {
                 $query->withoutGlobalScope('active')->orderBy('created_at', 'asc');
@@ -2499,7 +2498,6 @@ class HRController extends Controller
             if ($selectedDate) {
                 $availableTimes = $selectedDate->times()
                     ->where('time_delete', false)
-                    ->orderBy('time_start', 'asc')
                     ->get();
             }
         } else {
@@ -2507,7 +2505,7 @@ class HRController extends Controller
             $availableTimes = $project->dates()
                 ->where('date_delete', false)
                 ->with(['times' => function ($query) {
-                    $query->where('time_delete', false)->orderBy('time_start', 'asc');
+                    $query->where('time_delete', false);
                 }])
                 ->get()
                 ->flatMap(function ($date) {
@@ -4015,7 +4013,7 @@ class HRController extends Controller
                 $query->where('date_delete', false)->orderBy('date_datetime', 'asc');
             },
             'dates.times' => function ($query) {
-                $query->where('time_delete', false)->orderBy('time_start', 'asc');
+                $query->where('time_delete', false);
             },
             'dates.times.activeAttends.user',
             'dates.lectures.user',
