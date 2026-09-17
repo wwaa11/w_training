@@ -464,12 +464,20 @@
                                                 <div class="{{ $slot["userRegistered"] ? "bg-blue-50" : "bg-white" }} {{ $slot["userRegistered"] ? "" : "hover:bg-gray-50" }} rounded-lg p-3 transition-colors">
                                                     <label class="{{ $slot["userRegistered"] ? "cursor-not-allowed" : "cursor-pointer" }} flex items-center justify-between" for="time_{{ $slot["time"]->id }}">
                                                         <div class="flex flex-col gap-2">
-                                                            <div>
-                                                                <span class="{{ $slot["userRegistered"] ? "text-blue-900" : "text-gray-900" }} text-sm font-medium">
-                                                                    <i class="fas fa-clock mr-2 text-gray-500"></i>
-                                                                    {{ \Carbon\Carbon::parse($slot["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($slot["time"]->time_end)->format("H:i") }}
-                                                                </span>
-                                                            </div>
+                                                            @if (filled($slot["time"]->time_title))
+                                                                <div>
+                                                                    <i class="fas fa-clock mr-1"></i>
+                                                                    <span class="{{ $slot["userRegistered"] ? "text-blue-900" : "text-gray-900" }} text-sm font-medium">
+                                                                        {{ $slot["time"]->time_title }}
+                                                                    </span>
+                                                                </div>
+                                                            @endif
+
+                                                            @if (filled($slot["time"]->time_detail))
+                                                                <div class="text-xs text-gray-500">
+                                                                    {{ $slot["time"]->time_detail }}
+                                                                </div>
+                                                            @endif
 
                                                             <div>
                                                                 @if ($slot["isLimited"])

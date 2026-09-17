@@ -98,11 +98,11 @@
                     @endif
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                            <h3 class="mb-2 text-sm font-medium text-gray-700">เริ่มต้นการฝึกอบรม</h3>
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">เริ่มการลงทะเบียน</h3>
                             <p class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($project->project_start_register)->format("d/m/Y H:i") }}</p>
                         </div>
                         <div>
-                            <h3 class="mb-2 text-sm font-medium text-gray-700">สิ้นสุดการฝึกอบรม</h3>
+                            <h3 class="mb-2 text-sm font-medium text-gray-700">สิ้นสุดโครงการ</h3>
                             <p class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($project->project_end_register)->format("d/m/Y H:i") }}</p>
                         </div>
                     </div>
@@ -423,13 +423,15 @@
                                                     <div class="flex flex-wrap items-start justify-between gap-2">
                                                         <div>
                                                             <p class="text-sm font-semibold text-gray-900">{{ $time->time_title }}</p>
-                                                            <p class="mt-0.5 text-sm text-gray-600">{{ $time->time_start }} - {{ $time->time_end }}</p>
                                                         </div>
                                                         <span class="{{ $time->time_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }} inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium">
                                                             <i class="fas fa-{{ $time->time_active ? "check-circle" : "times-circle" }} mr-1"></i>
                                                             {{ $time->time_active ? "ใช้งาน" : "ไม่ใช้งาน" }}
                                                         </span>
                                                     </div>
+                                                    @if ($time->time_detail)
+                                                        <p class="mt-2 text-sm text-gray-600">{{ $time->time_detail }}</p>
+                                                    @endif
                                                     <div class="mt-2 flex flex-wrap items-center gap-2">
                                                         @if ($time->time_limit)
                                                             <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
@@ -443,9 +445,6 @@
                                                             </span>
                                                         @endif
                                                     </div>
-                                                    @if ($time->time_detail)
-                                                        <p class="mt-2 text-sm text-gray-600">{{ $time->time_detail }}</p>
-                                                    @endif
                                                     <a class="mt-3 inline-flex h-10 items-center rounded-lg bg-red-600 px-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-700" href="{{ route("hrd.admin.export.pdf.time", ["project_id" => $project->id, "time_id" => $time->id]) }}">
                                                         <i class="fas fa-file-pdf mr-2"></i>
                                                         ใบลงทะเบียน
