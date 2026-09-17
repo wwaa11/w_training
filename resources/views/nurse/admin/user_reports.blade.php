@@ -1,7 +1,9 @@
 @extends("layouts.nurse")
 @section("content")
     @php
+        $isGroupReport = $department === "group";
         $hasDepartment = filled($department) && $department !== "null";
+        $groupDepartments = $groupDepartments ?? [];
         $userCount = 0;
         $scoreSum = 0;
         $topScore = 0;
@@ -45,7 +47,7 @@
             </div>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700" for="selectYear">ปีงบประมาณ / ปีโครงการ</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700" for="selectYear">ปีโครงการ *(วันที่ลงทะเบียนอบรม)</label>
                     <select class="w-full min-h-[44px] cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" id="selectYear" onchange="changeFilter()">
                         @forelse ($years as $y)
                             <option value="{{ $y }}" @if ((int) $year === (int) $y) selected @endif>
@@ -57,9 +59,18 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700" for="selectDepartment">แผนก</label>
-                    <select class="w-full min-h-[44px] cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" id="selectDepartment" onchange="changeFilter()">
-                        <option value="" disabled @if (!$hasDepartment) selected @endif>เลือกแผนกเพื่อดูรายงาน</option>
+                    <div class="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                        <label class="text-sm font-medium text-slate-700" for="selectDepartment">แผนก</label>
+                        <a class="text-xs font-medium text-blue-600 transition hover:text-blue-800" href="{{ route("nurse.admin.score.departments") }}">
+                            <i class="fa-solid fa-sliders mr-1"></i>
+                            ตั้งค่าแผนกรายงาน
+                        </a>
+                    </div>
+                    <select class="w-full" id="selectDepartment" placeholder="เลือกแผนกเพื่อดูรายงาน">
+                        <option value="" @if (!$hasDepartment) selected @endif>เลือกแผนกเพื่อดูรายงาน</option>
+                        <option value="group" @if ($isGroupReport) selected @endif>
+                            กลุ่มแผนก ({{ count($groupDepartments) }} แผนก)
+                        </option>
                         @foreach ($departmentArray as $dept)
                             <option value="{{ $dept }}" @if ($department == $dept) selected @endif>{{ $dept }}</option>
                         @endforeach
@@ -76,7 +87,11 @@
                     </span>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
                         <i class="fa-solid fa-building"></i>
-                        {{ $department }}
+                        @if ($isGroupReport)
+                            กลุ่มแผนก ({{ count($groupDepartments) }} แผนก)
+                        @else
+                            {{ $department }}
+                        @endif
                     </span>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
                         <i class="fa-solid fa-folder-open"></i>
@@ -86,7 +101,20 @@
             @endif
         </div>
 
-        @if (!$hasDepartment)
+        @if (count($departmentArray) === 0)
+            <div class="rounded-2xl border border-dashed border-amber-300 bg-white px-6 py-14 text-center shadow-sm">
+                <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                    <i class="fa-solid fa-sliders text-2xl"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-slate-900">ยังไม่มีแผนกในรายงาน</h2>
+                <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
+                    กำหนดแผนกที่จะแสดงในรายงานคะแนนก่อน จากนั้นเลือกปีและแผนกเพื่อดูข้อมูล
+                </p>
+                <a class="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700" href="{{ route("nurse.admin.score.departments") }}">
+                    ไปตั้งค่าแผนกรายงาน
+                </a>
+            </div>
+        @elseif (!$hasDepartment)
             {{-- Guided empty state --}}
             <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center shadow-sm">
                 <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
@@ -94,8 +122,21 @@
                 </div>
                 <h2 class="text-lg font-semibold text-slate-900">เริ่มต้นดูรายงาน</h2>
                 <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-                    เลือกปีและแผนกด้านบน เพื่อแสดงตารางคะแนนพนักงานในแผนกนั้น สำหรับโครงการในปีที่เลือกเท่านั้น
+                    เลือกปีและแผนกจากรายการที่ตั้งค่าไว้ หรือเลือกกลุ่มแผนกเพื่อดูรวมทุกแผนกในตารางเดียว
                 </p>
+            </div>
+        @elseif ($isGroupReport && count($groupDepartments) === 0)
+            <div class="rounded-2xl border border-dashed border-amber-300 bg-white px-6 py-14 text-center shadow-sm">
+                <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                    <i class="fa-solid fa-sliders text-2xl"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-slate-900">ยังไม่ได้ตั้งค่ากลุ่มแผนก</h2>
+                <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
+                    เลือกแผนกที่ต้องการรวมในรายงานก่อน จากนั้นกลับมาเลือกตัวเลือกกลุ่มแผนกอีกครั้ง
+                </p>
+                <a class="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700" href="{{ route("nurse.admin.score.departments") }}">
+                    ไปตั้งค่ากลุ่มแผนก
+                </a>
             </div>
         @elseif ($userCount === 0)
             <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center shadow-sm">
@@ -104,7 +145,7 @@
                 </div>
                 <h2 class="text-lg font-semibold text-slate-900">ไม่พบข้อมูล</h2>
                 <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-                    ไม่มีพนักงานในแผนกนี้ หรือไม่มีคะแนนในปี พ.ศ. {{ $year + 543 }}
+                    ไม่มีพนักงาน{{ $isGroupReport ? "ในกลุ่มแผนกนี้" : "ในแผนกนี้" }} หรือไม่มีคะแนนในปี พ.ศ. {{ $year + 543 }}
                 </p>
             </div>
         @elseif ($projectCount === 0)
@@ -160,9 +201,15 @@
                     <div class="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                         <div>
                             <h2 class="text-base font-semibold text-slate-900 sm:text-lg">{{ $key }}</h2>
-                            <p class="text-xs text-slate-500">เรียงตามคะแนนรวมจากมากไปน้อย · {{ count($deptUsers) }} คน</p>
+                            <p class="text-xs text-slate-500">
+                                @if ($isGroupReport)
+                                    เรียงตามรหัสพนักงาน · {{ count($deptUsers) }} คน
+                                @else
+                                    เรียงตามคะแนนรวมจากมากไปน้อย · {{ count($deptUsers) }} คน
+                                @endif
+                            </p>
                         </div>
-                        <button class="download-table-btn inline-flex min-h-[40px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:hidden" type="button" data-table-id="table-{{ $loop->index }}">
+                        <button class="download-table-btn inline-flex min-h-[40px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:hidden" type="button" data-table-id="table-{{ $loop->index }}" data-dept-label="{{ $key }}">
                             <i class="fa-solid fa-file-excel"></i>
                             Export
                         </button>
@@ -175,6 +222,9 @@
                                     <th class="sticky-col sticky-col-1">รหัส</th>
                                     <th class="sticky-col sticky-col-2">ชื่อ - สกุล</th>
                                     <th class="sticky-col sticky-col-3">ตำแหน่ง</th>
+                                    @if ($isGroupReport)
+                                        <th class="dept-col min-w-[10rem] max-w-[14rem] text-left">แผนก</th>
+                                    @endif
                                     @foreach ($projects as $project)
                                         <th class="project-col score-head" data-project-title="{{ strtolower($project->title) }}" title="{{ $project->title }}">
                                             <span class="project-title">{{ $project->title }}</span>
@@ -186,10 +236,13 @@
                             </thead>
                             <tbody>
                                 @foreach ($deptUsers as $user)
-                                    <tr class="report-row" data-search="{{ strtolower($user["user"] . " " . $user["name"]) }}">
+                                    <tr class="report-row" data-search="{{ strtolower($user["user"] . " " . $user["name"] . " " . ($user["department"] ?? "")) }}">
                                         <td class="sticky-col sticky-col-1 font-mono text-xs text-slate-600">{{ $user["user"] }}</td>
                                         <td class="sticky-col sticky-col-2 font-medium text-slate-900">{{ $user["name"] }}</td>
                                         <td class="sticky-col sticky-col-3 text-slate-600">{{ $user["position"] }}</td>
+                                        @if ($isGroupReport)
+                                            <td class="dept-col max-w-[14rem] truncate text-slate-600" title="{{ $user["department"] ?? "" }}">{{ $user["department"] ?? "" }}</td>
+                                        @endif
                                         @foreach ($projects as $project)
                                             @php $val = $user[$project->title] ?? null; @endphp
                                             <td class="project-col score-cell text-center" data-project-title="{{ strtolower($project->title) }}">
@@ -413,16 +466,51 @@
                 transition: none !important;
             }
         }
+
+        .ts-wrapper.select-department-ts {
+            width: 100%;
+        }
+
+        .ts-wrapper.select-department-ts .ts-control {
+            min-height: 44px;
+            border-radius: 0.75rem;
+            border-color: #cbd5e1;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .ts-wrapper.select-department-ts.focus .ts-control {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgb(191 219 254);
+        }
+
+        .ts-wrapper.select-department-ts .ts-dropdown {
+            border-radius: 0.75rem;
+            border-color: #e2e8f0;
+            font-size: 0.875rem;
+        }
     </style>
 @endsection
 
 @section("scripts")
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/js/tom-select.complete.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
+        let departmentTomSelect = null;
+
+        function getDepartmentFilterValue() {
+            if (departmentTomSelect) {
+                const value = departmentTomSelect.getValue();
+                return Array.isArray(value) ? (value[0] || '') : (value || '');
+            }
+            const deptSelect = document.getElementById('selectDepartment');
+            return deptSelect?.value || '';
+        }
+
         function changeFilter() {
             const year = document.getElementById('selectYear').value;
-            const deptSelect = document.getElementById('selectDepartment');
-            const dept = deptSelect.options[deptSelect.selectedIndex]?.value || '';
+            const dept = getDepartmentFilterValue();
 
             Swal.fire({
                 title: 'กำลังโหลดรายงาน...',
@@ -471,6 +559,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            const deptEl = document.getElementById('selectDepartment');
+            if (deptEl && typeof TomSelect !== 'undefined') {
+                departmentTomSelect = new TomSelect(deptEl, {
+                    create: false,
+                    maxOptions: null,
+                    allowEmptyOption: true,
+                    placeholder: 'เลือกแผนกเพื่อดูรายงาน',
+                    sortField: { field: 'text', direction: 'asc' },
+                    onChange() {
+                        changeFilter();
+                    },
+                });
+                departmentTomSelect.wrapper.classList.add('select-department-ts');
+            }
+
             const rowSearch = document.getElementById('rowSearch');
             const colSearch = document.getElementById('colSearch');
             if (rowSearch) rowSearch.addEventListener('input', applyFilters);
@@ -479,11 +582,17 @@
             document.querySelectorAll('.download-table-btn').forEach((btn) => {
                 btn.addEventListener('click', function() {
                     const tableId = btn.getAttribute('data-table-id');
-                    const deptSelect = document.getElementById('selectDepartment');
                     const yearSelect = document.getElementById('selectYear');
+                    const deptLabel = btn.getAttribute('data-dept-label');
                     let deptName = 'report';
-                    if (deptSelect && deptSelect.selectedIndex >= 0) {
-                        deptName = deptSelect.options[deptSelect.selectedIndex].text.trim().replace(/\s+/g, '_');
+                    if (deptLabel) {
+                        deptName = deptLabel.trim().replace(/\s+/g, '_');
+                    } else if (departmentTomSelect) {
+                        const val = getDepartmentFilterValue();
+                        const opt = departmentTomSelect.options[val];
+                        if (opt && opt.text) {
+                            deptName = opt.text.trim().replace(/\s+/g, '_');
+                        }
                     }
                     const yearVal = yearSelect ? yearSelect.value : '';
                     const today = new Date();

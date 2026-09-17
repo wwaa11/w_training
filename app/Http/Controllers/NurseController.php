@@ -15,6 +15,7 @@ use App\Exports\NurseUserExport;
 use App\Models\NurseDate;
 use App\Models\NurseLecture;
 use App\Models\NurseProject;
+use App\Models\NurseScoreReportDepartment;
 use App\Models\NurseTime;
 use App\Models\NurseTransaction;
 use App\Models\User;
@@ -922,133 +923,227 @@ class NurseController extends Controller
         return Excel::download(new NurseOnebookExport($project_id), $name . '_' . date('d-m-Y') . '.xlsx');
     }
 
-    public function UserScore(Request $request)
+    public function userScoreDepartmentGroup()
     {
-        $department = $request->query('department');
+        $departmentArray = $this->nurseScoreDepartmentsFromUsers();
+        $selected        = NurseScoreReportDepartment::orderBy('department')->pluck('department')->all();
 
-        $years = NurseProject::where('active', true)
-            ->whereNotNull('register_start')
-            ->selectRaw('DISTINCT YEAR(register_start) as year')
-            ->orderByDesc('year')
-            ->pluck('year')
-            ->filter()
-            ->map(fn ($y) => (int) $y)
-            ->values();
-
-        $year = $request->query('year');
-        $year = $year !== null && $year !== ''
-            ? (int) $year
-            : (int) ($years->first() ?? date('Y'));
-
-        if ($years->isNotEmpty() && ! $years->contains($year)) {
-            $years = $years->push($year)->unique()->sortDesc()->values();
+        $staffCounts = [];
+        if ($departmentArray !== []) {
+            $staffCounts = User::query()
+                ->whereIn('department', $departmentArray)
+                ->selectRaw('department, COUNT(*) as total')
+                ->groupBy('department')
+                ->pluck('total', 'department')
+                ->all();
         }
 
-        $departmentArray = [
-            'แผนกฉุกเฉิน',
-            'แผนกหอผู้ป่วยวิกฤต ICU - CCU',
-            'แผนกไตเทียม',
-            'แผนกหอผู้ป่วยในชั้น 6',
-            'แผนกหอผู้ป่วยในชั้น 7',
-            'แผนกหอผู้ป่วยในชั้น 10',
-            'แผนกหอผู้ป่วยในชั้น 14',
-            'แผนกหอผู้ป่วยในชั้น 15',
-            'แผนกหอผู้ป่วยในชั้น 15(ตึกB)',
-            'แผนกหอผู้ป่วยในชั้น 16',
-            'แผนกหอผู้ป่วยในชั้น 17(ตึกB)',
-            'แผนกห้องส่องกล้องระบบทางเดินอาหาร',
-            'แผนกศูนย์ทางเดินอาหารและตับ(ตึกB)',
-            'แผนกห้องพักฟื้น',
-            'แผนกห้องผ่าตัด',
-            'แผนกห้องคลอด',
-            'หน่วยบริการเปล',
-            'แผนกจ่ายกลาง',
-            'แผนกอายุรกรรม',
-            'แผนกศัลยกรรม',
-            'แผนกสถาบันหัวใจและหลอดเลือด',
-            'แผนกสูตินรีเวช',
-            'แผนกการพยาบาลกลาง',
-        ];
+        return view('nurse.admin.score_department_group', compact('departmentArray', 'selected', 'staffCounts'));
+    }
 
-        // Active projects in selected year
+    public function userScoreDepartmentGroupStore(Request $request)
+    {
+        $departmentArray = $this->nurseScoreDepartmentsFromUsers();
+
+        $request->validate([
+            'departments'   => 'nullable|array',
+            'departments.*' => 'string|max:255',
+        ]);
+
+        $selected = array_values(array_intersect($request->input('departments', []), $departmentArray));
+
+        NurseScoreReportDepartment::query()->delete();
+        foreach ($selected as $dept) {
+            NurseScoreReportDepartment::create(['department' => $dept]);
+        }
+
+        return redirect()
+            ->route('nurse.admin.score.departments')
+            ->with('success', 'บันทึกแผนกรายงานคะแนนเรียบร้อยแล้ว');
+    }
+
+    private function nurseScoreDepartmentsFromUsers(): array
+    {
+        return User::query()
+            ->whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->orderBy('department')
+            ->pluck('department')
+            ->all();
+    }
+
+    private function nurseScoreReportDepartments(): array
+    {
+        return NurseScoreReportDepartment::orderBy('department')->pluck('department')->all();
+    }
+
+    private function nurseScoreUserIdSubquery(string $department, array $groupDepartments)
+    {
+        $query = User::query()->select('userid');
+
+        if ($department === 'group') {
+            if ($groupDepartments === []) {
+                return $query->whereRaw('0 = 1');
+            }
+
+            return $query->whereIn('department', $groupDepartments);
+        }
+
+        return $query->where('department', $department);
+    }
+
+    public function UserScore(Request $request)
+    {
+        $departmentArray  = $this->nurseScoreReportDepartments();
+        $groupDepartments = $departmentArray;
+
+        $departmentParam = $request->query('department');
+        if ($departmentParam === 'group') {
+            $department = 'group';
+        } elseif (! filled($departmentParam) || $departmentParam === 'null' || ! in_array($departmentParam, $departmentArray, true)) {
+            $department = null;
+        } else {
+            $department = $departmentParam;
+        }
+
+        $yearsFromRegister = NurseProject::where('active', true)
+            ->whereNotNull('register_start')
+            ->selectRaw('YEAR(register_start) as year')
+            ->distinct()
+            ->pluck('year');
+
+        $yearsFromTraining = NurseDate::query()
+            ->where('active', true)
+            ->whereNotNull('date')
+            ->whereHas('projectData', fn ($q) => $q->where('active', true))
+            ->selectRaw('YEAR(date) as year')
+            ->distinct()
+            ->pluck('year');
+
+        $years = $yearsFromRegister
+            ->merge($yearsFromTraining)
+            ->filter()
+            ->map(fn ($y) => (int) $y)
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $requestedYear = $request->query('year');
+        if ($requestedYear !== null && $requestedYear !== '') {
+            $year = (int) $requestedYear;
+        } elseif ($years->isNotEmpty()) {
+            $year = (int) $years->first();
+        } else {
+            $year = (int) date('Y');
+        }
+
+        if ($years->isNotEmpty() && ! $years->contains($year)) {
+            $year = (int) $years->first();
+        }
+
+        // Active projects with registration or training in the selected year
         $projects = NurseProject::where('active', true)
-            ->whereYear('register_start', $year)
+            ->where(function ($q) use ($year) {
+                $q->whereYear('register_start', $year)
+                    ->orWhereHas('dateData', fn ($dq) => $dq->whereYear('date', $year));
+            })
             ->orderBy('register_start', 'asc')
             ->get(['id', 'title', 'register_start']);
 
         $projectIds = $projects->pluck('id');
+        $data       = [];
 
-        // Nurses in selected department
-        $nurses = User::where('department', $department)
-            ->orderBy('department', 'asc')
-            ->orderBy('userid', 'asc')
-            ->get(['userid', 'name', 'position', 'department']);
+        if ($department !== null && ($department !== 'group' || $groupDepartments !== [])) {
+            $nurses = User::query()
+                ->whereIn('userid', $this->nurseScoreUserIdSubquery($department, $groupDepartments))
+                ->orderBy('userid', 'asc')
+                ->get(['userid', 'name', 'position', 'department']);
 
-        $userIds = $nurses->pluck('userid')->filter()->values();
+            $lectureScores = collect();
+            $txMap         = [];
 
-        // Aggregate lecture counts per user (only active, for projects in selected year)
-        $lectureCounts = NurseLecture::where('active', true)
-            ->whereIn('user_id', $userIds)
-            ->whereHas('dateData', function ($q) use ($projectIds) {
-                $q->whereIn('nurse_project_id', $projectIds);
-            })
-            ->select('user_id', \DB::raw('COUNT(*) as cnt'))
-            ->groupBy('user_id')
-            ->pluck('cnt', 'user_id');
+            if ($projectIds->isNotEmpty()) {
+                $lectureScores = NurseLecture::where('active', true)
+                    ->whereIn('user_id', $this->nurseScoreUserIdSubquery($department, $groupDepartments))
+                    ->whereHas('dateData', function ($q) use ($projectIds, $year) {
+                        $q->whereIn('nurse_project_id', $projectIds)
+                            ->whereYear('date', $year);
+                    })
+                    ->select('user_id', \DB::raw('SUM(COALESCE(score, 0)) as total_score'))
+                    ->groupBy('user_id')
+                    ->pluck('total_score', 'user_id');
 
-        // Aggregate transaction counts per user per project (only signed and active)
-        $txRows = NurseTransaction::where('active', true)
-            ->whereNotNull('user_sign')
-            ->whereNotNull('admin_sign')
-            ->whereIn('user_id', $userIds)
-            ->whereIn('nurse_project_id', $projectIds)
-            ->select('user_id', 'nurse_project_id', \DB::raw('COUNT(*) as cnt'))
-            ->groupBy('user_id', 'nurse_project_id')
-            ->get();
+                $txRows = NurseTransaction::where('active', true)
+                    ->whereNotNull('user_sign')
+                    ->whereNotNull('admin_sign')
+                    ->whereIn('user_id', $this->nurseScoreUserIdSubquery($department, $groupDepartments))
+                    ->whereIn('nurse_project_id', $projectIds)
+                    ->whereYear('date_time', $year)
+                    ->select('user_id', 'nurse_project_id', \DB::raw('COUNT(*) as cnt'))
+                    ->groupBy('user_id', 'nurse_project_id')
+                    ->get();
 
-        $txMap = [];
-        foreach ($txRows as $row) {
-            $uid               = $row->user_id;
-            $pid               = $row->nurse_project_id;
-            $txMap[$uid][$pid] = (int) $row->cnt;
-        }
-
-        // Build data structure for the view
-        $data = [];
-        foreach ($nurses as $nurse) {
-            $deptKey = $nurse->department;
-            $uid     = $nurse->userid;
-            $score   = 0;
-
-            $data[$deptKey][$uid] = [
-                'user'     => $uid,
-                'name'     => $nurse->name,
-                'position' => $nurse->position,
-                'lecture'  => null,
-            ];
-
-            // Lecture score: count * 5
-            $lc = (int) ($lectureCounts[$uid] ?? 0);
-            if ($lc > 0) {
-                $data[$deptKey][$uid]['lecture']  = $lc * 5;
-                $score                           += $lc * 5;
+                foreach ($txRows as $row) {
+                    $txMap[$row->user_id][$row->nurse_project_id] = (int) $row->cnt;
+                }
             }
 
-            // Per-project transaction counts
-            foreach ($projects as $project) {
-                $countTransaction                       = (int) ($txMap[$uid][$project->id] ?? 0);
-                $data[$deptKey][$uid][$project->title]  = $countTransaction > 0 ? $countTransaction : null;
-                $score                                 += $countTransaction;
+            $groupUsers = [];
+
+            foreach ($nurses as $nurse) {
+                $deptKey = $nurse->department;
+                $uid     = $nurse->userid;
+                $score   = 0;
+
+                $row = [
+                    'user'       => $uid,
+                    'name'       => $nurse->name,
+                    'position'   => $nurse->position,
+                    'department' => $nurse->department,
+                    'lecture'    => null,
+                ];
+
+                $lectureTotal = (int) ($lectureScores[$uid] ?? 0);
+                if ($lectureTotal > 0) {
+                    $row['lecture'] = $lectureTotal;
+                    $score         += $lectureTotal;
+                }
+
+                foreach ($projects as $project) {
+                    $countTransaction     = (int) ($txMap[$uid][$project->id] ?? 0);
+                    $row[$project->title] = $countTransaction > 0 ? $countTransaction : null;
+                    $score               += $countTransaction;
+                }
+
+                $row['total'] = $score;
+
+                if ($department === 'group') {
+                    $groupUsers[$uid] = $row;
+                } else {
+                    $data[$deptKey][$uid] = $row;
+                }
             }
 
-            $data[$deptKey][$uid]['total'] = $score;
+            if ($department === 'group') {
+                uasort($groupUsers, fn ($a, $b) => strcmp((string) $a['user'], (string) $b['user']));
+                $data = ['กลุ่มแผนก' => $groupUsers];
+            } else {
+                foreach ($data as $deptKey => $users) {
+                    uasort($data[$deptKey], fn ($a, $b) => ($b['total'] ?? 0) <=> ($a['total'] ?? 0));
+                }
+            }
         }
 
-        foreach ($data as $deptKey => $users) {
-            uasort($data[$deptKey], fn ($a, $b) => ($b['total'] ?? 0) <=> ($a['total'] ?? 0));
-        }
-
-        return view('nurse.admin.user_reports', compact('projects', 'data', 'departmentArray', 'department', 'years', 'year'));
+        return view('nurse.admin.user_reports', compact(
+            'projects',
+            'data',
+            'departmentArray',
+            'department',
+            'years',
+            'year',
+            'groupDepartments'
+        ));
     }
     public function UserScoreExport($department)
     {

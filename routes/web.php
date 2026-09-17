@@ -422,6 +422,8 @@ Route::middleware([NurseAdmin::class])->group(function () {
         Route::prefix('score')->name('score.')->group(function () {
             Route::get('/users', [NurseController::class, 'UserScore'])->name('users');
             Route::get('/users/export/{department}', [NurseController::class, 'UserScoreExport'])->name('users.export');
+            Route::get('/departments', [NurseController::class, 'userScoreDepartmentGroup'])->name('departments');
+            Route::post('/departments', [NurseController::class, 'userScoreDepartmentGroupStore'])->name('departments.store');
         });
     });
 });
