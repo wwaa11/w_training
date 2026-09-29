@@ -35,8 +35,8 @@
                         <h3 class="mb-1.5 text-sm font-semibold sm:mb-2 sm:text-base">📊 การติดตาม</h3>
                         <ul class="space-y-1 text-xs sm:text-sm">
                             <li>• ดูประวัติการเข้าร่วม</li>
-                            <li>• ตรวจสอบผลการประเมิน</li>
-                            <li>• ยกเลิกการลงทะเบียน</li>
+                            <li>• กลุ่ม/ที่นั่ง (หลังเช็คอิน)</li>
+                            <li>• ลิงก์ทรัพยากรระหว่างเซสชัน</li>
                         </ul>
                     </div>
                 </div>
@@ -47,15 +47,17 @@
                 <h2 class="mb-3 text-lg font-semibold text-slate-900 sm:mb-4 sm:text-xl">สารบัญ</h2>
                 <ul class="space-y-1.5 text-blue-600 sm:space-y-2">
                     <li><a class="text-xs hover:underline sm:text-sm" href="#overview">1. ภาพรวมระบบ</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#project-types">2. ประเภทกิจกรรม</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#attendance-projects">3. กิจกรรมเข้าร่วม</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#single-projects">4. กิจกรรมเดี่ยว</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#multiple-projects">5. กิจกรรมหลายเซสชัน</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#registration-process">6. ขั้นตอนการลงทะเบียน</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#check-in-process">7. ขั้นตอนการเช็คอิน</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#results">8. การดูผลการประเมิน</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#cancellation">9. การยกเลิกการลงทะเบียน</a></li>
-                    <li><a class="text-xs hover:underline sm:text-sm" href="#faq">10. คำถามที่พบบ่อย</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#screens">2. หน้าจอและเลย์เอาต์</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#project-types">3. ประเภทกิจกรรม</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#attendance-projects">4. กิจกรรมเข้าร่วม</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#single-projects">5. กิจกรรมเดี่ยว</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#multiple-projects">6. กิจกรรมหลายเซสชัน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#registration-process">7. ขั้นตอนการลงทะเบียน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#check-in-process">8. ขั้นตอนการเช็คอิน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#seat-group-links">9. กลุ่ม ที่นั่ง และลิงก์</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#results">10. การดูผลการประเมิน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#cancellation">11. การยกเลิกการลงทะเบียน</a></li>
+                    <li><a class="text-xs hover:underline sm:text-sm" href="#faq">12. คำถามที่พบบ่อย</a></li>
                 </ul>
             </div>
 
@@ -85,9 +87,42 @@
                 </div>
             </section>
 
-            <!-- 2. ประเภทกิจกรรม -->
+            <!-- 2. หน้าจอและเลย์เอาต์ -->
+            <section class="mb-6 sm:mb-8" id="screens">
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">2. หน้าจอและเลย์เอาต์</h2>
+
+                <div class="mb-4 space-y-4 sm:mb-6">
+                    <div class="rounded-lg border border-slate-200 p-4 sm:p-6">
+                        <h3 class="mb-2 text-base font-semibold text-blue-600 sm:text-lg">หน้าหลัก (/hrd)</h3>
+                        <ul class="ml-4 list-disc space-y-1.5 text-sm text-slate-700 sm:ml-6">
+                            <li>รายการโปรแกรมที่เปิดรับลงทะเบียนและโปรแกรมที่คุณลงทะเบียนแล้ว</li>
+                            <li>แถบ <strong>Live — เช็คอินได้ตอนนี้</strong> แสดงเฉพาะเซสชันที่อยู่ในช่วงเช็คอิน (เริ่ม 30 นาทีก่อนเวลาจัด จนถึงเวลาสิ้นสุดเซสชัน)</li>
+                            <li>แต่ละการ์ดแสดง <strong>เวลาจัด</strong> และ <strong>เปิดเช็คอิน</strong> เป็นบล็อกเต็มความกว้าง</li>
+                            <li>เช็คอินจากหน้านี้แล้วระบบจะอยู่หน้าเดิม (ไม่บังคับไปหน้ารายละเอียดโปรเจกต์)</li>
+                        </ul>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 p-4 sm:p-6">
+                        <h3 class="mb-2 text-base font-semibold text-blue-600 sm:text-lg">หน้ารายละเอียดโปรเจกต์</h3>
+                        <ul class="ml-4 list-disc space-y-1.5 text-sm text-slate-700 sm:ml-6">
+                            <li>ส่วนหัว: ชื่อโปรแกรม รายละเอียด และสถานะการลงทะเบียน (ไม่แสดงกลุ่ม/ที่นั่งที่ส่วนหัว)</li>
+                            <li>หลังลงทะเบียน (โปรเจกต์เดี่ยว/หลายเซสชัน): ส่วน <strong>เซสชันและเช็คอิน</strong> รวมตารางเวลา สถานะ กลุ่ม/ที่นั่ง และปุ่มเช็คอินในการ์ดเดียวต่อเซสชัน</li>
+                            <li>กิจกรรมแบบเข้าร่วม (ไม่ลงทะเบียน): ส่วน <strong>เช็คอินตอนนี้</strong> แบบ Live เมื่อถึงช่วงเวลา</li>
+                            <li>ฟอร์มลงทะเบียน / เพิ่มเซสชัน: เลือกช่วงจากรายการแบบย่อยตามวัน มีสรุปการเลือกที่แถบด้านล่าง</li>
+                            <li>ปุ่มรีเฟรชมุมขวาบน (เมื่อมีเซสชันเปิดเช็คอิน) สำหรับอัปเดตสถานะ</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:mt-6 sm:p-4">
+                    @include("hrd.partials.user-manual.example-live-checkin")
+                    @include("hrd.partials.user-manual.example-sessions-hub")
+                </div>
+            </section>
+
+            <!-- 3. ประเภทกิจกรรม -->
             <section class="mb-6 sm:mb-8" id="project-types">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">2. ประเภทกิจกรรม</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">3. ประเภทกิจกรรม</h2>
                 <div class="space-y-3 sm:space-y-4">
                     <div class="rounded-lg border border-slate-200 p-4 sm:p-6">
                         <h3 class="mb-2 text-base font-semibold text-purple-600 sm:mb-3 sm:text-lg">กิจกรรมเข้าร่วม (ไม่ต้องลงทะเบียน)</h3>
@@ -121,7 +156,7 @@
 
             <!-- 3. กิจกรรมเข้าร่วม -->
             <section class="mb-6 sm:mb-8" id="attendance-projects">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">3. กิจกรรมเข้าร่วม</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">4. กิจกรรมเข้าร่วม</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">วิธีการเข้าร่วม</h3>
@@ -147,25 +182,14 @@
                     </div>
                 </div>
 
-                <div class="rounded-lg bg-purple-50 p-3 sm:p-4">
-                    <h3 class="mb-2 text-sm font-semibold text-purple-800 sm:text-base">ตัวอย่างหน้าจอ</h3>
-                    <div class="rounded-lg border-2 border-purple-200 bg-white p-3 sm:p-4">
-                        <div class="mb-2 flex items-center justify-between sm:mb-3">
-                            <h4 class="text-sm font-semibold text-slate-900 sm:text-base">เช็คอินตอนนี้</h4>
-                            <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">พร้อมเช็คอิน</span>
-                        </div>
-                        <p class="mb-1.5 text-xs text-slate-600 sm:mb-2 sm:text-sm">เซสชัน: การอบรมการใช้งานระบบ</p>
-                        <p class="mb-2 text-xs text-slate-600 sm:mb-3 sm:text-sm">เวลา: 09:00 - 12:00</p>
-                        <button class="w-full rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white sm:px-4 sm:py-2 sm:text-sm">
-                            เช็คอินตอนนี้
-                        </button>
-                    </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                    @include("hrd.partials.user-manual.example-live-checkin")
                 </div>
             </section>
 
             <!-- 4. กิจกรรมเดี่ยว -->
             <section class="mb-6 sm:mb-8" id="single-projects">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">4. กิจกรรมเดี่ยว</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">5. กิจกรรมเดี่ยว</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">ขั้นตอนการลงทะเบียน</h3>
@@ -191,25 +215,14 @@
                     </div>
                 </div>
 
-                <div class="rounded-lg bg-blue-50 p-3 sm:p-4">
-                    <h3 class="mb-2 text-sm font-semibold text-blue-800 sm:text-base">ตัวอย่างหน้าจอ</h3>
-                    <div class="rounded-lg border-2 border-slate-200 bg-white p-3 sm:p-4">
-                        <div class="mb-2 flex items-center justify-between sm:mb-3">
-                            <h4 class="text-sm font-semibold text-slate-900 sm:text-base">ลงทะเบียน</h4>
-                            <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">เปิดรับ</span>
-                        </div>
-                        <p class="mb-1.5 text-xs text-slate-600 sm:mb-2 sm:text-sm">เซสชัน: การอบรมการใช้งานระบบ</p>
-                        <p class="mb-2 text-xs text-slate-600 sm:mb-3 sm:text-sm">เวลา: 09:00 - 12:00</p>
-                        <button class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white sm:px-4 sm:py-2 sm:text-sm">
-                            ลงทะเบียน
-                        </button>
-                    </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                    @include("hrd.partials.user-manual.example-registration")
                 </div>
             </section>
 
             <!-- 5. กิจกรรมหลายเซสชัน -->
             <section class="mb-6 sm:mb-8" id="multiple-projects">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">5. กิจกรรมหลายเซสชัน</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">6. กิจกรรมหลายเซสชัน</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">ขั้นตอนการลงทะเบียน</h3>
@@ -235,33 +248,15 @@
                     </div>
                 </div>
 
-                <div class="rounded-lg bg-green-50 p-3 sm:p-4">
-                    <h3 class="mb-2 text-sm font-semibold text-green-800 sm:text-base">ตัวอย่างหน้าจอ</h3>
-                    <div class="grid gap-2 sm:gap-3">
-                        <div class="rounded-lg border-2 border-green-200 bg-white p-2.5 sm:p-3">
-                            <div class="mb-1.5 flex items-center justify-between sm:mb-2">
-                                <h4 class="text-sm font-semibold text-slate-900 sm:text-base">เซสชันที่ 1</h4>
-                                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">ลงทะเบียนแล้ว</span>
-                            </div>
-                            <p class="text-xs text-slate-600 sm:text-sm">เวลา: 09:00 - 12:00</p>
-                        </div>
-                        <div class="rounded-lg border-2 border-slate-200 bg-white p-2.5 sm:p-3">
-                            <div class="mb-1.5 flex items-center justify-between sm:mb-2">
-                                <h4 class="text-sm font-semibold text-slate-900 sm:text-base">เซสชันที่ 2</h4>
-                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800">เปิดรับ</span>
-                            </div>
-                            <p class="mb-1.5 text-xs text-slate-600 sm:mb-2 sm:text-sm">เวลา: 13:00 - 16:00</p>
-                            <button class="rounded bg-green-600 px-2 py-1 text-xs text-white sm:px-3 sm:py-1 sm:text-sm">
-                                ลงทะเบียน
-                            </button>
-                        </div>
-                    </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                    @include("hrd.partials.user-manual.example-sessions-hub")
+                    <p class="mt-3 text-xs text-slate-600">หลังลงทะเบียนหลายเซสชัน แต่ละรอบมีสถานะและเช็คอินแยกกัน</p>
                 </div>
             </section>
 
-            <!-- 6. ขั้นตอนการลงทะเบียน -->
+            <!-- 7. ขั้นตอนการลงทะเบียน -->
             <section class="mb-6 sm:mb-8" id="registration-process">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">6. ขั้นตอนการลงทะเบียน</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">7. ขั้นตอนการลงทะเบียน</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">การลงทะเบียนทั่วไป</h3>
@@ -271,8 +266,8 @@
                             <li>เลือกกิจกรรมที่ต้องการจากรายการ</li>
                             <li>อ่านรายละเอียดและเงื่อนไขของกิจกรรม</li>
                             <li>เลือกเซสชันที่ต้องการ (ถ้ามีหลายเซสชัน)</li>
-                            <li>คลิกปุ่ม "ลงทะเบียน"</li>
-                            <li>ยืนยันการลงทะเบียนในหน้าต่างที่ปรากฏ</li>
+                            <li>คลิกปุ่ม "ลงทะเบียน" ที่แถบสรุปด้านล่าง</li>
+                            <li>เมื่อสำเร็จ ระบบแสดงข้อความยืนยันการลงทะเบียนเท่านั้น (ไม่แสดงชื่อกลุ่มทันที แม้โปรเจกต์เปิดจัดกลุ่มอัตโนมัติ)</li>
                         </ol>
                     </div>
                 </div>
@@ -292,18 +287,18 @@
 
             <!-- 7. ขั้นตอนการเช็คอิน -->
             <section class="mb-6 sm:mb-8" id="check-in-process">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">7. ขั้นตอนการเช็คอิน</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">8. ขั้นตอนการเช็คอิน</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">การเช็คอินทั่วไป</h3>
                     <div class="rounded-lg bg-slate-50 p-3 sm:p-4">
                         <ol class="ml-4 list-decimal space-y-1.5 text-sm text-slate-700 sm:ml-6 sm:space-y-2">
-                            <li>เข้าสู่ระบบและไปที่กิจกรรมที่ลงทะเบียน</li>
-                            <li>รอจนถึงเวลาที่กำหนดในเซสชันนั้นๆ</li>
-                            <li>เมื่อถึงเวลา ปุ่ม "เช็คอินตอนนี้" จะปรากฏ</li>
-                            <li>คลิกปุ่ม "เช็คอินตอนนี้"</li>
-                            <li>ยืนยันการเช็คอินในหน้าต่างที่ปรากฏ</li>
-                            <li>ระบบจะแสดงข้อความยืนยันการเช็คอินสำเร็จ</li>
+                            <li>เปิดหน้าหลัก HRD หรือหน้ารายละเอียดโปรเจกต์ที่ลงทะเบียน</li>
+                            <li>รอจนเข้าช่วงเช็คอิน (เริ่ม 30 นาทีก่อนเวลาจัด จนสิ้นสุดเซสชัน)</li>
+                            <li>เมื่อถึงเวลา ปุ่ม <strong>เช็คอินตอนนี้</strong> จะปรากฏในการ์ดเซสชัน</li>
+                            <li>กดปุ่มแล้วตรวจสอบรายละเอียดในหน้าต่างยืนยัน (ชื่อโปรแกรม วัน เวลา สถานที่)</li>
+                            <li>กดยืนยันเพื่อบันทึกการเข้าร่วม</li>
+                            <li>ระบบแสดงข้อความสำเร็จและอยู่หน้าเดิม — จากนั้นจะเห็นกลุ่ม/ที่นั่ง (ถ้าโปรเจกต์เปิดใช้) ในการ์ดเซสชันนั้น</li>
                         </ol>
                     </div>
                 </div>
@@ -312,7 +307,7 @@
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">ข้อควรระวัง</h3>
                     <div class="rounded-lg bg-red-50 p-3 sm:p-4">
                         <ul class="ml-4 list-disc space-y-1.5 text-sm text-red-700 sm:ml-6 sm:space-y-2">
-                            <li>เช็คอินได้เฉพาะในช่วงเวลาที่กำหนดเท่านั้น</li>
+                            <li>เช็คอินได้ตั้งแต่ 30 นาทีก่อนเวลาจัด จนถึงเวลาสิ้นสุดเซสชัน</li>
                             <li>เช็คอินได้เพียงครั้งเดียวต่อเซสชัน</li>
                             <li>หากเช็คอินแล้ว จะไม่สามารถยกเลิกการลงทะเบียนได้ (สำหรับกิจกรรมเดี่ยวและหลายเซสชัน)</li>
                             <li>ตรวจสอบเวลาให้ถูกต้องก่อนเช็คอิน</li>
@@ -321,9 +316,37 @@
                 </div>
             </section>
 
-            <!-- 8. การดูผลการประเมิน -->
+            <!-- 9. กลุ่ม ที่นั่ง และลิงก์ -->
+            <section class="mb-6 sm:mb-8" id="seat-group-links">
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">9. กลุ่ม ที่นั่ง และลิงก์</h2>
+
+                <div class="mb-4 rounded-lg border border-violet-200 bg-violet-50 p-4 sm:mb-6 sm:p-6">
+                    <h3 class="mb-2 text-base font-semibold text-violet-900">กลุ่มและที่นั่ง</h3>
+                    <ul class="ml-4 list-disc space-y-1.5 text-sm text-violet-950 sm:ml-6">
+                        <li>แสดงเฉพาะในการ์ด <strong>เช็คอิน / เซสชันและเช็คอิน</strong> ไม่แสดงที่ส่วนหัวโปรเจกต์</li>
+                        <li>ก่อนเช็คอิน: ข้อความ <em>กรุณาเช็คอินก่อนเพื่อดูกลุ่ม/ที่นั่งของคุณ</em></li>
+                        <li>หลังเช็คอิน: แสดงการ์ดกลุ่ม (สีม่วง) และที่นั่ง (สีเขียว) แยกตามเซสชัน — หลายเซสชันอาจได้กลุ่ม/ที่นั่งต่างกัน</li>
+                        <li>หากยังไม่จัด: แสดง <em>รอจัดกลุ่ม</em> หรือ <em>รอจัดที่นั่ง</em> จนแอดมินหรือระบบจัดให้</li>
+                    </ul>
+                </div>
+
+                <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 sm:p-6">
+                    <h3 class="mb-2 text-base font-semibold text-blue-900">ลิงก์ทรัพยากรของโปรเจกต์</h3>
+                    <ul class="ml-4 list-disc space-y-1.5 text-sm text-blue-950 sm:ml-6">
+                        <li>ปรากฏหลังเช็คอินแล้ว และอยู่ในช่วงเวลาเซสชัน (เช่นเดียวกับช่วงเช็คอิน)</li>
+                        <li>แสดงในการ์ดเซสชันใต้เวลาที่เช็คอิน</li>
+                        <li>ลิงก์ที่แอดมินตั้งเวลาจำกัดจะแสดงเฉพาะเมื่ออยู่ในช่วงที่เปิด</li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:mt-6 sm:p-4">
+                    @include("hrd.partials.user-manual.example-assignment-checked-in")
+                </div>
+            </section>
+
+            <!-- 10. การดูผลการประเมิน -->
             <section class="mb-6 sm:mb-8" id="results">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">8. การดูผลการประเมิน</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">10. การดูผลการประเมิน</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">การเข้าถึงผลการประเมิน</h3>
@@ -376,7 +399,7 @@
 
             <!-- 9. การยกเลิกการลงทะเบียน -->
             <section class="mb-6 sm:mb-8" id="cancellation">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">9. การยกเลิกการลงทะเบียน</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">11. การยกเลิกการลงทะเบียน</h2>
 
                 <div class="mb-4 sm:mb-6">
                     <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">วิธีการยกเลิก</h3>
@@ -415,7 +438,7 @@
 
             <!-- 10. คำถามที่พบบ่อย -->
             <section class="mb-6 sm:mb-8" id="faq">
-                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">10. คำถามที่พบบ่อย</h2>
+                <h2 class="mb-3 text-xl font-bold text-slate-900 sm:mb-4 sm:text-2xl">12. คำถามที่พบบ่อย</h2>
 
                 <div class="space-y-4 sm:space-y-6">
                     <div class="rounded-lg border border-slate-200 p-4 sm:p-6">
@@ -443,8 +466,16 @@
                     <div class="rounded-lg border border-slate-200 p-4 sm:p-6">
                         <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">ฉันสามารถเช็คอินได้เมื่อไหร่?</h3>
                         <p class="text-sm text-slate-700 sm:text-base">
-                            คุณสามารถเช็คอินได้เฉพาะในช่วงเวลาที่กำหนดในแต่ละเซสชันเท่านั้น
-                            ระบบจะแสดงปุ่มเช็คอินเมื่อถึงเวลาและซ่อนเมื่อหมดเวลา
+                            ตั้งแต่ 30 นาทีก่อนเวลาจัดของเซสชัน จนถึงเวลาสิ้นสุดเซสชัน
+                            ปุ่มเช็คอินจะปรากฏในหน้าหลัก (Live) หรือในการ์ดเซสชันที่หน้ารายละเอียดโปรเจกต์
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 p-4 sm:p-6">
+                        <h3 class="mb-2 text-base font-semibold text-slate-700 sm:mb-3 sm:text-lg">ลงทะเบียนแล้วทำไมยังไม่เห็นกลุ่ม?</h3>
+                        <p class="text-sm text-slate-700 sm:text-base">
+                            ระบบซ่อนรายละเอียดกลุ่มและที่นั่งจนกว่าคุณจะเช็คอินในเซสชันนั้น
+                            หลังเช็คอิน ดูได้ในการ์ดเซสชันเดียวกับปุ่มเช็คอิน
                         </p>
                     </div>
 

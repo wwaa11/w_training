@@ -24,7 +24,7 @@
                         <h3 class="mb-1.5 text-sm font-semibold sm:mb-2 sm:text-base">👥 การจัดการ</h3>
                         <ul class="space-y-1 text-xs sm:text-sm">
                             <li>• อนุมัติการลงทะเบียน</li>
-                            <li>• จัดที่นั่งอัตโนมัติ</li>
+                            <li>• จัดกลุ่ม/ที่นั่งต่อช่วงเวลา</li>
                             <li>• จัดการผลการประเมิน</li>
                         </ul>
                     </div>
@@ -134,8 +134,8 @@
                                             <li><strong>Attendance:</strong> ไม่ต้องลงทะเบียนล่วงหน้า</li>
                                         </ul>
                                     </li>
-                                    <li><strong>การจัดที่นั่ง:</strong> เปิด/ปิดการจัดที่นั่งอัตโนมัติ</li>
-                                    <li><strong>การจัดกลุ่ม:</strong> เปิด/ปิดการจัดกลุ่มผู้เข้าร่วม</li>
+                                    <li><strong>การจัดที่นั่ง:</strong> เปิด/ปิด — ผู้ใช้เห็นหมายเลขที่นั่งหลังเช็คอินในแต่ละเซสชัน</li>
+                                    <li><strong>การจัดกลุ่ม:</strong> เปิด/ปิด — กำหนดโหมด Manual หรือ Auto ในหน้าจัดการกลุ่ม (แยกตามช่วงเวลาลงทะเบียน)</li>
                                 </ul>
                             </li>
                             <li>กำหนดช่วงเวลาลงทะเบียน:
@@ -160,6 +160,7 @@
                                     <li><strong>ชื่อลิงก์:</strong> ชื่อที่แสดงให้ผู้ใช้เห็น</li>
                                     <li><strong>URL:</strong> ลิงก์ที่ต้องการ</li>
                                     <li><strong>จำกัดเวลา:</strong> จำกัดเวลาการเข้าถึงลิงก์</li>
+                                    <li><strong>การแสดงผล:</strong> ผู้ใช้เห็นลิงก์หลังเช็คอิน และในช่วงเวลาเซสชัน (เช่นเดียวกับช่วงเช็คอิน) ในการ์ดเซสชัน</li>
                                 </ul>
                             </li>
                             <li>คลิก "สร้างโปรเจกต์" เพื่อบันทึก</li>
@@ -353,8 +354,8 @@
                         </ol>
                         <div class="mt-4 rounded-lg bg-green-50 p-3">
                             <p class="text-sm text-green-700">
-                                <strong>ข้อดี:</strong> การอนุมัติจะทำให้ผู้ใช้สามารถเข้าร่วมกิจกรรมได้
-                                และระบบจะจัดที่นั่งให้อัตโนมัติ (หากเปิดใช้งาน)
+                                <strong>ข้อดี:</strong> การอนุมัติยืนยันสิทธิ์เข้าร่วม
+                                การจัดที่นั่ง (หากเปิด) มักเกิดขึ้นเมื่อเช็คอินหรือเมื่อแอดมินกดจัดอัตโนมัติ — ผู้ใช้เห็นหมายเลขที่นั่งหลังเช็คอิน
                             </p>
                         </div>
                     </div>
@@ -443,26 +444,32 @@
             <section class="mb-8" id="seat-management">
                 <h2 class="mb-4 text-2xl font-bold text-slate-900">6. การจัดการที่นั่ง</h2>
 
+                <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <p class="text-sm text-blue-900">
+                        <strong>มุมมองผู้ใช้:</strong> ที่นั่งแสดงในการ์ดเช็คอินเท่านั้น และเฉพาะหลังเช็คอินในเซสชันนั้น
+                        การลงทะเบียนหรือการอนุมัติอย่างเดียวยังไม่แสดงหมายเลขที่นั่งให้ผู้ใช้
+                    </p>
+                </div>
+
                 <div class="mb-6">
-                    <h3 class="mb-3 text-lg font-semibold text-slate-700">การกำหนดที่นั่งอัตโนมัติ</h3>
+                    <h3 class="mb-3 text-lg font-semibold text-slate-700">หน้าจัดการที่นั่ง (ต่อช่วงเวลา)</h3>
                     <div class="rounded-lg bg-slate-50 p-4">
                         <ol class="ml-6 list-decimal space-y-2 text-slate-700">
-                            <li>ไปที่หน้า "การจัดการที่นั่ง" ของโปรเจกต์</li>
-                            <li>คลิกปุ่ม "กำหนดที่นั่งอัตโนมัติ"</li>
-                            <li>ระบบจะจัดที่นั่งให้ผู้ลงทะเบียนทั้งหมด (ทั้งที่ได้รับการอนุมัติและยังไม่ได้รับการอนุมัติ):
-                                <ul class="ml-6 mt-2 list-disc">
-                                    <li>จัดที่นั่งตามลำดับการลงทะเบียน</li>
-                                    <li>พิจารณาแผนกและตำแหน่งในการจัดที่นั่ง</li>
-                                    <li>หลีกเลี่ยงการจัดที่นั่งซ้ำ</li>
-                                    <li>คำนวณจำนวนที่นั่งที่เหมาะสม</li>
-                                </ul>
-                            </li>
-                            <li>ตรวจสอบผลลัพธ์และปรับแต่งตามต้องการ</li>
+                            <li>ไปที่เมนูโปรเจกต์ → <strong>การจัดการที่นั่ง</strong></li>
+                            <li>เลือกวัน/ช่วงเวลา — แต่ละรอบมีรายการที่นั่งและผู้ลงทะเบียนแยกกัน</li>
+                            <li>ใช้ปุ่ม <strong>รีเฟรช</strong> เพื่อโหลดข้อมูลล่าสุด</li>
+                            <li>ปุ่ม <strong>จัดอัตโนมัติ</strong>: รันจัดที่นั่งให้ผู้ที่เหมาะสมในโปรเจกต์ (ทำงานทันทีเมื่อกด ไม่ต้องรอคิว worker ในสภาพแวดล้อมทั่วไป)</li>
+                            <li>ปุ่ม <strong>ส่งออก</strong>: ดาวน์โหลด CSV การจัดที่นั่ง</li>
+                            <li>จัดด้วยตนเอง: กด <strong>+</strong> ข้างผู้ลงทะเบียนที่ยังไม่มีที่นั่ง หรือ <strong>X</strong> เพื่อยกเลิกที่นั่ง</li>
+                            <li>ล้างที่นั่งทั้งช่วง: ใช้ปุ่มล้างของช่วงเวลานั้น (ยืนยันก่อนลบ)</li>
                         </ol>
                         <div class="mt-4 rounded-lg bg-green-50 p-3">
                             <p class="text-sm text-green-700">
-                                <strong>ข้อดี:</strong> ประหยัดเวลาในการจัดที่นั่ง ลดความผิดพลาด และจัดที่นั่งได้อย่างเป็นระบบ
+                                <strong>อัตโนมัติเมื่อเช็คอิน:</strong> หากเปิดจัดที่นั่ง ระบบอาจส่งงานจัดที่นั่งเมื่อผู้ใช้เช็คอิน — ตรวจสอบความจุช่วงเวลา (จำกัดจำนวนต่อรอบ) หากจัดไม่สำเร็จ
                             </p>
+                        </div>
+                        <div class="mt-4 rounded-lg border border-slate-200 bg-white p-3">
+                            @include("hrd.partials.admin-manual.example-seat-management")
                         </div>
                     </div>
                 </div>
@@ -471,12 +478,9 @@
                     <h3 class="mb-3 text-lg font-semibold text-slate-700">การกำหนดที่นั่งด้วยตนเอง</h3>
                     <div class="rounded-lg bg-slate-50 p-4">
                         <ol class="ml-6 list-decimal space-y-2 text-slate-700">
-                            <li>ไปที่หน้า "การจัดการที่นั่ง" ของโปรเจกต์</li>
-                            <li>เลือกผู้ใช้จากรายการ:
-
-                            </li>
-
-                            <li>คลิก + เพื่อเพิ่มที่นั่ง</li>
+                            <li>เลือกช่วงเวลาในหน้าจัดการที่นั่ง</li>
+                            <li>ในรายการผู้ลงทะเบียนที่ยังไม่มีที่นั่ง คลิก <strong>+</strong> — ระบบคำนวณหมายเลขที่นั่งให้</li>
+                            <li>ตรวจสอบรายการที่นั่งที่จัดแล้วด้านบนของช่วงเวลาเดียวกัน</li>
                         </ol>
                     </div>
                 </div>
@@ -825,39 +829,63 @@
             <section class="mb-8" id="group-management">
                 <h2 class="mb-4 text-2xl font-bold text-slate-900">10. การจัดการกลุ่ม</h2>
 
+                <div class="mb-6 rounded-lg border border-violet-200 bg-violet-50 p-4">
+                    <p class="text-sm text-violet-950">
+                        <strong>สำคัญ:</strong> กลุ่มผูกกับ <strong>ช่วงเวลาลงทะเบียน (time slot)</strong> ไม่ใช่ทั้งโปรเจกต์รวมกัน
+                        ผู้ใช้เห็นชื่อกลุ่มหลังเช็คอินในเซสชันนั้นเท่านั้น — การลงทะเบียนสำเร็จจะไม่โชว์ชื่อกลุ่มในป๊อปอัป
+                    </p>
+                </div>
+
                 <div class="mb-6">
-                    <h3 class="mb-3 text-lg font-semibold text-slate-700">การเพิ่มสมาชิกในกลุ่ม</h3>
-                    <div class="rounded-lg bg-slate-50 p-4">
-                        <ol class="ml-6 list-decimal space-y-2 text-slate-700">
-                            <li>เลือกกลุ่มที่ต้องการเพิ่มสมาชิก</li>
-                            <li>คลิกปุ่ม "เพิ่มสมาชิก"</li>
-                            <li>ค้นหาและเลือกผู้ใช้ที่ต้องการเพิ่ม</li>
-                            <li>คลิก "เพิ่มสมาชิก" เพื่อบันทึก</li>
-                        </ol>
-                        <div class="mt-4 rounded-lg bg-blue-50 p-3">
-                            <p class="text-sm text-blue-700">
-                                <strong>ฟีเจอร์:</strong> สามารถเพิ่มสมาชิกหลายคนพร้อมกัน
-                                และระบบจะตรวจสอบความขัดแย้งอัตโนมัติ
-                            </p>
+                    <h3 class="mb-3 text-lg font-semibold text-slate-700">โหมดการจัดกลุ่ม</h3>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="rounded-lg border border-slate-200 bg-white p-4">
+                            <h4 class="font-semibold text-blue-700">Manual (กำหนดเอง)</h4>
+                            <ul class="ml-4 mt-2 list-disc text-sm text-slate-700">
+                                <li>สร้างชื่อกลุ่มและจำนวนที่นั่ง (slot) ต่อช่วงเวลา</li>
+                                <li>เพิ่มสมาชิกด้วยรหัสพนักงาน หรือนำเข้า Excel</li>
+                                <li>จัดกลุ่มได้ก่อนผู้ใช้ลงทะเบียนเข้าร่วม</li>
+                            </ul>
+                        </div>
+                        <div class="rounded-lg border border-slate-200 bg-white p-4">
+                            <h4 class="font-semibold text-violet-700">Auto (อัตโนมัติ)</h4>
+                            <ul class="ml-4 mt-2 list-disc text-sm text-slate-700">
+                                <li>สร้างชื่อกลุ่มต่อช่วงเวลา — ระบบจัดเมื่อผู้ใช้ลงทะเบียนในรอบนั้น</li>
+                                <li>พยายามแยกแผนกเดียวกันออกคนละกลุ่มเมื่อยังมีกลุ่มว่างที่รับได้</li>
+                                <li>หากทุกกลุ่มที่ว่างมีแผนกนี้แล้วหรือที่นั่งไม่พอ ผู้ลงทะเบียนอาจยังไม่มีกลุ่มจนกว่าจะเพิ่มกลุ่ม/ที่นั่งหรือกดสุ่มใหม่</li>
+                                <li>ปุ่ม <strong>สุ่มจัดกลุ่มใหม่ทั้งช่วง</strong> สำหรับจัดใหม่ทุกคนในช่วงที่เลือก</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-6">
-                    <h3 class="mb-3 text-lg font-semibold text-slate-700">การนำเข้าข้อมูลกลุ่ม</h3>
+                    <h3 class="mb-3 text-lg font-semibold text-slate-700">ขั้นตอนในหน้าจัดการกลุ่ม (4 ขั้น)</h3>
                     <div class="rounded-lg bg-slate-50 p-4">
                         <ol class="ml-6 list-decimal space-y-2 text-slate-700">
-                            <li>คลิกปุ่ม "นำเข้าข้อมูลกลุ่ม"</li>
-                            <li>ดาวน์โหลดเทมเพลต Excel</li>
-                            <li>กรอกข้อมูลในเทมเพลต:
-                                <ul class="ml-6 mt-2 list-disc">
-                                    <li>ชื่อกลุ่ม</li>
-                                    <li>รายชื่อสมาชิก</li>
-                                    <li>ข้อมูลเพิ่มเติม (ถ้ามี)</li>
-                                </ul>
-                            </li>
-                            <li>อัปโหลดไฟล์ Excel ที่กรอกข้อมูลแล้ว</li>
-                            <li>ตรวจสอบข้อมูลและยืนยันการนำเข้า</li>
+                            <li><strong>เลือกวันและช่วงเวลา</strong> — ดูสถิติลงทะเบียน / จัดกลุ่มแล้ว / จำนวนกลุ่ม</li>
+                            <li><strong>สร้างกลุ่มในช่วงนี้</strong> — ชื่อกลุ่ม และจำนวนที่นั่ง (เว้นว่าง = ไม่จำกัด)</li>
+                            <li><strong>มอบหมายหรืออัตโนมัติ</strong> — Manual: ใส่รหัสพนักงาน + เลือกกลุ่ม หรือนำเข้า Excel · Auto: รอลงทะเบียนหรือสุ่มใหม่</li>
+                            <li><strong>ตรวจสอบผล</strong> — รายชื่อสมาชิกในแต่ละกลุ่ม เอาออกจากกลุ่มได้</li>
+                        </ol>
+                        <div class="mt-4 rounded-lg bg-teal-50 p-3">
+                            <p class="text-sm text-teal-900">
+                                <strong>ทางลัด:</strong> คัดลอกโครงกลุ่ม (ชื่อและจำนวนที่นั่ง) จากช่วงที่เลือกไปช่วงอื่นทั้งหมด — ไม่คัดลอกสมาชิก
+                            </p>
+                        </div>
+                        <div class="mt-4 rounded-lg border border-slate-200 bg-white p-3">
+                            @include("hrd.partials.admin-manual.example-group-management")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="mb-3 text-lg font-semibold text-slate-700">การนำเข้า Excel (โหมด Manual)</h3>
+                    <div class="rounded-lg bg-slate-50 p-4">
+                        <ol class="ml-6 list-decimal space-y-2 text-slate-700">
+                            <li>เลือกช่วงเวลาก่อนนำเข้า</li>
+                            <li>ดาวน์โหลดเทมเพลต — ระบุรหัสพนักงานและชื่อกลุ่มตามคอลัมน์ในเทมเพลต</li>
+                            <li>อัปโหลดไฟล์และตรวจสอบผลการนำเข้า</li>
                         </ol>
                     </div>
                 </div>
@@ -896,6 +924,24 @@
                                     <li>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</li>
                                     <li>ตรวจสอบสิทธิ์การเข้าถึงไฟล์</li>
                                     <li>ลองรีเฟรชหน้าเว็บและลองใหม่</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-yellow-700">จัดที่นั่งอัตโนมัติไม่ทำงาน / ผู้ใช้ไม่เห็นที่นั่ง</h4>
+                                <ul class="ml-6 mt-2 list-disc text-sm text-yellow-700">
+                                    <li>ผู้ใช้ต้องเช็คอินก่อนจึงจะเห็นที่นั่งบนหน้า HRD</li>
+                                    <li>ตรวจสอบความจุช่วงเวลา (time_max) และจำนวนที่นั่งที่ใช้แล้ว</li>
+                                    <li>กดจัดอัตโนมัติหรือรีเฟรชในหน้าจัดการที่นั่ง แล้วตรวจสอบรายการต่อช่วงเวลา</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-yellow-700">โหมด Auto แต่ผู้ลงทะเบียนไม่มีกลุ่ม</h4>
+                                <ul class="ml-6 mt-2 list-disc text-sm text-yellow-700">
+                                    <li>ตรวจสอบว่าสร้างกลุ่มในช่วงเวลานั้นแล้ว</li>
+                                    <li>ทุกกลุ่มที่ว่างอาจมีสมาชิกแผนกเดียวกันครบ — เพิ่มกลุ่มหรือกดสุ่มจัดกลุ่มใหม่</li>
+                                    <li>ตรวจสอบจำนวนที่นั่ง (max members) ของกลุ่ม</li>
                                 </ul>
                             </div>
                         </div>
