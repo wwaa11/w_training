@@ -692,13 +692,9 @@ class HRController extends Controller
 
         if ($department !== '' && $withoutSameDepartment->isNotEmpty()) {
             $pool = $withoutSameDepartment;
-        } elseif ($department === '' || $withCapacity->count() === 1) {
-            // No department on profile, or only one group can take anyone — assign there.
-            $pool = $withCapacity;
         } else {
-            // Every open group already has this department; keep them apart by leaving unassigned
-            // until admin adds capacity/groups or runs re-randomize.
-            return null;
+            // Prefer separate departments when possible; otherwise fill any group that still has capacity.
+            $pool = $withCapacity;
         }
 
         $pickedId = $pool->sortBy(fn (array $group) => $group['count'])->keys()->first();

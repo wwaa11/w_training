@@ -213,7 +213,7 @@
                         @if ($isAuto)
                             <div class="rounded-xl border border-violet-200 bg-violet-50/80 p-4 text-sm text-violet-950">
                                 <p class="font-medium">เมื่อผู้ใช้ลงทะเบียนช่วงนี้</p>
-                                <p class="mt-1 text-violet-900">ระบบจะจัดเข้ากลุ่มที่ยังไม่มีสมาชิกแผนกเดียวกัน (แยกแผนกละกลุ่มเมื่อทำได้) หากทุกกลุ่มที่ว่างมีแผนกนี้แล้วหรือที่นั่งไม่พอ ผู้ลงทะเบียนจะยังไม่มีกลุ่มจนกว่าจะเพิ่มกลุ่ม/ที่นั่งหรือสุ่มใหม่</p>
+                                <p class="mt-1 text-violet-900">ระบบจะจัดเข้ากลุ่มที่ยังไม่มีสมาชิกแผนกเดียวกันเมื่อทำได้ (แยกแผนกละกลุ่ม) หากทุกกลุ่มที่ยังมีที่ว่างมีแผนกนี้แล้ว จะจัดเข้ากลุ่มที่มีที่ว่างเหลืออยู่แทน — ยังไม่มีกลุ่มเฉพาะเมื่อที่นั่งไม่พอทุกกลุ่ม</p>
                             </div>
                             <form class="js-swal-confirm mt-4" action="{{ route("hrd.admin.projects.groups.rerandom", $project->id) }}" method="POST" data-confirm-title="สุ่มจัดกลุ่มใหม่?" data-confirm-message="จัดกลุ่มใหม่สำหรับผู้ลงทะเบียนในช่วงนี้ {{ $stats["registered_users"] }} คน การกระทำนี้ไม่สามารถย้อนกลับได้" data-confirm-icon="question" data-confirm-button="ใช่, สุ่มใหม่" data-confirm-color="#7c3aed">
                                 @csrf
