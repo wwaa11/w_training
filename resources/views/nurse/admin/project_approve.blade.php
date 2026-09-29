@@ -3,12 +3,12 @@
     <meta http-equiv="Refresh" content="60">
 @endsection
 @section("content")
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="hrd-hospital hrd-page mx-auto max-w-7xl px-4 py-6 text-slate-800 antialiased sm:px-6 lg:px-8">
         <div class="rounded-lg bg-white p-4 shadow-lg sm:p-6">
             <div class="mb-6 flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-gray-800">
+                <h1 class="text-3xl font-bold text-slate-800">
                     <a class="text-blue-600 hover:underline" href="{{ route("nurse.admin.project.management", $project->id) }}">{{ $project->title }}</a>
-                    <span class="text-gray-500">/ อนุมัติผู้ลงทะเบียน</span>
+                    <span class="text-slate-500">/ อนุมัติผู้ลงทะเบียน</span>
                 </h1>
                 @if ($query["sign"] == "false")
                     <button class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-green-700" onclick="approveArray()" type="button">Approve Select User</button>
@@ -17,15 +17,15 @@
 
             <div class="mb-6">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <select class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm" id="searchTime" onchange="changeSearch()">
+                    <select class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" id="searchTime" onchange="changeSearch()">
                         <option @if ($query["time"] == "all") selected @endif value="all">ทั้งหมด</option>
                         @foreach ($query["option"] as $option)
                             <option @if ($query["time"] == $option) selected @endif value="{{ $option }}">{{ $option }}</option>
                         @endforeach
                     </select>
-                    <input class="w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
+                    <input class="w-full flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" id="searchInput" onkeyup="search()" placeholder="ค้นหา" type="text">
                     <div class="flex-none">
-                        <select class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm" id="searchType" onchange="changeSearch()">
+                        <select class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" id="searchType" onchange="changeSearch()">
                             <option @if ($query["sign"] == "false") selected @endif value="false">ยังไม่อนุมัติ</option>
                             <option @if ($query["sign"] == "true") selected @endif value="true">อนุมัติ</option>
                         </select>
@@ -34,44 +34,44 @@
             </div>
 
             <div class="hidden overflow-x-auto sm:block">
-                <table class="min-w-full border border-gray-200 bg-white">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full border border-slate-200 bg-white">
+                    <thead class="bg-slate-50">
                         <tr>
                             @if ($query["sign"] == "false")
-                                <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    <input class="h-5 w-5 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="selectall" type="checkbox" name="sample" />
+                                <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-slate-500">
+                                    <input class="h-5 w-5 rounded border-slate-300 bg-slate-100 text-blue-600 focus:ring-blue-500" id="selectall" type="checkbox" name="sample" />
                                 </th>
                             @endif
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">วันที่</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">รอบ</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">รหัสพนักงาน</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ชื่อ - สกุล</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ตำแหน่ง</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">แผนก</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Check-In</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Nurse Approve</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">วันที่</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">รอบ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">รหัสพนักงาน</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">ชื่อ - สกุล</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">ตำแหน่ง</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">แผนก</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Check-In</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-slate-500">Nurse Approve</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200" id="userTable">
+                    <tbody class="divide-y divide-slate-200" id="userTable">
                         @foreach ($transactions as $transcation)
-                            <tr class="cursor-pointer hover:bg-gray-50">
+                            <tr class="cursor-pointer hover:bg-slate-50">
                                 @if ($query["sign"] == "false")
                                     <td class="px-6 py-4 text-center">
-                                        <input class="checkselfCheckbox h-5 w-5 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="checkbox_{{ $transcation->user }}" onchange="ChangeCheckBox('#checkbox_{{ $transcation->user }}')" name='checkbox[]' value="{{ $transcation->id }}" type="checkbox">
+                                        <input class="checkselfCheckbox h-5 w-5 rounded border-slate-300 bg-slate-100 text-blue-600 focus:ring-blue-500" id="checkbox_{{ $transcation->user }}" onchange="ChangeCheckBox('#checkbox_{{ $transcation->user }}')" name='checkbox[]' value="{{ $transcation->id }}" type="checkbox">
                                     </td>
                                 @endif
-                                <td class="px-6 py-4 text-sm text-gray-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->timeData->dateData->title }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->timeData->title }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->user_id }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->name }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->position }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->department }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->timeData->dateData->title }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->timeData->title }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->user_id }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->name }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->position }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-900" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ $transcation->userData->department }}</td>
                                 <td class="px-6 py-4 text-center text-sm font-medium text-green-700" onclick="checkBox('#checkbox_{{ $transcation->user }}')">{{ date("d/m/Y H:i", strtotime($transcation->user_sign)) }}</td>
                                 <td class="px-6 py-4 text-center">
                                     @if ($transcation->admin_sign == null)
                                         <button class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-blue-700" onclick="approve('{{ $transcation->id }}','{{ $transcation->timeData->dateData->title }}','{{ $transcation->timeData->title }}','{{ $transcation->userData->userid }}','{{ $transcation->userData->name }}','{{ $transcation->userData->position }}','{{ $transcation->userData->department }}')" type="button">อนุมัติ</button>
                                     @else
-                                        <span class="text-sm text-gray-700">{{ date("d/m/Y H:i", strtotime($transcation->admin_sign)) }}</span>
+                                        <span class="text-sm text-slate-700">{{ date("d/m/Y H:i", strtotime($transcation->admin_sign)) }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -82,14 +82,14 @@
 
             <div class="block space-y-3 sm:hidden">
                 @foreach ($transactions as $transcation)
-                    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                         <div class="flex items-center justify-between">
-                            <div class="font-semibold text-gray-900">{{ $transcation->timeData->dateData->title }} • {{ $transcation->timeData->title }}</div>
+                            <div class="font-semibold text-slate-900">{{ $transcation->timeData->dateData->title }} • {{ $transcation->timeData->title }}</div>
                             @if ($query["sign"] == "false")
-                                <input class="checkselfCheckbox h-5 w-5 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500" id="checkbox_m_{{ $transcation->user }}" onchange="ChangeCheckBox('#checkbox_m_{{ $transcation->user }}')" name='checkbox[]' value="{{ $transcation->id }}" type="checkbox">
+                                <input class="checkselfCheckbox h-5 w-5 rounded border-slate-300 bg-slate-100 text-blue-600 focus:ring-blue-500" id="checkbox_m_{{ $transcation->user }}" onchange="ChangeCheckBox('#checkbox_m_{{ $transcation->user }}')" name='checkbox[]' value="{{ $transcation->id }}" type="checkbox">
                             @endif
                         </div>
-                        <div class="mt-2 text-sm text-gray-700">
+                        <div class="mt-2 text-sm text-slate-700">
                             <div>รหัส: {{ $transcation->user_id }}</div>
                             <div>ชื่อ: {{ $transcation->userData->name }}</div>
                             <div>ตำแหน่ง: {{ $transcation->userData->position }}</div>
@@ -100,7 +100,7 @@
                             @if ($transcation->admin_sign == null)
                                 <button class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-blue-700" onclick="approve('{{ $transcation->id }}','{{ $transcation->timeData->dateData->title }}','{{ $transcation->timeData->title }}','{{ $transcation->userData->userid }}','{{ $transcation->userData->name }}','{{ $transcation->userData->position }}','{{ $transcation->userData->department }}')" type="button">Approve</button>
                             @else
-                                <span class="text-sm text-gray-700">{{ date("d/m/Y H:i", strtotime($transcation->admin_sign)) }}</span>
+                                <span class="text-sm text-slate-700">{{ date("d/m/Y H:i", strtotime($transcation->admin_sign)) }}</span>
                             @endif
                         </div>
                     </div>

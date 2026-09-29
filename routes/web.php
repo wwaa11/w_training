@@ -157,6 +157,11 @@ Route::middleware([HrAdmin::class])->group(function () {
                 // Group Management
                 Route::prefix('groups')->name('groups.')->group(function () {
                     Route::get('/', [HRController::class, 'adminProjectGroups'])->name('index');
+                    Route::post('/mode', [HRController::class, 'adminGroupModeUpdate'])->name('mode');
+                    Route::post('/rerandom', [HRController::class, 'adminGroupRerandom'])->name('rerandom');
+                    Route::post('/definitions', [HRController::class, 'adminGroupDefinitionStore'])->name('definitions.store');
+                    Route::put('/definitions/{definitionId}', [HRController::class, 'adminGroupDefinitionUpdate'])->name('definitions.update');
+                    Route::delete('/definitions/{definitionId}', [HRController::class, 'adminGroupDefinitionDelete'])->name('definitions.delete');
                     Route::post('/', [HRController::class, 'adminGroupStore'])->name('store');
                     Route::put('/{groupId}', [HRController::class, 'adminGroupUpdate'])->name('update');
                     Route::delete('/{groupId}', [HRController::class, 'adminGroupDelete'])->name('delete');

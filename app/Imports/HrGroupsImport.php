@@ -2,6 +2,7 @@
 namespace App\Imports;
 
 use App\Models\HrGroup;
+use App\Models\HrGroupDefinition;
 use App\Models\User;
 use App\Traits\HrLoggingTrait;
 use Illuminate\Support\Collection;
@@ -40,6 +41,16 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
                 $userId    = trim($row['user_id']);
                 $groupName = trim($row['group_name']);
 
+                $definition = HrGroupDefinition::where('project_id', $this->projectId)
+                    ->where('name', $groupName)
+                    ->first();
+
+                if (! $definition) {
+                    $errors[] = "แถว " . ($rowIndex + 3) . ": ไม่พบกลุ่ม '{$groupName}' กรุณาสร้างกลุ่มก่อนนำเข้า";
+                    $skippedCount++;
+                    continue;
+                }
+
                 // Find user by user_id
                 $user = User::where('userid', $userId)->first();
 
@@ -53,6 +64,13 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
                 $existingGroup = HrGroup::where('project_id', $this->projectId)
                     ->where('user_id', $user->id)
                     ->first();
+
+                $isSameGroup = $existingGroup && $existingGroup->group === $groupName;
+                if (! $isSameGroup && ! $definition->hasCapacity()) {
+                    $errors[] = "แถว " . ($rowIndex + 3) . ": กลุ่ม '{$groupName}' เต็มแล้ว";
+                    $skippedCount++;
+                    continue;
+                }
 
                 if ($existingGroup) {
                     // Update existing group assignment

@@ -1,465 +1,223 @@
-@extends("layouts.hrd")
+﻿@extends("layouts.hrd")
 
 @section("content")
-    <div class="container mx-auto px-3">
-        <!-- Header Section -->
-        <div class="mb-4">
-            <div class="flex items-center justify-between">
-                <div class="min-w-0 flex-1">
-                    <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">โปรแกรมพัฒนาบุคลากร HRD</h1>
-                    <p class="mt-1 text-xs text-gray-600 sm:text-sm">สำรวจและลงทะเบียนสำหรับโปรแกรมการฝึกอบรม</p>
-                </div>
-                <a class="ml-3 inline-flex items-center rounded-lg bg-gray-600 px-3 py-2 text-xs font-medium text-white hover:bg-gray-700 sm:px-4 sm:text-sm" href="{{ route("hrd.history") }}">
-                    <i class="fas fa-history mr-1.5 sm:mr-2"></i>
-                    <span class="hidden sm:inline">ประวัติ</span>
-                    <span class="sm:hidden">ประวัติ</span>
-                </a>
-            </div>
+    @include("hrd.partials.app-page", [
+        "appEyebrow" => "HRD",
+        "appTitle" => "โปรแกรมพัฒนาบุคลากร",
+        "appSubtitle" => "สำรวจ ลงทะเบียน และเช็คอินโปรแกรมการฝึกอบรม",
+    ])
+
+        <div class="flex flex-wrap gap-2">
+            <a class="hrd-btn-secondary min-h-[44px] flex-1 sm:flex-none" href="{{ route("hrd.history") }}">
+                <i class="fas fa-history text-blue-600"></i>
+                ประวัติ
+            </a>
+            <a class="hrd-btn-primary min-h-[44px] flex-1 sm:flex-none" href="{{ route("hrd.user-guide") }}">
+                <i class="fas fa-book-open"></i>
+                คู่มือ
+            </a>
         </div>
 
-        <!-- Quick Help Section -->
-        <div class="mb-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 p-3 shadow-sm sm:p-4">
-            <div class="flex items-center justify-between">
-                <div class="flex min-w-0 flex-1 items-center">
-                    <div class="mr-3 rounded-full bg-purple-100 p-1.5 sm:p-2">
-                        <i class="fas fa-question-circle text-sm text-purple-600 sm:text-base"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <h3 class="text-sm font-semibold text-gray-900 sm:text-base">ไม่แน่ใจว่าจะใช้งานอย่างไร?</h3>
-                        <p class="truncate text-xs text-gray-600 sm:text-sm">ดูคู่มือการใช้งานเพื่อเรียนรู้วิธีการลงทะเบียนและเช็คอิน</p>
-                    </div>
-                </div>
-                <a class="ml-3 inline-flex items-center rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700 sm:px-4 sm:py-2 sm:text-sm" href="{{ route("hrd.user-guide") }}">
-                    <i class="fas fa-book-open mr-1.5 sm:mr-2"></i>
-                    ดูคู่มือ
-                </a>
-            </div>
-        </div>
-
-        <!-- Flash Messages -->
-        @if (session("success"))
-            <div class="mb-3 rounded-lg border border-green-400 bg-green-100 px-3 py-2 text-green-700 sm:px-4 sm:py-3">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2 text-sm"></i>
-                    <span class="text-xs sm:text-sm">{{ session("success") }}</span>
-                </div>
-            </div>
-        @endif
-
-        @if (session("error"))
-            <div class="mb-3 rounded-lg border border-red-400 bg-red-100 px-3 py-2 text-red-700 sm:px-4 sm:py-3">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2 text-sm"></i>
-                    <span class="text-xs sm:text-sm">{{ session("error") }}</span>
-                </div>
-            </div>
-        @endif
-
-        <!-- Ongoing Projects Section -->
         @if ($ongoingProjects->count() > 0)
-            <div class="mb-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 p-3 shadow-sm sm:p-4">
-                <div class="mb-3 flex items-center">
-                    <i class="fas fa-clock mr-2 text-lg text-blue-600 sm:text-xl"></i>
-                    <h2 class="text-base font-semibold text-blue-900 sm:text-lg">โปรแกรมที่กำลังดำเนินการ</h2>
+            <section class="hrd-hero-banner">
+                <div class="border-b border-blue-700/50 px-4 py-4 sm:px-5">
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-200">Live</p>
+                    <h2 class="mt-1 text-lg font-bold">เช็คอินได้ตอนนี้</h2>
+                    <p class="mt-0.5 text-sm text-blue-100/90">ยืนยันการเข้าร่วมจากหน้านี้</p>
                 </div>
-                <p class="mb-3 text-xs text-blue-700 sm:text-sm">คุณสามารถเช็คอินสำหรับโปรแกรมต่อไปนี้ได้ตอนนี้:</p>
 
-                <div class="space-y-2">
+                <div class="space-y-3 px-4 pb-4 sm:px-5 sm:pb-5">
                     @foreach ($ongoingProjects as $ongoingProject)
                         @foreach ($ongoingProject["sessions"] as $session)
-                            <div class="rounded-lg bg-white p-4 shadow-sm" id="session-card-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                <!-- Header -->
-                                <div class="mb-3 flex items-center justify-between">
-                                    <div>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
-                                            <h3 class="text-sm font-semibold text-gray-900" id="project-name-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $ongoingProject["project"]->project_name }}</h3>
-                                        </div>
-                                        <p class="ml-6 mt-1 text-sm text-gray-600" id="date-title-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $session["date"]->date_title }}</p>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        @if ($ongoingProject["project"]->project_seat_assign && $session["userSeat"])
-                                            <span class="text-xs text-purple-600">
-                                                <i class="fas fa-chair mb-2 mr-1"></i>
-                                                <span class="font-medium">ที่นั่ง:</span> {{ $session["userSeat"]->seat_number }}
-                                            </span>
-                                        @endif
-                                        @if ($ongoingProject["project"]->project_group_assign)
-                                            @php
-                                                $userGroup = \App\Models\HrGroup::where("project_id", $ongoingProject["project"]->id)
-                                                    ->where("user_id", auth()->id())
-                                                    ->first();
-                                            @endphp
-                                            @if ($userGroup)
-                                                <span class="text-sm text-indigo-600">
-                                                    <i class="fas fa-users mr-1"></i>
-                                                    {{ $userGroup->group }}
-                                                </span>
-                                            @endif
-                                        @endif
-                                    </div>
+                            <div class="hrd-user-card p-4 text-slate-800" id="session-card-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                <div class="mb-3">
+                                    <p class="text-xs font-medium text-slate-500" id="date-title-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $session["date"]->date_title }}</p>
+                                    <h3 class="mt-0.5 text-base font-semibold text-slate-900" id="project-name-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $ongoingProject["project"]->project_name }}</h3>
                                 </div>
-                                <!-- Info -->
-                                <div class="mb-3 space-y-2">
+
+                                @if (! empty($session["attendanceRecord"]) && ($ongoingProject["project"]->project_seat_assign || $ongoingProject["project"]->project_group_assign))
+                                    @include("hrd.partials.assignment-inline", [
+                                        "userSeat" => $session["userSeat"] ?? null,
+                                        "userGroup" => $session["userGroup"] ?? null,
+                                        "showSeat" => $ongoingProject["project"]->project_seat_assign,
+                                        "showGroup" => $ongoingProject["project"]->project_group_assign,
+                                        "class" => "mb-3",
+                                    ])
+                                @endif
+
+                                <dl class="mb-4 space-y-1.5 text-sm text-slate-600">
                                     @if ($session["date"]->date_location)
-                                        <div class="text-sm text-gray-600" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                            <i class="fas fa-map-marker-alt mb-2 mr-1"></i>
-                                            <span class="font-medium">สถานที่:</span> {{ $session["date"]->date_location }}
+                                        <div class="flex gap-2" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                            <dt class="shrink-0 font-medium text-slate-500">สถานที่</dt>
+                                            <dd>{{ $session["date"]->date_location }}</dd>
                                         </div>
                                     @endif
-                                    @if ($session["note"])
-                                        <div class="text-sm text-orange-600" id="note-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                            <i class="fas fa-info-circle mb-2 mr-1"></i>
-                                            <span class="font-medium">รายละเอียด:</span> {{ $session["note"] }}
-                                        </div>
-                                    @endif
-                                    <div class="text-sm text-gray-600" id="time-schedule-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                        <i class="fas fa-clock mb-2 mr-1"></i>
-                                        <span class="font-medium">เวลา:</span> {{ \Carbon\Carbon::parse($session["time"]->time_start)->format("H:i") }} - {{ \Carbon\Carbon::parse($session["time"]->time_end)->format("H:i") }}
+                                    <div class="flex gap-2" id="time-schedule-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                        <dt class="shrink-0 font-medium text-slate-500">เวลา</dt>
+                                        <dd>{{ \Carbon\Carbon::parse($session["time"]->time_start)->format("H:i") }}–{{ \Carbon\Carbon::parse($session["time"]->time_end)->format("H:i") }}</dd>
                                     </div>
-                                    <div class="text-sm text-green-600">
-                                        <i class="fas fa-sign-in-alt mb-2 mr-1"></i>
-                                        <span class="font-medium">เช็คอินได้ตั้งแต่:</span> {{ \Carbon\Carbon::parse($session["time"]->time_start)->subMinutes(30)->format("H:i") }}
+                                    <div class="flex gap-2 text-blue-700">
+                                        <dt class="shrink-0 font-medium">เช็คอิน</dt>
+                                        <dd>ตั้งแต่ {{ \Carbon\Carbon::parse($session["time"]->time_start)->subMinutes(30)->format("H:i") }}</dd>
                                     </div>
-                                </div>
-                                <!-- Check-in Button or Attendance Status -->
+                                </dl>
+
                                 @if ($session["canCheckIn"])
                                     <form class="checkin-form" id="checkin-form-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" action="{{ $session["checkInRoute"] }}" method="{{ $session["checkInMethod"] }}">
                                         @csrf
                                         @foreach ($session["checkInData"] as $key => $value)
                                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                         @endforeach
-                                        <button class="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" id="checkin-btn-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" type="submit">
-                                            <i class="fas fa-user-check mr-3 text-lg text-white"></i>
-                                            <div class="text-center">
-                                                <div class="text-sm font-medium text-green-100">เช็คอินตอนนี้</div>
-                                                <div class="text-base font-bold text-white">คลิกเพื่อยืนยันการเข้าร่วม</div>
-                                            </div>
+                                        <button class="hrd-btn-primary min-h-[48px] w-full" id="checkin-btn-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" type="submit">
+                                            <i class="fas fa-user-check"></i>
+                                            เช็คอินตอนนี้
                                         </button>
                                     </form>
                                 @elseif ($session["hasAttended"] && $session["attendanceRecord"])
-                                    <div class="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4 text-center">
-                                        <div class="mb-2 flex items-center justify-center">
-                                            <i class="fas fa-check-circle mr-2 text-lg text-blue-600"></i>
-                                            <span class="text-sm font-medium text-blue-800">เช็คอินเรียบร้อยแล้ว</span>
-                                        </div>
-                                        <div class="text-lg font-bold text-blue-900">
-                                            {{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("H:i") }}
-                                        </div>
-                                        <div class="mt-1 text-xs text-blue-600">
-                                            {{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("d/m/Y") }}
-                                        </div>
+                                    <div class="rounded-xl border border-slate-200 bg-blue-50 px-4 py-3 text-center">
+                                        <p class="text-sm font-medium text-blue-800"><i class="fas fa-check-circle mr-1"></i>เช็คอินแล้ว</p>
+                                        <p class="text-xl font-bold text-slate-900">{{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("H:i") }}</p>
+                                        <p class="text-xs text-blue-700">{{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("d M Y") }}</p>
                                     </div>
                                 @endif
                             </div>
                         @endforeach
                     @endforeach
                 </div>
-            </div>
+            </section>
         @endif
-    </div>
 
-    <!-- Search Section -->
-    <div class="mb-4 rounded-lg bg-white p-3 shadow-sm sm:p-4">
-        <div class="relative">
-            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
-            <input class="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" id="searchInput" type="text" placeholder="ค้นหาโปรเจกต์...">
-        </div>
-    </div>
+        <section class="hrd-user-card p-4 sm:p-5">
+            <label class="sr-only" for="searchInput">ค้นหาโปรแกรม</label>
+            <div class="hrd-search-wrap">
+                <span class="hrd-search-wrap__icon" aria-hidden="true">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input class="hrd-input" id="searchInput" type="text" placeholder="ค้นหาชื่อโปรแกรม..." autocomplete="off" inputmode="search" spellcheck="false">
+            </div>
+            <p class="mt-2 text-xs text-slate-500">เลือกโปรแกรมเพื่อลงทะเบียน ดูตาราง และเช็คอิน</p>
+        </section>
 
-    <!-- Projects Grid -->
-    <div class="space-y-4 sm:space-y-6" id="projectsGrid">
-        @forelse($projectsWithStates as $projectData)
-            @php
-                $project = $projectData["project"];
-                $state = $projectData["registrationState"];
-            @endphp
-            <a class="block" href="{{ route("hrd.projects.show", $project->id) }}">
-                <div class="project-card @if ($project->project_type === "single") border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white hover:border-l-blue-600
-                        @elseif($project->project_type === "multiple") 
-                            border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-white hover:border-l-green-600
-                        @else 
-                            border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-white hover:border-l-purple-600 @endif cursor-pointer rounded-xl border border-gray-200 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:border-gray-300 hover:shadow-xl" data-type="{{ $project->project_type }}" data-name="{{ strtolower($project->project_name) }}">
-
-                    <!-- Project Header -->
-                    <div class="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white p-4 sm:p-6">
-                        <div class="mb-3 flex items-start justify-between">
-                            <span class="@if ($project->project_type === "single") bg-blue-100 text-blue-800 border border-blue-200
-                                    @elseif($project->project_type === "multiple") bg-green-100 text-green-800 border border-green-200
-                                    @else bg-purple-100 text-purple-800 border border-purple-200 @endif inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm sm:px-4 sm:py-1.5 sm:text-sm">
-                                @if ($project->project_type === "single")
-                                    <i class="fas fa-user mr-1.5"></i>ลงทะเบียน 1 ครั้ง
-                                @elseif($project->project_type === "multiple")
-                                    <i class="fas fa-users mr-1.5"></i>ลงทะเบียนได้มากกว่า 1 ครั้ง
-                                @else
-                                    <i class="fas fa-calendar-check mr-1.5"></i>ไม่ต้องลงทะเบียน
+        <div class="space-y-3" id="projectsGrid">
+            @forelse($projectsWithStates as $projectData)
+                @php
+                    $project = $projectData["project"];
+                    $state = $projectData["registrationState"];
+                @endphp
+                <a class="project-list-item group block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" data-name="{{ strtolower($project->project_name) }}" href="{{ route("hrd.projects.show", $project->id) }}">
+                    <article class="project-card hrd-user-card overflow-hidden transition group-hover:shadow-md" data-type="{{ $project->project_type }}" data-name="{{ strtolower($project->project_name) }}">
+                        <div class="border-b border-slate-100 p-4 sm:p-5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if ($project->project_type === "attendance")
+                                    <span class="rounded bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800">ไม่ต้องลงทะเบียน</span>
+                                @elseif($state["canRegister"])
+                                    <span class="rounded bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800">เปิดรับลงทะเบียน</span>
+                                @elseif($state["isUpcoming"])
+                                    <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">เร็วๆ นี้</span>
+                                @elseif($state["isExpired"])
+                                    <span class="rounded-lg bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">ปิดรับแล้ว</span>
                                 @endif
-                            </span>
-                            @if ($project->project_type === "attendance")
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-info-circle mr-1.5"></i>
-                                    ไม่ต้องลงทะเบียน
-                                </span>
-                            @elseif($state["canRegister"])
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-green-500 to-green-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-circle mr-1.5 text-green-200" style="font-size: 6px;"></i>
-                                    เปิดรับลงทะเบียน
-                                </span>
-                            @elseif($state["isUpcoming"])
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-clock mr-1.5"></i>
-                                    เร็วๆ นี้
-                                </span>
-                            @elseif($state["isExpired"])
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-gray-500 to-gray-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-lock mr-1.5"></i>
-                                    ปิดรับลงทะเบียน
-                                </span>
-                            @else
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-red-500 to-red-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-ban mr-1.5"></i>
-                                    ไม่ใช้งาน
-                                </span>
+                                @if ($state["attendanceStatus"])
+                                    <span class="rounded-lg bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">{{ $state["attendanceStatus"] }}</span>
+                                @endif
+                            </div>
+                            <h3 class="mt-3 text-lg font-bold text-slate-900">{{ $project->project_name }}</h3>
+                            @if ($project->project_detail)
+                                <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $project->project_detail }}</p>
                             @endif
                         </div>
-
-                        <!-- Attendance Status Row -->
-                        @if ($state["attendanceStatus"])
-                            <div class="mb-3">
-                                <span class="inline-flex items-center rounded-full bg-gradient-to-r from-yellow-500 to-yellow-600 px-3 py-1 text-xs font-semibold text-white shadow-md sm:px-4 sm:py-1.5 sm:text-sm">
-                                    <i class="fas fa-user-check mr-1.5"></i>
-                                    {{ $state["attendanceStatus"] }}
-                                </span>
-                            </div>
-                        @endif
-
-                        <h3 class="mb-2 text-lg font-bold text-gray-900 sm:text-xl">{{ $project->project_name }}</h3>
-
-                        @if ($project->project_detail)
-                            <p class="line-clamp-2 text-xs text-gray-600 sm:text-sm">{{ $project->project_detail }}</p>
-                        @endif
-                    </div>
-
-                    <!-- Project Information -->
-                    <div class="space-y-4 bg-white p-4 sm:p-6">
-                        <!-- Registration Period -->
-                        <div class="flex items-start">
-                            <div class="mr-2 mt-1 rounded-full bg-blue-100 p-1 sm:mr-3">
-                                <i class="fas fa-calendar-alt text-xs text-blue-600"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">ช่วงเวลาลงทะเบียน</h4>
-                                <p class="text-xs text-gray-600 sm:text-sm">
-                                    {{ $project->project_start_register->format("d M Y, H:i") }} - {{ $project->project_end_register->format("d M Y, H:i") }}
-                                </p>
+                        <div class="space-y-2 p-4 text-sm text-slate-600 sm:p-5">
+                            @if ($project->project_type !== "attendance")
+                                <p><span class="font-medium text-slate-500">ลงทะเบียน:</span> {{ $project->project_start_register->format("d M Y") }} – {{ $project->project_end_register->format("d M Y") }}</p>
+                            @endif
+                            @if ($project->dates->count() > 0)
+                                <p><span class="font-medium text-slate-500">จัดอบรม:</span> {{ $project->dates->count() }} วัน</p>
+                            @endif
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                @if ($project->project_seat_assign)
+                                        <span class="rounded-lg bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">จัดที่นั่ง</span>
+                                @endif
+                                @if ($project->project_group_assign)
+                                        <span class="rounded-lg bg-violet-50 px-2 py-0.5 text-xs text-violet-800">จัดกลุ่ม</span>
+                                @endif
                             </div>
                         </div>
-
-                        <!-- Project Dates -->
-                        @if ($project->dates->count() > 0)
-                            <div class="flex items-start">
-                                <div class="mr-2 mt-1 rounded-full bg-green-100 p-1 sm:mr-3">
-                                    <i class="fas fa-calendar-check text-xs text-green-600"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">วันที่เปิดลงทะเบียน ({{ $project->dates->count() }})</h4>
-                                    <div class="mt-1 space-y-1">
-                                        @foreach ($project->dates->take(2) as $date)
-                                            <div class="flex items-center text-xs text-gray-600 sm:text-sm">
-                                                <i class="fas fa-dot-circle mr-1.5 text-gray-400" style="font-size: 6px;"></i>
-                                                <span class="truncate font-medium">{{ $date->date_title }}</span>
-                                                <span class="mx-1.5">•</span>
-                                                <span class="truncate">{{ $date->date_datetime->format("d M Y") }}</span>
-                                            </div>
-                                        @endforeach
-                                        @if ($project->dates->count() > 2)
-                                            <div class="ml-3 text-xs text-gray-500 sm:text-sm">
-                                                +{{ $project->dates->count() - 2 }} วันที่เพิ่มเติม
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Project Links -->
-                        @if ($project->links->count() > 0)
-                            <div class="flex items-start">
-                                <div class="mr-2 mt-1 rounded-full bg-blue-100 p-1 sm:mr-3">
-                                    <i class="fas fa-link text-xs text-blue-600"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">ทรัพยากร ({{ $project->links->count() }})</h4>
-                                    <p class="text-xs text-gray-600 sm:text-sm">เอกสารและลิงก์ที่เกี่ยวข้อง</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Seat Assignment Info -->
-                        @if ($project->project_seat_assign)
-                            <div class="flex items-start">
-                                <div class="mr-2 mt-1 rounded-full bg-purple-100 p-1 sm:mr-3">
-                                    <i class="fas fa-chair text-xs text-purple-600"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">เปิดใช้งานการจัดที่นั่ง</h4>
-                                    <div class="mt-1 inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-2 py-1 shadow-md sm:px-3">
-                                        <i class="fas fa-star mr-1.5 text-xs text-yellow-300"></i>
-                                        <span class="text-xs font-bold text-white">ที่นั่ง</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Registration Count -->
-                        @if ($state["registrationCount"] > 0)
-                            <div class="flex items-start">
-                                <div class="mr-2 mt-1 rounded-full bg-gray-100 p-1 sm:mr-3">
-                                    <i class="fas fa-users text-xs text-gray-600"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="text-xs font-semibold text-gray-900 sm:text-sm">ผู้ลงทะเบียน {{ $state["registrationCount"] }}</h4>
-                                    <p class="text-xs text-gray-600 sm:text-sm">จำนวนผู้ลงทะเบียนในปัจจุบัน</p>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Action Footer -->
-                    <div class="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 sm:px-6 sm:py-4">
-                        <div class="flex items-center justify-between">
-                            <div class="text-xs font-medium text-gray-600 sm:text-sm">
-                                คลิกเพื่อดูรายละเอียดเพิ่มเติม
-                            </div>
-                            <div class="inline-flex items-center text-xs font-semibold text-blue-700 sm:text-sm">
-                                <i class="fas fa-arrow-right mr-1.5 transition-transform duration-200 group-hover:translate-x-1 sm:mr-2"></i>
-                                ดูรายละเอียด
-                            </div>
+                        <div class="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-4 py-3 text-sm sm:px-5">
+                            <span class="text-slate-600">ดูรายละเอียด</span>
+                            <span class="font-semibold text-blue-700 group-hover:text-blue-800">เปิด <i class="fas fa-chevron-right ml-1 text-xs"></i></span>
                         </div>
-                    </div>
+                    </article>
+                </a>
+            @empty
+                <div class="rounded-2xl border border-dashed border-slate-300 bg-white py-14 text-center" id="emptyStateDefault">
+                    <i class="fas fa-inbox text-3xl text-slate-300"></i>
+                    <h3 class="mt-3 font-semibold text-slate-900">ไม่มีโปรแกรมที่ใช้งานได้</h3>
+                    <p class="mt-1 text-sm text-slate-500">ยังไม่มีโปรแกรมที่เปิดให้ลงทะเบียน</p>
                 </div>
-            </a>
-        @empty
-            <div class="col-span-full">
-                <div class="py-8 text-center sm:py-12">
-                    <div class="mx-auto h-10 w-10 text-gray-400 sm:h-12 sm:w-12">
-                        <i class="fas fa-inbox text-3xl sm:text-4xl"></i>
-                    </div>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">ไม่มีโปรเจกต์ที่ใช้งานได้</h3>
-                    <p class="mt-1 text-xs text-gray-500 sm:text-sm">ไม่มีโปรเจกต์ที่เปิดให้ลงทะเบียนในขณะนี้</p>
-                </div>
-            </div>
-        @endforelse
-    </div>
-
-    <!-- Pagination -->
-    {{-- @if ($projects->hasPages())
-        <div class="mt-6">
-            {{ $projects->links() }}
+            @endforelse
         </div>
-    @endif --}}
+
+        <div class="hidden rounded-2xl border border-dashed border-slate-300 bg-white py-14 text-center" id="emptyStateSearch">
+            <i class="fas fa-search text-3xl text-slate-300"></i>
+            <h3 class="mt-3 font-semibold text-slate-900">ไม่พบโปรแกรม</h3>
+            <p class="mt-1 text-sm text-slate-500">ลองคำค้นหาอื่น</p>
+        </div>
+
+    @include("hrd.partials.app-page", ["appPageClose" => true])
 @endsection
 
 @section("scripts")
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            @if (session("success"))
+                Swal.fire({ icon: 'success', title: @json(session("success")), confirmButtonText: 'ตกลง', confirmButtonColor: '#2563eb' });
+            @endif
+            @if (session("error"))
+                Swal.fire({ icon: 'error', title: @json(session("error")), confirmButtonText: 'ตกลง', confirmButtonColor: '#2563eb' });
+            @endif
+            @if (session("info"))
+                Swal.fire({ icon: 'info', title: @json(session("info")), confirmButtonText: 'ตกลง', confirmButtonColor: '#2563eb' });
+            @endif
+
             const searchInput = document.getElementById('searchInput');
-            const projectCards = document.querySelectorAll('.project-card');
+            const listItems = document.querySelectorAll('.project-list-item');
+            const emptySearch = document.getElementById('emptyStateSearch');
 
             function searchProjects() {
-                const searchTerm = searchInput.value.toLowerCase();
-
-                projectCards.forEach(card => {
-                    const cardName = card.dataset.name;
-                    const searchMatch = !searchTerm || cardName.includes(searchTerm);
-
-                    if (searchMatch) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                const searchTerm = (searchInput?.value || '').toLowerCase().trim();
+                let visible = 0;
+                listItems.forEach(item => {
+                    const match = !searchTerm || (item.dataset.name || '').includes(searchTerm);
+                    item.classList.toggle('hidden', !match);
+                    if (match) visible++;
                 });
-
-                // Show/hide empty state
-                const visibleCards = document.querySelectorAll('.project-card[style="display: block"], .project-card:not([style*="display: none"])');
-                const emptyState = document.querySelector('.col-span-full');
-
-                if (visibleCards.length === 0 && emptyState) {
-                    emptyState.style.display = 'block';
-                } else if (emptyState) {
-                    emptyState.style.display = 'none';
+                if (emptySearch) {
+                    emptySearch.classList.toggle('hidden', listItems.length === 0 || visible > 0 || !searchTerm);
                 }
             }
+            searchInput?.addEventListener('input', searchProjects);
 
-            searchInput.addEventListener('input', searchProjects);
-
-            // Handle check-in form submissions with confirmation
-            const checkinForms = document.querySelectorAll('.checkin-form');
-            checkinForms.forEach(form => {
+            document.querySelectorAll('.checkin-form').forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-
-                    // Get form ID to extract project and time IDs
-                    const formId = this.id;
-                    const matches = formId.match(/checkin-form-(\d+)-(\d+)/);
-
-                    if (!matches) {
-                        console.error('Could not parse form ID:', formId);
-                        return;
-                    }
-
-                    const projectId = matches[1];
-                    const timeId = matches[2];
-
-                    // Use ID-based selectors for better performance and reliability
-                    const projectName = document.getElementById(`project-name-${projectId}-${timeId}`)?.textContent || 'Unknown Project';
+                    const matches = this.id.match(/checkin-form-(\d+)-(\d+)/);
+                    if (!matches) return;
+                    const [projectId, timeId] = [matches[1], matches[2]];
+                    const projectName = document.getElementById(`project-name-${projectId}-${timeId}`)?.textContent || '';
                     const dateTitle = document.getElementById(`date-title-${projectId}-${timeId}`)?.textContent || '';
-                    const locationElement = document.getElementById(`location-${projectId}-${timeId}`);
-                    const location = locationElement ? locationElement.textContent.replace('สถานที่:', '').trim() : '';
-                    const timeScheduleElement = document.getElementById(`time-schedule-${projectId}-${timeId}`);
-                    const timeSchedule = timeScheduleElement ? timeScheduleElement.textContent.replace('เวลา:', '').trim() : '';
-
                     Swal.fire({
                         title: 'ยืนยันการเช็คอิน',
-                        html: `
-                            <div class="text-left">
-                                <p class="mb-3"><strong>โปรแกรม:</strong> ${projectName}</p>
-                                ${dateTitle ? `<p class="mb-2"><strong>วันที่:</strong> ${dateTitle}</p>` : ''}
-                                ${location ? `<p class="mb-2"><strong>สถานที่:</strong> ${location}</p>` : ''}
-                                ${timeSchedule ? `<p class="mb-3"><strong>เวลา:</strong> ${timeSchedule}</p>` : ''}
-                            </div>
-                            <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                <p class="text-sm text-green-700">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    การเช็คอินจะบันทึกเวลาที่คุณเข้าร่วมโปรแกรม
-                                </p>
-                            </div>
-                            <p class="mt-4 text-sm text-gray-600">คุณแน่ใจหรือไม่ที่จะเช็คอินสำหรับเซสชันนี้?</p>
-                        `,
+                        html: `<p class="text-sm text-left"><strong>${projectName}</strong><br>${dateTitle}</p>`,
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'ใช่, เช็คอิน',
+                        confirmButtonColor: '#2563eb',
+                        cancelButtonColor: '#71717a',
+                        confirmButtonText: 'เช็คอิน',
                         cancelButtonText: 'ยกเลิก',
-                        showLoaderOnConfirm: true,
-                        preConfirm: () => {
-                            return new Promise((resolve) => {
-                                setTimeout(() => {
-                                    resolve();
-                                }, 1000);
-                            });
-                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Show loading state on button using ID
-                            const buttonId = `checkin-btn-${projectId}-${timeId}`;
-                            const button = document.getElementById(buttonId);
-                            if (button) {
-                                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังเช็คอิน...';
-                                button.disabled = true;
-                            }
-
+                            const btn = document.getElementById(`checkin-btn-${projectId}-${timeId}`);
+                            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเช็คอิน...'; }
                             this.submit();
                         }
                     });

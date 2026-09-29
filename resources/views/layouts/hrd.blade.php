@@ -9,7 +9,7 @@
     <title inertia>PR9 HRD</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
-    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.1.0">
     <script src="{{ asset("js/axios.min.js") }}"></script>
     <script src="{{ asset("js/jquery.min.js") }}"></script>
     <script src="{{ asset("js/sweetalert2.js") }}"></script>
@@ -36,9 +36,11 @@
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     </script>
     @vite("resources/css/app.css")
+    @include("hrd.partials.hospital-theme")
+    @stack("styles")
 </head>
 
-<body class="prompt">
+<body class="prompt hrd-shell">
     <nav class="navbar">
         <div class="navbar-logo">
             <a href="{{ route("index") }}">
@@ -116,7 +118,7 @@
         </div>
     </div>
 
-    <div class="main-content">
+    <div class="main-content hrd-hospital">
         @yield("content")
     </div>
 

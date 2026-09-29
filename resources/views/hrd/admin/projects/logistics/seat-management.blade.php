@@ -1,42 +1,25 @@
-@extends("layouts.hrd")
+﻿@extends("layouts.hrd")
 
 @section("content")
-    <div class="container mx-auto px-4 pb-20">
-        <div class="rounded-lg bg-white p-6 shadow-lg">
-            <!-- Header -->
-            <div class="mb-6 flex items-center justify-between">
-                <div class="flex items-center">
-                    <a class="mr-4 text-blue-600 hover:text-blue-800" href="{{ route("hrd.admin.projects.show", $project->id) }}">
-                        <i class="fas fa-arrow-left text-xl"></i>
-                    </a>
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">จัดการที่นั่ง - {{ $project->project_name }}</h1>
-                        <p class="text-gray-600">จัดการการจัดที่นั่งสำหรับโปรเจกต์</p>
-                    </div>
-                </div>
-                <div class="flex space-x-2">
-                    <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-green-600 hover:to-green-700 hover:shadow-xl" onclick="refreshSeatData()">
-                        <i class="fas fa-sync-alt mr-2"></i> รีเฟรชข้อมูล
-                    </button>
-                    <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl" onclick="triggerSeatAssignment()">
-                        <i class="fas fa-cogs mr-2"></i> จัดที่นั่งอัตโนมัติ
-                    </button>
-                    <button class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 text-white shadow-lg transition-all duration-300 hover:from-purple-600 hover:to-purple-700 hover:shadow-xl" onclick="exportSeatData()">
-                        <i class="fas fa-download mr-2"></i> ส่งออกข้อมูล
-                    </button>
-                </div>
-            </div>
+    <div class="hrd-hospital hrd-page min-h-screen">
+    <div class="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:px-8">
+            @include("hrd.partials.admin-page-header", [
+                "backUrl" => route("hrd.admin.projects.show", $project->id),
+                "title" => "จัดการที่นั่ง",
+                "subtitle" => $project->project_name,
+                "headerActions" => '<button type="button" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" onclick="refreshSeatData()"><i class="fas fa-sync-alt"></i>รีเฟรช</button><button type="button" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="triggerSeatAssignment()"><i class="fas fa-cogs"></i>จัดอัตโนมัติ</button><button type="button" class="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-700" onclick="exportSeatData()"><i class="fas fa-download"></i>ส่งออก</button>',
+            ])
 
             <!-- Project Info -->
-            <div class="mb-6 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4">
+            <div class="hrd-card mb-6 bg-gradient-to-r from-blue-50 to-blue-100 p-4">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div class="flex items-center">
                         <i class="fas fa-info-circle mr-3 text-2xl text-blue-600"></i>
                         <div>
-                            <p class="font-semibold text-blue-900">สถานะการจัดที่นั่ง</p>
+                            <p class="font-semibold text-slate-900">สถานะการจัดที่นั่ง</p>
                             <p class="text-sm text-blue-700">
                                 @if ($project->project_seat_assign)
-                                    <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800">
                                         <i class="fas fa-check-circle mr-1"></i> เปิดใช้งาน
                                     </span>
                                 @else
@@ -50,14 +33,14 @@
                     <div class="flex items-center">
                         <i class="fas fa-calendar mr-3 text-2xl text-blue-600"></i>
                         <div>
-                            <p class="font-semibold text-blue-900">วันที่โปรเจกต์</p>
+                            <p class="font-semibold text-slate-900">วันที่โปรเจกต์</p>
                             <p class="text-sm text-blue-700">{{ $project->dates->count() }} วันที่</p>
                         </div>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-clock mr-3 text-2xl text-blue-600"></i>
                         <div>
-                            <p class="font-semibold text-blue-900">ช่วงเวลา</p>
+                            <p class="font-semibold text-slate-900">ช่วงเวลา</p>
                             <p class="text-sm text-blue-700">{{ $project->dates->sum(function ($date) {return $date->times->count();}) }} ช่วงเวลา</p>
                         </div>
                     </div>
@@ -66,39 +49,39 @@
 
             <!-- Stats Cards -->
             <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-                <div class="group relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white shadow-lg transition-all duration-300 hover:shadow-xl">
+                <div class="hrd-stat-card hrd-stat-card--blue group relative overflow-hidden transition-shadow hover:shadow-lg">
                     <div class="flex items-center">
-                        <i class="fas fa-chair mr-3 text-2xl"></i>
+                        <i class="fas fa-chair mr-3 text-2xl text-blue-600"></i>
                         <div>
-                            <p class="text-2xl font-bold" id="totalSeats">0</p>
-                            <p class="text-sm opacity-90">ที่นั่งที่จัดแล้ว</p>
+                            <p class="text-2xl font-bold text-slate-900" id="totalSeats">0</p>
+                            <p class="text-sm text-slate-600">ที่นั่งที่จัดแล้ว</p>
                         </div>
                     </div>
                 </div>
-                <div class="group relative overflow-hidden rounded-lg bg-gradient-to-r from-green-500 to-green-600 p-4 text-white shadow-lg transition-all duration-300 hover:shadow-xl">
+                <div class="hrd-stat-card hrd-stat-card--emerald group relative overflow-hidden transition-shadow hover:shadow-lg">
                     <div class="flex items-center">
-                        <i class="fas fa-users mr-3 text-2xl"></i>
+                        <i class="fas fa-users mr-3 text-2xl text-emerald-600"></i>
                         <div>
-                            <p class="text-2xl font-bold" id="totalRegistrations">0</p>
-                            <p class="text-sm opacity-90">การลงทะเบียนทั้งหมด</p>
+                            <p class="text-2xl font-bold text-slate-900" id="totalRegistrations">0</p>
+                            <p class="text-sm text-slate-600">การลงทะเบียนทั้งหมด</p>
                         </div>
                     </div>
                 </div>
-                <div class="group relative overflow-hidden rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 p-4 text-white shadow-lg transition-all duration-300 hover:shadow-xl">
+                <div class="hrd-stat-card hrd-stat-card--amber group relative overflow-hidden transition-shadow hover:shadow-lg">
                     <div class="flex items-center">
-                        <i class="fas fa-user-clock mr-3 text-2xl"></i>
+                        <i class="fas fa-user-clock mr-3 text-2xl text-amber-600"></i>
                         <div>
-                            <p class="text-2xl font-bold" id="unassignedSeats">0</p>
-                            <p class="text-sm opacity-90">รอจัดที่นั่ง</p>
+                            <p class="text-2xl font-bold text-slate-900" id="unassignedSeats">0</p>
+                            <p class="text-sm text-slate-600">รอจัดที่นั่ง</p>
                         </div>
                     </div>
                 </div>
-                <div class="group relative overflow-hidden rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 p-4 text-white shadow-lg transition-all duration-300 hover:shadow-xl">
+                <div class="hrd-stat-card hrd-stat-card--violet group relative overflow-hidden transition-shadow hover:shadow-lg">
                     <div class="flex items-center">
-                        <i class="fas fa-building mr-3 text-2xl"></i>
+                        <i class="fas fa-building mr-3 text-2xl text-violet-600"></i>
                         <div>
-                            <p class="text-2xl font-bold" id="totalDepartments">0</p>
-                            <p class="text-sm opacity-90">แผนกที่เข้าร่วม</p>
+                            <p class="text-2xl font-bold text-slate-900" id="totalDepartments">0</p>
+                            <p class="text-sm text-slate-600">แผนกที่เข้าร่วม</p>
                         </div>
                     </div>
                 </div>
@@ -113,7 +96,7 @@
             </div>
 
             <!-- Error Message -->
-            <div class="mb-6 hidden rounded-lg bg-red-100 p-4 text-red-700" id="errorMessage">
+            <div class="hrd-alert hrd-alert--error mb-6 hidden" id="errorMessage">
                 <div class="flex items-center">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
                     <span id="errorText"></span>
@@ -121,7 +104,7 @@
             </div>
 
             <!-- Success Message -->
-            <div class="mb-6 hidden rounded-lg bg-green-100 p-4 text-green-700" id="successMessage">
+            <div class="hrd-alert hrd-alert--success mb-6 hidden" id="successMessage">
                 <div class="flex items-center">
                     <i class="fas fa-check-circle mr-2"></i>
                     <span id="successText"></span>
@@ -129,24 +112,24 @@
             </div>
 
             <!-- Waiting Screen -->
-            <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50" id="waitingScreen">
-                <div class="mx-4 w-full max-w-md rounded-lg bg-white p-8 shadow-2xl">
+            <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm" id="waitingScreen">
+                <div class="hrd-card mx-4 w-full max-w-md p-8 shadow-2xl">
                     <div class="text-center">
                         <div class="mb-4">
                             <i class="fas fa-cogs fa-spin text-4xl text-blue-600"></i>
                         </div>
-                        <h3 class="mb-2 text-lg font-semibold text-gray-800">กำลังจัดที่นั่งอัตโนมัติ</h3>
-                        <p class="mb-4 text-gray-600">กรุณารอสักครู่ ระบบกำลังประมวลผลการจัดที่นั่งให้กับผู้เข้าร่วมทั้งหมด</p>
+                        <h3 class="mb-2 text-lg font-semibold text-slate-900">กำลังจัดที่นั่งอัตโนมัติ</h3>
+                        <p class="mb-4 text-slate-600">กรุณารอสักครู่ ระบบกำลังประมวลผลการจัดที่นั่งให้กับผู้เข้าร่วมทั้งหมด</p>
                         <div class="flex items-center justify-center space-x-2">
                             <div class="h-2 w-2 animate-bounce rounded-full bg-blue-600"></div>
                             <div class="h-2 w-2 animate-bounce rounded-full bg-blue-600" style="animation-delay: 0.1s;"></div>
                             <div class="h-2 w-2 animate-bounce rounded-full bg-blue-600" style="animation-delay: 0.2s;"></div>
                         </div>
-                        <div class="mt-4 text-sm text-gray-500">
+                        <div class="mt-4 text-sm text-slate-500">
                             <p>ขั้นตอนที่กำลังดำเนินการ:</p>
                             <ul class="mt-2 space-y-1 text-left">
                                 <li class="flex items-center">
-                                    <i class="fas fa-check mr-2 text-green-500"></i>
+                                    <i class="fas fa-check mr-2 text-emerald-500"></i>
                                     <span>ตรวจสอบข้อมูลการลงทะเบียน</span>
                                 </li>
                                 <li class="flex items-center">
@@ -154,7 +137,7 @@
                                     <span>จัดที่นั่งตามลำดับ</span>
                                 </li>
                                 <li class="flex items-center">
-                                    <i class="fas fa-clock mr-2 text-gray-400"></i>
+                                    <i class="fas fa-clock mr-2 text-slate-400"></i>
                                     <span>อัปเดตฐานข้อมูล</span>
                                 </li>
                             </ul>
@@ -169,7 +152,7 @@
                 <div id="dateTimeSections"></div>
             </div>
 
-        </div>
+    </div>
     </div>
 @endsection
 
@@ -244,9 +227,9 @@
             if (!data.seat_data || data.seat_data.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12">
-                        <i class="fas fa-chair text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">ไม่มีข้อมูลการจัดที่นั่ง</h3>
-                        <p class="text-gray-500">ยังไม่มีช่วงเวลาหรือการลงทะเบียนสำหรับโปรเจกต์นี้</p>
+                        <i class="fas fa-chair text-6xl text-slate-300 mb-4"></i>
+                        <h3 class="text-lg font-medium text-slate-900 mb-2">ไม่มีข้อมูลการจัดที่นั่ง</h3>
+                        <p class="text-slate-500">ยังไม่มีช่วงเวลาหรือการลงทะเบียนสำหรับโปรเจกต์นี้</p>
                     </div>
                 `;
                 return;
@@ -258,22 +241,22 @@
                 const unassignedCount = registrations.filter(r => !r.seat_number).length;
 
                 const sessionDiv = document.createElement('div');
-                sessionDiv.className = 'rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200';
+                sessionDiv.className = 'rounded-lg border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200';
 
                 sessionDiv.innerHTML = `
                     <div class="mb-4 flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-800">
+                            <h3 class="text-lg font-semibold text-slate-900">
                                 <i class="fas fa-calendar text-blue-600 mr-2"></i>
                                 ${session.date} - ${session.time}
                             </h3>
-                            <p class="text-sm text-gray-600 mt-1">
+                            <p class="text-sm text-slate-600 mt-1">
                                 <i class="fas fa-clock mr-1"></i>
                                 ${session.time_start} - ${session.time_end}
                             </p>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="clearSeats(${session.time_id})" class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 text-white shadow-lg transition-all duration-300 hover:from-red-600 hover:to-red-700">
+                            <button onclick="clearSeats(${session.time_id})" class="group relative inline-flex items-center overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 text-white shadow-sm transition-all duration-300 hover:from-red-600 hover:to-red-700">
                                 <i class="fas fa-trash mr-1"></i>ล้างที่นั่ง
                             </button>
                         </div>
@@ -282,11 +265,11 @@
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <!-- Seat Assignments -->
                         <div>
-                            <h4 class="mb-3 font-medium text-gray-700 flex items-center">
+                            <h4 class="mb-3 font-medium text-slate-700 flex items-center">
                                 <i class="fas fa-chair mr-2 text-green-600"></i>
                                 ที่นั่งที่จัดแล้ว (${seats.length})
                             </h4>
-                            <div class="rounded-lg bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                            <div class="rounded-lg bg-slate-50 p-4 max-h-64 overflow-y-auto">
                                 ${seats.length > 0 ? 
                                     seats.map(seat => `
                                                                                                                                                                     <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-green-500">
@@ -295,7 +278,7 @@
                                                                                                                                                                                 <span class="text-sm font-bold text-green-600">${seat.seat_number}</span>
                                                                                                                                                                             </div>
                                                                                                                                                                             <div>
-                                                                                                                                                                                <span class="font-medium text-gray-900">${seat.user_name}</span>
+                                                                                                                                                                                <span class="font-medium text-slate-900">${seat.user_name}</span>
                                                                                                                                                                                 <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${seat.department}</span>
                                                                                                                                                                             </div>
                                                                                                                                                                         </div>
@@ -304,18 +287,18 @@
                                                                                                                                                                         </button>
                                                                                                                                                                     </div>
                                                                                                                                                                 `).join('') : 
-                                    '<div class="text-center py-8 text-gray-500"><i class="fas fa-chair text-3xl mb-2"></i><p>ยังไม่มีที่นั่งที่จัด</p></div>'
+                                    '<div class="text-center py-8 text-slate-500"><i class="fas fa-chair text-3xl mb-2"></i><p>ยังไม่มีที่นั่งที่จัด</p></div>'
                                 }
                             </div>
                         </div>
                         
                         <!-- Unassigned Registrations -->
                         <div>
-                            <h4 class="mb-3 font-medium text-gray-700 flex items-center">
+                            <h4 class="mb-3 font-medium text-slate-700 flex items-center">
                                 <i class="fas fa-users mr-2 text-yellow-600"></i>
                                 รอจัดที่นั่ง (${unassignedCount})
                             </h4>
-                            <div class="rounded-lg bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                            <div class="rounded-lg bg-slate-50 p-4 max-h-64 overflow-y-auto">
                                 ${unassignedCount > 0 ? 
                                     registrations.filter(r => !r.seat_number).map(reg => `
                                                                                                                                                                     <div class="mb-2 flex items-center justify-between rounded-lg bg-white p-3 shadow-sm border-l-4 border-yellow-500">
@@ -324,7 +307,7 @@
                                                                                                                                                                                 <i class="fas fa-user text-yellow-600 text-sm"></i>
                                                                                                                                                                             </div>
                                                                                                                                                                             <div>
-                                                                                                                                                                                <span class="font-medium text-gray-900">${reg.user_name}</span>
+                                                                                                                                                                                <span class="font-medium text-slate-900">${reg.user_name}</span>
                                                                                                                                                                                 <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">${reg.department}</span>
                                                                                                                                                                             </div>
                                                                                                                                                                         </div>
@@ -333,7 +316,7 @@
                                                                                                                                                                         </button>
                                                                                                                                                                     </div>
                                                                                                                                                                 `).join('') : 
-                                    '<div class="text-center py-8 text-gray-500"><i class="fas fa-check-circle text-3xl mb-2"></i><p>ไม่มีผู้ใช้ที่รอจัดที่นั่ง</p></div>'
+                                    '<div class="text-center py-8 text-slate-500"><i class="fas fa-check-circle text-3xl mb-2"></i><p>ไม่มีผู้ใช้ที่รอจัดที่นั่ง</p></div>'
                                 }
                             </div>
                         </div>
@@ -379,7 +362,7 @@
                 text: 'คุณแน่ใจหรือไม่ที่จะเริ่มการจัดที่นั่งอัตโนมัติสำหรับโปรเจกต์นี้?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'ใช่, เริ่มการจัดที่นั่ง',
                 cancelButtonText: 'ยกเลิก'
@@ -459,7 +442,7 @@
                 text: 'คุณแน่ใจหรือไม่ที่จะจัดที่นั่งให้ผู้ใช้นี้?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'ใช่, จัดที่นั่ง',
                 cancelButtonText: 'ยกเลิก'
@@ -493,7 +476,7 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                cancelButtonColor: '#2563eb',
                 confirmButtonText: 'ใช่, ลบที่นั่ง',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
@@ -524,7 +507,7 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                cancelButtonColor: '#2563eb',
                 confirmButtonText: 'ใช่, ล้างที่นั่งทั้งหมด',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {

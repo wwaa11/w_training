@@ -50,12 +50,12 @@
             align-items: center;
             justify-content: center;
             padding: var(--spacing-md);
-            background: var(--background-gradient);
+            background: radial-gradient(circle at top, var(--primary-light) 0%, var(--background-secondary) 55%);
             width: 100%;
         }
 
         .auth-card {
-            background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+            background: var(--background-primary);
             border-radius: var(--radius-lg);
             padding: var(--spacing-xl);
             box-shadow: 0 15px 40px var(--shadow-medium);
@@ -125,8 +125,7 @@
         .form-input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px var(--primary-light);
-            transform: translateY(-1px);
+            box-shadow: 0 0 0 3px var(--primary-ring);
         }
 
         .form-input::placeholder {
@@ -185,7 +184,7 @@
 
         .auth-button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 6px 20px rgb(37 99 235 / 0.3);
         }
 
         .auth-button:active {

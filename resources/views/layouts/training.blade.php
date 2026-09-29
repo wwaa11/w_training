@@ -9,7 +9,7 @@
     <title inertia>PR9 Lesson</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
-    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.1.0">
     <script src="{{ asset("js/axios.min.js") }}"></script>
     <script src="{{ asset("js/jquery.min.js") }}"></script>
     <script src="{{ asset("js/sweetalert2.js") }}"></script>

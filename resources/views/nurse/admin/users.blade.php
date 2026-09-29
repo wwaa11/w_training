@@ -1,22 +1,22 @@
 @extends("layouts.nurse")
 @section("content")
-    <div class="container mx-auto px-3">
+    <div class="hrd-hospital hrd-page mx-auto max-w-7xl px-4 py-6 text-slate-800 antialiased sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-4">
             <div class="flex items-center justify-between">
-                <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">Users Management</h1>
+                <h1 class="text-xl font-bold text-slate-900 sm:text-2xl">Users Management</h1>
                 <button class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 sm:px-4 sm:text-sm" onclick="refreshPage()">
                     <i class="fas fa-arrows-rotate mr-1.5 sm:mr-2"></i>
                     อัพเดตข้อมูล
                 </button>
             </div>
-            <p class="mt-1 text-xs text-gray-600 sm:text-sm">ค้นหาและจัดการผู้ใช้พนักงาน</p>
+            <p class="mt-1 text-xs text-slate-600 sm:text-sm">ค้นหาและจัดการผู้ใช้พนักงาน</p>
         </div>
 
         <!-- Search -->
         <div class="mb-4 flex items-center">
-            <input class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200" id="searchInput" autocomplete="off" onkeyup="search()" type="text" placeholder="รหัสพนักงาน">
-            <button class="ml-2 rounded-lg bg-gray-200 px-3 py-2 text-xs font-medium text-gray-800 hover:bg-gray-300 sm:text-sm" onclick="searchUser()">ค้นหา</button>
+            <input class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200" id="searchInput" autocomplete="off" onkeyup="search()" type="text" placeholder="รหัสพนักงาน">
+            <button class="ml-2 rounded-lg bg-slate-200 px-3 py-2 text-xs font-medium text-slate-800 hover:bg-slate-300 sm:text-sm" onclick="searchUser()">ค้นหา</button>
         </div>
 
         <!-- Pagination -->
@@ -27,18 +27,18 @@
         <!-- Users Table -->
         <div class="overflow-x-auto rounded-xl shadow">
             <table class="my-3 w-full min-w-max rounded bg-white p-3 text-sm">
-                <thead class="sticky top-0 z-10 bg-gray-200">
+                <thead class="sticky top-0 z-10 bg-slate-200">
                     <tr>
-                        <th class="border border-gray-600 p-2">รหัสพนักงาน</th>
-                        <th class="border border-gray-600 p-2">ชื่อ - สกุล</th>
-                        <th class="border border-gray-600 p-2">ตำแหน่ง</th>
-                        <th class="border border-gray-600 p-2">แผนก</th>
-                        <th class="border border-gray-600 p-2"></th>
+                        <th class="border border-slate-600 p-2">รหัสพนักงาน</th>
+                        <th class="border border-slate-600 p-2">ชื่อ - สกุล</th>
+                        <th class="border border-slate-600 p-2">ตำแหน่ง</th>
+                        <th class="border border-slate-600 p-2">แผนก</th>
+                        <th class="border border-slate-600 p-2"></th>
                     </tr>
                 </thead>
                 <tbody id="userTable">
                     @foreach ($users as $user)
-                        <tr class="@if ($loop->even) bg-gray-50 @endif transition hover:bg-blue-50" id="user{{ $user->userid }}">
+                        <tr class="@if ($loop->even) bg-slate-50 @endif transition hover:bg-blue-50" id="user{{ $user->userid }}">
                             <td class="border p-2 text-center">
                                 @if ($user->admin)
                                     <span class="text-red-600">(Admin)</span>

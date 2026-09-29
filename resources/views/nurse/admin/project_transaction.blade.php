@@ -1,6 +1,6 @@
 @extends("layouts.nurse")
 @section("content")
-    <div class="container mx-auto px-4">
+    <div class="hrd-hospital hrd-page mx-auto max-w-7xl px-4 py-6 text-slate-800 antialiased sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center">
@@ -8,8 +8,8 @@
                     <i class="fas fa-arrow-left text-xl"></i>
                 </a>
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">จัดการการลงทะเบียน</h1>
-                    <p class="text-gray-600">{{ $project->title }}</p>
+                    <h1 class="text-3xl font-bold text-slate-800">จัดการการลงทะเบียน</h1>
+                    <p class="text-slate-600">{{ $project->title }}</p>
                 </div>
             </div>
         </div>
@@ -45,16 +45,16 @@
 
         <!-- Search Section -->
         <div class="mb-6 rounded-lg bg-white p-6 shadow-lg">
-            <h2 class="mb-4 text-xl font-semibold text-gray-800">
+            <h2 class="mb-4 text-xl font-semibold text-slate-800">
                 <i class="fas fa-search mr-2 text-blue-600"></i>ค้นหา
             </h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">ค้นหาด้วยคำค้น</label>
-                    <input class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" id="searchInput" onkeyup="search()" placeholder="ค้นหาจากชื่อ, รหัสพนักงาน, ตำแหน่ง, แผนก, วันที่, รอบ" type="text">
+                    <label class="block text-sm font-medium text-slate-700">ค้นหาด้วยคำค้น</label>
+                    <input class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500" id="searchInput" onkeyup="search()" placeholder="ค้นหาจากชื่อ, รหัสพนักงาน, ตำแหน่ง, แผนก, วันที่, รอบ" type="text">
                 </div>
                 <div class="flex items-end">
-                    <button class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50" type="button" onclick="document.getElementById('searchInput').value=''; search();">
+                    <button class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" type="button" onclick="document.getElementById('searchInput').value=''; search();">
                         <i class="fas fa-times mr-1"></i>ล้าง
                     </button>
                 </div>
@@ -63,36 +63,36 @@
 
         <!-- Registrations Table -->
         <div class="rounded-lg bg-white p-6 shadow-lg">
-            <h2 class="mb-4 text-xl font-semibold text-gray-800">
+            <h2 class="mb-4 text-xl font-semibold text-slate-800">
                 <i class="fas fa-list mr-2 text-blue-600"></i>รายการลงทะเบียน
             </h2>
 
             <div class="overflow-x-auto">
                 <table class="min-w-full" id="user-table">
                     <thead>
-                        <tr class="border-b border-gray-200">
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ผู้ลงทะเบียน</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">แผนก</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">วันที่/ช่วงเวลา</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะเข้าร่วม</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">สถานะอนุมัติ</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">การดำเนินการ</th>
+                        <tr class="border-b border-slate-200">
+                            <th class="px-4 py-3 text-left text-sm font-medium text-slate-700">ผู้ลงทะเบียน</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-slate-700">แผนก</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-slate-700">วันที่/ช่วงเวลา</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-slate-700">สถานะเข้าร่วม</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-slate-700">สถานะอนุมัติ</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-slate-700">การดำเนินการ</th>
                         </tr>
                     </thead>
                     <tbody id="userTable">
                         @foreach ($project->dateData as $date)
                             @foreach ($date->timeData as $time)
                                 @foreach ($time->transactionData as $index => $transaction)
-                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                        <td class="px-4 py-3 text-sm text-gray-900">
+                                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                                        <td class="px-4 py-3 text-sm text-slate-900">
                                             <div class="font-medium">{{ $transaction->userData->name }}</div>
-                                            <div class="text-xs text-gray-500">{{ $transaction->user_id }}</div>
+                                            <div class="text-xs text-slate-500">{{ $transaction->user_id }}</div>
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-900">
+                                        <td class="px-4 py-3 text-sm text-slate-900">
                                             <div>{{ $transaction->userData->position }}</div>
-                                            <div class="text-xs text-gray-500">{{ $transaction->userData->department }}</div>
+                                            <div class="text-xs text-slate-500">{{ $transaction->userData->department }}</div>
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-900">
+                                        <td class="px-4 py-3 text-sm text-slate-900">
                                             <div>{{ $date->title }}</div>
                                             <div>{{ $time->title }}</div>
                                         </td>
@@ -101,7 +101,7 @@
                                                 <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
                                                     <i class="fas fa-check-circle mr-1"></i>เข้าร่วมแล้ว (Check-in)
                                                 </span>
-                                                <div class="mt-1 text-xs text-gray-500">
+                                                <div class="mt-1 text-xs text-slate-500">
                                                     {{ date("d/m/Y H:i", strtotime($transaction->user_sign)) }}
                                                 </div>
                                             @else
@@ -115,11 +115,11 @@
                                                 <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">
                                                     <i class="fas fa-thumbs-up mr-1"></i>อนุมัติแล้ว
                                                 </span>
-                                                <div class="mt-1 text-xs text-gray-500">
+                                                <div class="mt-1 text-xs text-slate-500">
                                                     {{ date("d/m/Y H:i", strtotime($transaction->admin_sign)) }}
                                                 </div>
                                             @else
-                                                <span class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-800">
+                                                <span class="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-800">
                                                     <i class="fas fa-minus mr-1"></i>ยังไม่อนุมัติ
                                                 </span>
                                             @endif
@@ -145,19 +145,19 @@
     </div>
 
     <!-- Modal: Edit/Delete Transaction -->
-    <div class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-30 backdrop-blur-sm" id="editModal">
-        <div class="mt-50 m-auto w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-2xl">
-            <h2 class="mb-4 text-xl font-semibold text-gray-800">แก้ไขข้อมูลการลงทะเบียน</h2>
+    <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900 bg-opacity-30 backdrop-blur-sm" id="editModal">
+        <div class="mt-50 m-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <h2 class="mb-4 text-xl font-semibold text-slate-800">แก้ไขข้อมูลการลงทะเบียน</h2>
             <div class="mb-3">
-                <label class="mb-1 block text-sm font-medium text-gray-700">Check-In</label>
-                <input class="w-full rounded border border-gray-300 px-3 py-2 text-sm" id="modalCheckin" type="datetime-local">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Check-In</label>
+                <input class="w-full rounded border border-slate-300 px-3 py-2 text-sm" id="modalCheckin" type="datetime-local">
             </div>
             <div class="mb-6">
-                <label class="mb-1 block text-sm font-medium text-gray-700">Approve</label>
-                <input class="w-full rounded border border-gray-300 px-3 py-2 text-sm" id="modalApprove" type="datetime-local">
+                <label class="mb-1 block text-sm font-medium text-slate-700">Approve</label>
+                <input class="w-full rounded border border-slate-300 px-3 py-2 text-sm" id="modalApprove" type="datetime-local">
             </div>
             <div class="flex justify-end gap-2">
-                <button class="rounded bg-gray-600 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700" type="button" onclick="closeEditModal()">ปิด</button>
+                <button class="rounded bg-slate-600 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" type="button" onclick="closeEditModal()">ปิด</button>
                 <button class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700" type="button" onclick="updateTransaction()">บันทึก</button>
             </div>
         </div>

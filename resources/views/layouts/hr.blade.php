@@ -9,7 +9,7 @@
     <title inertia>PR9 HRD</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
-    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.1.0">
     <script src="{{ asset("js/axios.min.js") }}"></script>
     <script src="{{ asset("js/jquery.min.js") }}"></script>
     <script src="{{ asset("js/sweetalert2.js") }}"></script>
@@ -50,8 +50,7 @@
     </style>
 </head>
 
-<body class="prompt relative bg-[#fff]">
-    <div class="h-20"></div>
+<body class="prompt relative">
     <nav class="navbar">
         <div class="navbar-logo">
             <a href="{{ route("index") }}">

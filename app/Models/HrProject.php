@@ -14,6 +14,7 @@ class HrProject extends Model
         'project_detail',
         'project_seat_assign',
         'project_group_assign',
+        'project_group_mode',
         'project_start_register',
         'project_end_register',
         'project_register_today',
@@ -66,6 +67,21 @@ class HrProject extends Model
     public function groups()
     {
         return $this->hasMany(HrGroup::class, 'project_id');
+    }
+
+    public function groupDefinitions()
+    {
+        return $this->hasMany(HrGroupDefinition::class, 'project_id')->orderBy('sort_order')->orderBy('name');
+    }
+
+    public function usesAutoGroupMode(): bool
+    {
+        return $this->project_group_assign && $this->project_group_mode === 'auto';
+    }
+
+    public function usesManualGroupMode(): bool
+    {
+        return $this->project_group_assign && $this->project_group_mode !== 'auto';
     }
 
     public function onebook()

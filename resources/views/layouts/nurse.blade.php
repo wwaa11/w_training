@@ -9,7 +9,7 @@
     <title inertia>PR9 Nurse Training</title>
     <link href="{{ url("images/Logo.ico") }}" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="{{ asset("css/all.min.css") }}?v=1.0.2">
-    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.0.2">
+    <link rel="stylesheet" type="text/css" href="{{ asset("css/theme.css") }}?v=1.1.0">
     <script src="{{ asset("js/axios.min.js") }}"></script>
     <script src="{{ asset("js/jquery.min.js") }}"></script>
     <script src="{{ asset("js/sweetalert2.js") }}"></script>
@@ -36,9 +36,11 @@
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     </script>
     @vite("resources/css/app.css")
+    @include("hrd.partials.hospital-theme")
+    @stack("styles")
 </head>
 
-<body class="prompt">
+<body class="prompt app-shell">
     <nav class="navbar">
         <div class="navbar-logo">
             <a href="{{ route("index") }}">
@@ -50,11 +52,11 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="navbar-links hidden lg:flex">
-            <a href="{{ route("index") }}"><i class="fa-solid fa-home mr-2"></i>หน้าหลัก</a>
-            <a href="{{ route("nurse.index") }}"><i class="fa-solid fa-list mr-2"></i>รายการที่เปิดลงทะเบียน</a>
-            <a href="{{ route("nurse.history") }}"><i class="fa-solid fa-history mr-2"></i>ประวัติการลงทะเบียน</a>
+            <a class="{{ request()->routeIs("index") ? "active" : "" }}" href="{{ route("index") }}"><i class="fa-solid fa-home mr-2"></i>หน้าหลัก</a>
+            <a class="{{ request()->routeIs("nurse.index") ? "active" : "" }}" href="{{ route("nurse.index") }}"><i class="fa-solid fa-list mr-2"></i>รายการที่เปิดลงทะเบียน</a>
+            <a class="{{ request()->routeIs("nurse.history") ? "active" : "" }}" href="{{ route("nurse.history") }}"><i class="fa-solid fa-history mr-2"></i>ประวัติการลงทะเบียน</a>
             @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
-                <a href="{{ route("nurse.admin.index") }}"><i class="fa-solid fa-gear mr-2"></i>Admin Panel</a>
+                <a class="{{ request()->routeIs("nurse.admin.*") ? "active" : "" }}" href="{{ route("nurse.admin.index") }}"><i class="fa-solid fa-gear mr-2"></i>Admin Panel</a>
             @endif
         </div>
         <div class="navbar-user hidden lg:flex">
@@ -63,38 +65,47 @@
                 <div class="department">{{ session("department") }}</div>
             </div>
             <div class="navbar-user-actions">
-                <a href="{{ route("profile.index") }}">ข้อมูลผู้ใช้งาน</a>
-                <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
+                <a href="{{ route("profile.index") }}"><i class="fa-solid fa-user mr-1"></i>ข้อมูลผู้ใช้งาน</a>
+                <button class="logout" onclick="confirmLogout()"><i class="fa-solid fa-sign-out-alt mr-1"></i>ออกจากระบบ</button>
             </div>
         </div>
     </nav>
 
     <div class="mobile-menu fade-in" id="mobileMenu">
-        <a href="{{ route("index") }}">หน้าหลัก</a>
-        <a href="{{ route("nurse.index") }}">รายการที่เปิดลงทะเบียน</a>
-        <a href="{{ route("nurse.history") }}">ประวัติการลงทะเบียน</a>
+        <a class="{{ request()->routeIs("index") ? "active" : "" }}" href="{{ route("index") }}"><i class="fa-solid fa-home mr-2"></i>หน้าหลัก</a>
+        <a class="{{ request()->routeIs("nurse.index") ? "active" : "" }}" href="{{ route("nurse.index") }}"><i class="fa-solid fa-list mr-2"></i>รายการที่เปิดลงทะเบียน</a>
+        <a class="{{ request()->routeIs("nurse.history") ? "active" : "" }}" href="{{ route("nurse.history") }}"><i class="fa-solid fa-history mr-2"></i>ประวัติการลงทะเบียน</a>
         @if (auth()->user()->role == "sa" || auth()->user()->role == "nurse")
-            <a href="{{ route("nurse.admin.index") }}">Management</a>
+            <a class="{{ request()->routeIs("nurse.admin.*") ? "active" : "" }}" href="{{ route("nurse.admin.index") }}"><i class="fa-solid fa-gear mr-2"></i>Admin Panel</a>
         @endif
         <div class="user-block">
-            {{ Auth::user()->userid }} {{ session("name") }}
+            <div class="userid">{{ Auth::user()->userid }} {{ session("name") }}</div>
             <div class="department">{{ session("department") }}</div>
             <div class="user-actions">
-                <a href="{{ route("profile.index") }}">ข้อมูลผู้ใช้งาน</a>
-                <button class="logout" onclick="confirmLogout()">ออกจากระบบ</button>
+                <a href="{{ route("profile.index") }}"><i class="fa-solid fa-user mr-1"></i>ข้อมูลผู้ใช้งาน</a>
+                <button class="logout" onclick="confirmLogout()"><i class="fa-solid fa-sign-out-alt mr-1"></i>ออกจากระบบ</button>
             </div>
         </div>
     </div>
-    <main class="main-content">
+    <main class="main-content hrd-hospital">
         @yield("content")
     </main>
-    <!-- Logout Modal -->
-    <div id="logoutModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:100; align-items:center; justify-content:center;">
-        <div style="background:var(--background-primary); border-radius:var(--radius-lg); padding:var(--spacing-xl); min-width:300px; box-shadow:0 2px 16px var(--shadow-medium); text-align:center; border:1px solid var(--border-color);">
-            <div style="font-size:1.2rem; font-weight:600; margin-bottom:var(--spacing-lg); color:var(--text-primary);">ยืนยันการออกจากระบบ?</div>
-            <div style="display:flex; gap:var(--spacing-md); justify-content:center;">
-                <button onclick="hideLogoutModal()" style="background:var(--secondary-color); color:var(--background-primary); border:none; border-radius:var(--radius-md); padding:var(--spacing-md) var(--spacing-lg); font-size:1rem; cursor:pointer; transition:all var(--transition-fast);">ยกเลิก</button>
-                <button onclick="logout()" style="background:var(--danger-color); color:var(--background-primary); border:none; border-radius:var(--radius-md); padding:var(--spacing-md) var(--spacing-lg); font-size:1rem; font-weight:600; cursor:pointer; transition:all var(--transition-fast);">ออกจากระบบ</button>
+
+    <div class="logout-modal" id="logoutModal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-title">
+                <i class="fa-solid fa-sign-out-alt mr-2"></i>ยืนยันการออกจากระบบ
+            </div>
+            <div class="logout-modal-description">
+                คุณต้องการออกจากระบบหรือไม่? การดำเนินการนี้จะทำให้คุณต้องเข้าสู่ระบบใหม่
+            </div>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-btn cancel" onclick="hideLogoutModal()">
+                    <i class="fa-solid fa-times mr-1"></i>ยกเลิก
+                </button>
+                <button class="logout-modal-btn confirm" onclick="logout()">
+                    <i class="fa-solid fa-sign-out-alt mr-1"></i>ออกจากระบบ
+                </button>
             </div>
         </div>
     </div>
