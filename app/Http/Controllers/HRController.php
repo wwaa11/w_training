@@ -160,6 +160,9 @@ class HRController extends Controller
                     $query->where('attend_delete', false);
                 },
                 'attends.note',
+                'links'       => function ($query) {
+                    $query->where('link_delete', false);
+                },
             ])
             ->withMin('dates', 'date_datetime')
             ->orderBy('dates_min_date_datetime', 'asc')
@@ -251,8 +254,13 @@ class HRController extends Controller
                                 'checkInRoute'     => $checkInRoute,
                                 'checkInMethod'    => $checkInMethod,
                                 'checkInData'      => $checkInData,
-                                'userSeat'         => $this->getUserSeat($time, $userId),
-                                'userGroup'        => $this->getUserGroup($project->id, $userId),
+                                'userSeat'         => $hasAttended
+                                    ? $this->getUserSeat($time, $userId)
+                                    : null,
+                                'userGroup'        => $hasAttended
+                                    ? $this->getUserGroup($project->id, $userId, $time->id)
+                                    : null,
+                                'showSessionLinks' => $this->canShowSessionLinks($date, $time, (bool) $hasAttended, $now),
                             ]);
                         }
                     }
@@ -271,6 +279,40 @@ class HRController extends Controller
         return $currentTime >= $earlyCheckIn && $currentTime <= $timeEnd;
     }
 
+    /**
+     * Show project resource links after check-in while the session is running (today, start–end).
+     */
+    private function canShowSessionLinks($date, $time, $hasAttended, ?Carbon $now = null): bool
+    {
+        $hasAttended = (bool) $hasAttended;
+
+        if (! $hasAttended) {
+            return false;
+        }
+
+        $now         = $now ?? now();
+        $today       = $now->format('Y-m-d');
+        $dateString  = $date->date_datetime->format('Y-m-d');
+        $currentTime = $now->format('H:i:s');
+        $timeEnd          = Carbon::parse($time->time_end)->format('H:i:s');
+        $earlyCheckInTime = Carbon::parse($time->time_start)->subMinutes(30)->format('H:i:s');
+
+        return $today === $dateString
+            && $currentTime >= $earlyCheckInTime
+            && $currentTime <= $timeEnd;
+    }
+
+    private function redirectAfterUserCheckIn(string $message, ?string $info = null)
+    {
+        $redirect = redirect()->back()->with('success', $message);
+
+        if ($info) {
+            $redirect->with('info', $info);
+        }
+
+        return $redirect;
+    }
+
     private function getUserSeat($time, $userId)
     {
         return $time->seats()
@@ -279,11 +321,16 @@ class HRController extends Controller
             ->first();
     }
 
-    private function getUserGroup($projectId, $userId)
+    private function getUserGroup($projectId, $userId, ?int $timeId = null)
     {
-        return HrGroup::where('project_id', $projectId)
-            ->where('user_id', $userId)
-            ->first();
+        $query = HrGroup::where('project_id', $projectId)
+            ->where('user_id', $userId);
+
+        if ($timeId !== null) {
+            $query->where('time_id', $timeId);
+        }
+
+        return $query->first();
     }
 
     /**
@@ -299,6 +346,16 @@ class HRController extends Controller
 
         foreach ($project->dates as $date) {
             foreach ($date->times as $time) {
+                $attendance = HrAttend::where('project_id', $project->id)
+                    ->where('user_id', $userId)
+                    ->where('time_id', $time->id)
+                    ->where('attend_delete', false)
+                    ->first();
+
+                if (! $attendance || ! $attendance->attend_datetime) {
+                    continue;
+                }
+
                 $seat = $this->getUserSeat($time, $userId);
                 if (! $seat) {
                     continue;
@@ -391,6 +448,7 @@ class HRController extends Controller
 
         $existingGroup = HrGroup::where('project_id', $project->id)
             ->where('user_id', $user->id)
+            ->where('time_id', $definition->time_id)
             ->first();
 
         if ($existingGroup) {
@@ -405,6 +463,7 @@ class HRController extends Controller
 
         HrGroup::create([
             'project_id' => $project->id,
+            'time_id'    => $definition->time_id,
             'user_id'    => $user->id,
             'group'      => $definition->name,
         ]);
@@ -412,9 +471,61 @@ class HRController extends Controller
         $this->logGroupAssignment($project, $user, $definition->name, 'assigned', $logMeta);
     }
 
-    private function removeProjectGroupIfNoActiveRegistration(HrProject $project, int $userId, array $logMeta = []): void
+    private function removeProjectGroupIfNoActiveRegistration(HrProject $project, int $userId, array $logMeta = [], ?int $timeId = null): void
     {
         if (! $project->project_group_assign) {
+            return;
+        }
+
+        if (! empty($logMeta['cleared_all_sessions'])) {
+            $groups = HrGroup::where('project_id', $project->id)
+                ->where('user_id', $userId)
+                ->get();
+
+            foreach ($groups as $group) {
+                $user = User::find($userId);
+                if ($user) {
+                    $this->logGroupAssignment($project, $user, $group->group, 'deleted', array_merge($logMeta, [
+                        'reason'  => 'no_active_registration',
+                        'time_id' => $group->time_id,
+                    ]));
+                }
+                $group->delete();
+            }
+
+            return;
+        }
+
+        if ($timeId !== null) {
+            $hasActiveRegistration = $project->attends()
+                ->where('user_id', $userId)
+                ->where('time_id', $timeId)
+                ->where('attend_delete', false)
+                ->exists();
+
+            if ($hasActiveRegistration) {
+                return;
+            }
+
+            $group = HrGroup::where('project_id', $project->id)
+                ->where('user_id', $userId)
+                ->where('time_id', $timeId)
+                ->first();
+
+            if (! $group) {
+                return;
+            }
+
+            $user = User::find($userId);
+            if ($user) {
+                $this->logGroupAssignment($project, $user, $group->group, 'deleted', array_merge($logMeta, [
+                    'reason'  => 'no_active_registration',
+                    'time_id' => $timeId,
+                ]));
+            }
+
+            $group->delete();
+
             return;
         }
 
@@ -427,34 +538,86 @@ class HRController extends Controller
             return;
         }
 
-        $group = HrGroup::where('project_id', $project->id)
+        $groups = HrGroup::where('project_id', $project->id)
             ->where('user_id', $userId)
-            ->first();
+            ->get();
 
-        if (! $group) {
-            return;
+        foreach ($groups as $group) {
+            $user = User::find($userId);
+            if ($user) {
+                $this->logGroupAssignment($project, $user, $group->group, 'deleted', array_merge($logMeta, [
+                    'reason' => 'no_active_registration',
+                ]));
+            }
+            $group->delete();
         }
-
-        $user = User::find($userId);
-        if ($user) {
-            $this->logGroupAssignment($project, $user, $group->group, 'deleted', array_merge($logMeta, [
-                'reason' => 'no_active_registration',
-            ]));
-        }
-
-        $group->delete();
     }
 
-    private function getRegisteredUsersForProject(int $projectId)
+    private function getRegisteredUsersForProject(int $projectId, ?int $timeId = null)
     {
-        return HrAttend::with('user')
+        $query = HrAttend::with('user')
             ->where('project_id', $projectId)
-            ->where('attend_delete', false)
-            ->get()
+            ->where('attend_delete', false);
+
+        if ($timeId !== null) {
+            $query->where('time_id', $timeId);
+        }
+
+        return $query->get()
             ->pluck('user')
             ->filter()
             ->unique('id')
             ->values();
+    }
+
+    private function collectProjectTimeSlotOptions(HrProject $project)
+    {
+        return $project->dates()
+            ->with(['times' => function ($query) {
+                // HrDate::times() already applies active() + orderBy(time_start); avoid duplicate ORDER BY on SQL Server
+                $query->where('time_delete', false);
+            }])
+            ->where('date_delete', false)
+            ->orderBy('date_datetime')
+            ->get()
+            ->flatMap(function (HrDate $date) {
+                return $date->times->map(function (HrTime $time) use ($date) {
+                    $start = \Carbon\Carbon::parse($time->time_start)->format('H:i');
+                    $end   = \Carbon\Carbon::parse($time->time_end)->format('H:i');
+
+                    return [
+                        'time_id' => $time->id,
+                        'label'   => $date->date_title . ' · ' . $start . '–' . $end,
+                        'date'    => $date,
+                        'time'    => $time,
+                    ];
+                });
+            })
+            ->values();
+    }
+
+    private function resolveProjectTimeIdForGroups(Request $request, HrProject $project): ?int
+    {
+        $slots = $this->collectProjectTimeSlotOptions($project);
+        if ($slots->isEmpty()) {
+            return null;
+        }
+
+        $timeId = (int) $request->input('time_id', $slots->first()['time_id']);
+        $valid  = $slots->contains(fn (array $slot) => (int) $slot['time_id'] === $timeId);
+
+        return $valid ? $timeId : (int) $slots->first()['time_id'];
+    }
+
+    private function findProjectTimeForGroups(int $projectId, int $timeId): ?HrTime
+    {
+        return HrTime::query()
+            ->where('id', $timeId)
+            ->where('time_delete', false)
+            ->whereHas('date', function ($query) use ($projectId) {
+                $query->where('project_id', $projectId)->where('date_delete', false);
+            })
+            ->first();
     }
 
     private function initializeEmptyAutoGroupSlotState($definitions): array
@@ -472,14 +635,21 @@ class HRController extends Controller
         return $state;
     }
 
-    private function initializeAutoGroupSlotStateFromDatabase(int $projectId, $definitions): array
+    private function initializeAutoGroupSlotStateFromDatabase(int $projectId, $definitions, ?int $timeId = null): array
     {
         $state = [];
         foreach ($definitions as $definition) {
-            $members = HrGroup::with('user')
+            $membersQuery = HrGroup::with('user')
                 ->where('project_id', $projectId)
-                ->where('group', $definition->name)
-                ->get();
+                ->where('group', $definition->name);
+
+            if ($timeId !== null) {
+                $membersQuery->where('time_id', $timeId);
+            } elseif ($definition->time_id !== null) {
+                $membersQuery->where('time_id', $definition->time_id);
+            }
+
+            $members = $membersQuery->get();
 
             $depts = [];
             foreach ($members as $member) {
@@ -520,8 +690,21 @@ class HRController extends Controller
             return ! in_array($department, $group['depts'], true);
         });
 
-        $pool = $withoutSameDepartment->isNotEmpty() ? $withoutSameDepartment : $withCapacity;
-        $pickedId = $pool->keys()->random();
+        if ($department !== '' && $withoutSameDepartment->isNotEmpty()) {
+            $pool = $withoutSameDepartment;
+        } elseif ($department === '' || $withCapacity->count() === 1) {
+            // No department on profile, or only one group can take anyone — assign there.
+            $pool = $withCapacity;
+        } else {
+            // Every open group already has this department; keep them apart by leaving unassigned
+            // until admin adds capacity/groups or runs re-randomize.
+            return null;
+        }
+
+        $pickedId = $pool->sortBy(fn (array $group) => $group['count'])->keys()->first();
+        if ($pickedId === null) {
+            return null;
+        }
 
         $state[$pickedId]['count']++;
         if ($department !== '' && ! in_array($department, $state[$pickedId]['depts'], true)) {
@@ -531,22 +714,22 @@ class HRController extends Controller
         return $pickedId;
     }
 
-    private function autoAssignGroupOnRegistration(HrProject $project, User $user): ?HrGroupDefinition
+    private function autoAssignGroupOnRegistration(HrProject $project, User $user, int $timeId): ?HrGroupDefinition
     {
         if (! $project->project_group_assign || $project->project_group_mode !== 'auto') {
             return null;
         }
 
-        if ($this->getUserGroup($project->id, $user->id)) {
+        if ($this->getUserGroup($project->id, $user->id, $timeId)) {
             return null;
         }
 
-        $definitions = $project->groupDefinitions()->get();
+        $definitions = $project->groupDefinitions()->where('time_id', $timeId)->get();
         if ($definitions->isEmpty()) {
             return null;
         }
 
-        $state = $this->initializeAutoGroupSlotStateFromDatabase($project->id, $definitions);
+        $state = $this->initializeAutoGroupSlotStateFromDatabase($project->id, $definitions, $timeId);
         $pickedId = $this->pickAutoGroupSlotForUser($state, $user);
         if ($pickedId === null) {
             return null;
@@ -558,9 +741,9 @@ class HRController extends Controller
     /**
      * Auto-mode: pick a group and persist assignment when the user joins the project (register or attendance check-in).
      */
-    private function applyAutoGroupAssignmentAfterParticipation(HrProject $project, User $user, array $logMeta = []): ?string
+    private function applyAutoGroupAssignmentAfterParticipation(HrProject $project, User $user, int $timeId, array $logMeta = []): ?string
     {
-        $autoGroupDefinition = $this->autoAssignGroupOnRegistration($project, $user);
+        $autoGroupDefinition = $this->autoAssignGroupOnRegistration($project, $user, $timeId);
         if (! $autoGroupDefinition) {
             return null;
         }
@@ -647,7 +830,21 @@ class HRController extends Controller
         $userId = auth()->id();
         $registrationUserGroup = null;
         if ($project->project_group_assign) {
-            $registrationUserGroup = $this->getUserGroup($project->id, $userId);
+            $activeRegistrations = HrAttend::where('project_id', $project->id)
+                ->where('user_id', $userId)
+                ->where('attend_delete', false)
+                ->get();
+
+            if ($activeRegistrations->count() === 1) {
+                $soleRegistration = $activeRegistrations->first();
+                if ($soleRegistration->attend_datetime) {
+                    $registrationUserGroup = $this->getUserGroup(
+                        $project->id,
+                        $userId,
+                        (int) $soleRegistration->time_id
+                    );
+                }
+            }
         }
 
         $userSeatAssignments = $this->getUserSeatAssignmentsForProject($project, $userId);
@@ -708,7 +905,7 @@ class HRController extends Controller
 
                             // Include session if user can check in OR has already attended
                             $canCheckIn  = (! $attendanceRecord || ! $attendanceRecord->attend_datetime);
-                            $hasAttended = ($attendanceRecord && $attendanceRecord->attend_datetime);
+                            $hasAttended = (bool) ($attendanceRecord && $attendanceRecord->attend_datetime);
                             $hasApprove  = ($attendanceRecord && $attendanceRecord->approve_datetime != null);
 
                             if ($canCheckIn || $hasAttended) {
@@ -717,12 +914,17 @@ class HRController extends Controller
                                     'time'             => $time,
                                     'attendanceRecord' => $attendanceRecord,
                                     'note'             => ($attendanceRecord && $attendanceRecord->note) ? $attendanceRecord->note->attend_note : null,
-                                    'userSeat'         => $this->getUserSeat($time, $userId),
-                                    'userGroup'        => $this->getUserGroup($project->id, $userId),
+                                    'userSeat'         => $hasAttended
+                                        ? $this->getUserSeat($time, $userId)
+                                        : null,
+                                    'userGroup'        => $hasAttended
+                                        ? $this->getUserGroup($project->id, $userId, $time->id)
+                                        : null,
                                     'projectType'      => 'attendance',
                                     'canCheckIn'       => $canCheckIn,
                                     'hasAttended'      => $hasAttended,
                                     'hasApprove'       => $hasApprove,
+                                    'showSessionLinks' => $this->canShowSessionLinks($date, $time, (bool) $hasAttended, $now),
                                 ]);
                             }
                         } else {
@@ -736,7 +938,7 @@ class HRController extends Controller
                             if ($userRegistration) {
                                 // Include session if user can check in OR has already attended
                                 $canCheckIn  = (! $userRegistration->attend_datetime);
-                                $hasAttended = ($userRegistration->attend_datetime);
+                                $hasAttended = (bool) $userRegistration->attend_datetime;
                                 $hasApprove  = ($userRegistration->approve_datetime == null) ? false : true;
 
                                 if ($canCheckIn || $hasAttended) {
@@ -746,12 +948,17 @@ class HRController extends Controller
                                         'userRegistration' => $userRegistration,
                                         'attendanceRecord' => $userRegistration,
                                         'note'             => ($userRegistration->note) ? $userRegistration->note->attend_note : null,
-                                        'userSeat'         => $this->getUserSeat($time, $userId),
-                                        'userGroup'        => $this->getUserGroup($project->id, $userId),
+                                        'userSeat'         => $hasAttended
+                                            ? $this->getUserSeat($time, $userId)
+                                            : null,
+                                        'userGroup'        => $hasAttended
+                                            ? $this->getUserGroup($project->id, $userId, $time->id)
+                                            : null,
                                         'projectType'      => $project->project_type,
                                         'canCheckIn'       => $canCheckIn,
                                         'hasAttended'      => $hasAttended,
                                         'hasApprove'       => $hasApprove,
+                                        'showSessionLinks' => $this->canShowSessionLinks($date, $time, (bool) $hasAttended, $now),
                                     ]);
                                 }
                             }
@@ -825,8 +1032,12 @@ class HRController extends Controller
                     'timeSlotMessage'    => $state['timeSlotMessage'] ?? null,
                     'attendanceRecord'   => $state['attendanceRecord'] ?? null,
                     'checkinFromText'    => $earlyCheckIn->format('H:i'),
-                    'userSeat'           => $this->getUserSeat($time, $userId),
-                    'userGroup'          => $this->getUserGroup($project->id, $userId),
+                    'userSeat'           => $hasAttended
+                        ? $this->getUserSeat($time, $userId)
+                        : null,
+                    'userGroup'          => $hasAttended
+                        ? $this->getUserGroup($project->id, $userId, $time->id)
+                        : null,
                     'userRegistrationId' => $userRegistration->id ?? null,
                     'registeredAtText'   => $userRegistration && ! $userRegistration->attend_datetime ? $userRegistration->created_at->format('d M Y, H:i') : null,
                     'attendedAtText'     => $userRegistration && $userRegistration->attend_datetime ? $userRegistration->attend_datetime->format('d M Y, H:i') : null,
@@ -1279,6 +1490,8 @@ class HRController extends Controller
         try {
             DB::beginTransaction();
 
+            $assignedGroupNames = [];
+
             // Create registrations for all selected time slots
             foreach ($request->time_ids as $timeId) {
                 $attendance = $project->attends()->create([
@@ -1293,11 +1506,17 @@ class HRController extends Controller
                 if ($project->project_seat_assign) {
                     HrAssignSeatForAttendance::dispatch($attendance->id);
                 }
+
+                $groupName = $this->applyAutoGroupAssignmentAfterParticipation($project, auth()->user(), (int) $timeId, [
+                    'assigned_on_registration' => true,
+                ]);
+
+                if ($groupName) {
+                    $assignedGroupNames[] = $groupName;
+                }
             }
 
-            $assignedGroupName = $this->applyAutoGroupAssignmentAfterParticipation($project, auth()->user(), [
-                'assigned_on_registration' => true,
-            ]);
+            $assignedGroupName = $assignedGroupNames !== [] ? implode(', ', array_unique($assignedGroupNames)) : null;
 
             DB::commit();
 
@@ -1313,14 +1532,8 @@ class HRController extends Controller
                 ? 'ลงทะเบียนเซสชันสำเร็จ!'
                 : "ลงทะเบียน {$sessionCount} เซสชันสำเร็จ!";
 
-            $redirect = redirect()->route('hrd.projects.show', $id)
+            return redirect()->route('hrd.projects.show', $id)
                 ->with('success', $message);
-
-            if ($project->project_group_assign && $project->project_group_mode === 'auto' && $assignedGroupName) {
-                $redirect->with('info', 'ระบบจัดคุณเข้ากลุ่ม ' . $assignedGroupName . ' อัตโนมัติ');
-            }
-
-            return $redirect;
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -1411,7 +1624,7 @@ class HRController extends Controller
                     HrAssignSeatForAttendance::dispatch($attendance->id);
                 }
 
-                $assignedGroupName = $this->applyAutoGroupAssignmentAfterParticipation($project, $user, [
+                $assignedGroupName = $this->applyAutoGroupAssignmentAfterParticipation($project, $user, (int) $timeId, [
                     'assigned_on_attendance_checkin' => true,
                 ]);
 
@@ -1422,14 +1635,11 @@ class HRController extends Controller
                 ]);
             });
 
-            $redirect = redirect()->route('hrd.projects.show', $id)
-                ->with('success', 'บันทึกการเข้าร่วมสำเร็จ!');
+            $info = ($project->project_group_assign && $project->project_group_mode === 'auto' && $assignedGroupName)
+                ? 'ระบบจัดคุณเข้ากลุ่ม ' . $assignedGroupName . ' อัตโนมัติ'
+                : null;
 
-            if ($project->project_group_assign && $project->project_group_mode === 'auto' && $assignedGroupName) {
-                $redirect->with('info', 'ระบบจัดคุณเข้ากลุ่ม ' . $assignedGroupName . ' อัตโนมัติ');
-            }
-
-            return $redirect;
+            return $this->redirectAfterUserCheckIn('บันทึกการเข้าร่วมสำเร็จ!', $info);
 
         } catch (\Exception $e) {
             // Log error
@@ -1501,7 +1711,11 @@ class HRController extends Controller
                 'attendance_method' => 'user_self_stamp',
             ]);
 
-            return redirect()->route('hrd.projects.show', $id)->with('success', 'เช็คอินสำเร็จ! บันทึกการเข้าร่วมแล้ว');
+            if ($project->project_seat_assign) {
+                HrAssignSeatForAttendance::dispatch($attendance->id);
+            }
+
+            return $this->redirectAfterUserCheckIn('เช็คอินสำเร็จ! บันทึกการเข้าร่วมแล้ว');
 
         } catch (\Exception $e) {
             // Log error
@@ -1635,7 +1849,7 @@ class HRController extends Controller
             $this->removeProjectGroupIfNoActiveRegistration($project, $userId, [
                 'removed_on_unregister' => true,
                 'registration_id'     => $registration->id,
-            ]);
+            ], (int) $registration->time_id);
 
             return redirect()->route('hrd.projects.show', $id)
                 ->with('success', 'ยกเลิกการลงทะเบียนเรียบร้อยแล้ว');
@@ -2604,6 +2818,10 @@ class HRController extends Controller
                 HrAssignSeatForAttendance::dispatch($attendance->id);
             }
 
+            $this->applyAutoGroupAssignmentAfterParticipation($project, $user, (int) $request->time_id, [
+                'assigned_by_admin_registration' => true,
+            ]);
+
             // Log admin registration creation
             $this->logUserRegistration($project, $user, [$request->time_id], [
                 'created_by_admin'    => true,
@@ -2765,7 +2983,7 @@ class HRController extends Controller
                 'removed_on_unregister' => true,
                 'deleted_by_admin'      => true,
                 'registration_id'       => $registration->id,
-            ]);
+            ], (int) $registration->time_id);
 
             return redirect()->back()->with('success', 'Registration deleted successfully.');
         } catch (\Exception $e) {
@@ -3004,8 +3222,8 @@ class HRController extends Controller
                 ], 400);
             }
 
-            // Dispatch the bulk assignment job for the specific project
-            HrProjectSeatAssignment::dispatch($project->id);
+            // Run immediately so admins see results without a queue worker
+            HrProjectSeatAssignment::dispatchSync($project->id);
 
             // Log seat assignment trigger
             $this->logBulkOperation('SEAT_ASSIGNMENT_TRIGGER', $project, 0, [
@@ -3188,14 +3406,9 @@ class HRController extends Controller
                 $currentSeats = HrSeat::where('time_id', $request->time_id)
                     ->where('seat_delete', false)
                     ->get()
-                    ->keyBy('seat_number');
+                    ->keyBy(fn (HrSeat $seat) => (int) $seat->seat_number);
 
-                // Determine max seats
-                if (! $time->time_limit) {
-                    $maxSeats = 999999; // Very high number for unlimited
-                } else {
-                    $maxSeats = $time->time_max ?? 100;
-                }
+                $maxSeats = $time->seatAssignmentCapacity();
 
                 $assignedSeat = null;
 
@@ -3829,24 +4042,39 @@ class HRController extends Controller
     /**
      * Show project groups management page
      */
-    public function adminProjectGroups($projectId)
+    public function adminProjectGroups(Request $request, $projectId)
     {
-        $project = HrProject::findOrFail($projectId);
+        $project    = HrProject::findOrFail($projectId);
+        $timeSlots  = $this->collectProjectTimeSlotOptions($project);
+        $selectedTimeId = $this->resolveProjectTimeIdForGroups($request, $project);
 
         $legacyGroupNames = HrGroup::where('project_id', $projectId)
+            ->when($selectedTimeId, fn ($query) => $query->where('time_id', $selectedTimeId))
             ->distinct()
             ->pluck('group');
 
-        foreach ($legacyGroupNames as $legacyName) {
-            HrGroupDefinition::firstOrCreate(
-                ['project_id' => $projectId, 'name' => $legacyName],
-                ['max_members' => null, 'sort_order' => 0]
-            );
+        if ($selectedTimeId) {
+            foreach ($legacyGroupNames as $legacyName) {
+                HrGroupDefinition::firstOrCreate(
+                    [
+                        'project_id' => $projectId,
+                        'time_id'    => $selectedTimeId,
+                        'name'       => $legacyName,
+                    ],
+                    ['max_members' => null, 'sort_order' => 0]
+                );
+            }
         }
 
-        $groupDefinitions = $project->groupDefinitions()->get()->map(function (HrGroupDefinition $definition) use ($projectId) {
+        $definitionsQuery = $project->groupDefinitions();
+        if ($selectedTimeId) {
+            $definitionsQuery->where('time_id', $selectedTimeId);
+        }
+
+        $groupDefinitions = $definitionsQuery->get()->map(function (HrGroupDefinition $definition) use ($projectId) {
             $members = HrGroup::with('user')
                 ->where('project_id', $projectId)
+                ->where('time_id', $definition->time_id)
                 ->where('group', $definition->name)
                 ->get();
 
@@ -3857,29 +4085,44 @@ class HRController extends Controller
             ];
         });
 
-        $registeredUsers = $this->getRegisteredUsersForProject($projectId);
-        $assignedUserIds = HrGroup::where('project_id', $projectId)->pluck('user_id')->unique();
-        $assignedCount   = $assignedUserIds->count();
-        $uniqueGroups    = $groupDefinitions->count();
+        $registeredUsers = $selectedTimeId
+            ? $this->getRegisteredUsersForProject($projectId, $selectedTimeId)
+            : collect();
+
+        $assignedUserIds = $selectedTimeId
+            ? HrGroup::where('project_id', $projectId)->where('time_id', $selectedTimeId)->pluck('user_id')->unique()
+            : collect();
 
         $unassignedRegisteredUsers = $registeredUsers
             ->filter(fn (User $user) => ! $assignedUserIds->contains($user->id))
             ->values();
 
+        $unassignedRegisteredTotal   = $unassignedRegisteredUsers->count();
+        $unassignedRegisteredPreview = $unassignedRegisteredUsers->take(10)->values();
+
         $stats = [
             'registered_users' => $registeredUsers->count(),
             'attended_users'   => $registeredUsers->count(),
-            'assigned_users'   => $assignedCount,
-            'unassigned_users' => $unassignedRegisteredUsers->count(),
-            'group_count'      => $uniqueGroups,
+            'assigned_users'   => $assignedUserIds->count(),
+            'unassigned_users' => $unassignedRegisteredTotal,
+            'group_count'      => $groupDefinitions->count(),
         ];
+
+        $selectedTimeSlot = $timeSlots->firstWhere('time_id', $selectedTimeId);
+
+        $otherSlotCount = max(0, $timeSlots->count() - 1);
 
         return view('hrd.admin.projects.participants.group-management', compact(
             'project',
             'groupDefinitions',
             'registeredUsers',
-            'unassignedRegisteredUsers',
-            'stats'
+            'unassignedRegisteredTotal',
+            'unassignedRegisteredPreview',
+            'stats',
+            'timeSlots',
+            'selectedTimeId',
+            'selectedTimeSlot',
+            'otherSlotCount'
         ));
     }
 
@@ -3899,6 +4142,96 @@ class HRController extends Controller
         return redirect()->back()->with('success', 'เปลี่ยนโหมดการจัดกลุ่มเป็น: ' . $label);
     }
 
+    /**
+     * Copy group definitions (names + slot limits) from the selected time slot to every other slot in the project.
+     * Does not copy member assignments.
+     */
+    public function adminGroupCopyDefinitionsToAllSlots(Request $request, $projectId)
+    {
+        $project = HrProject::findOrFail($projectId);
+
+        $request->validate([
+            'time_id' => 'required|integer|exists:hr_times,id',
+        ]);
+
+        $sourceTimeId = (int) $request->time_id;
+        if (! $this->findProjectTimeForGroups((int) $projectId, $sourceTimeId)) {
+            return redirect()->back()->with('error', 'ช่วงเวลาที่เลือกไม่ถูกต้องสำหรับโปรเจกต์นี้');
+        }
+
+        $allTimeIds = $this->collectProjectTimeSlotOptions($project)
+            ->pluck('time_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $targetTimeIds = $allTimeIds->filter(fn (int $id) => $id !== $sourceTimeId)->values();
+        if ($targetTimeIds->isEmpty()) {
+            return redirect()->back()->with('warning', 'โปรเจกต์มีช่วงเวลาเดียว — ไม่มีช่วงอื่นให้คัดลอกไป');
+        }
+
+        $sourceDefinitions = HrGroupDefinition::where('project_id', $projectId)
+            ->where('time_id', $sourceTimeId)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        if ($sourceDefinitions->isEmpty()) {
+            return redirect()->back()->with('error', 'ช่วงเวลานี้ยังไม่มีกลุ่มให้คัดลอก');
+        }
+
+        $createdCount = 0;
+        $updatedCount = 0;
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($targetTimeIds as $targetTimeId) {
+                foreach ($sourceDefinitions as $source) {
+                    $existing = HrGroupDefinition::where('project_id', $projectId)
+                        ->where('time_id', $targetTimeId)
+                        ->where('name', $source->name)
+                        ->first();
+
+                    if ($existing) {
+                        $existing->update([
+                            'max_members' => $source->max_members,
+                            'sort_order'  => $source->sort_order,
+                        ]);
+                        $updatedCount++;
+
+                        continue;
+                    }
+
+                    HrGroupDefinition::create([
+                        'project_id'  => $projectId,
+                        'time_id'     => $targetTimeId,
+                        'name'        => $source->name,
+                        'max_members' => $source->max_members,
+                        'sort_order'  => $source->sort_order,
+                    ]);
+                    $createdCount++;
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'คัดลอกกลุ่มไม่สำเร็จ: ' . $e->getMessage());
+        }
+
+        $groupCount   = $sourceDefinitions->count();
+        $slotCount    = $targetTimeIds->count();
+        $message      = "คัดลอก {$groupCount} กลุ่มไปยัง {$slotCount} ช่วงเวลา";
+        $message     .= " (สร้างใหม่ {$createdCount}, อัปเดต {$updatedCount})";
+        $message     .= ' — ไม่ได้คัดลอกสมาชิกในกลุ่ม';
+
+        return redirect()
+            ->route('hrd.admin.projects.groups.index', ['id' => $projectId, 'time_id' => $sourceTimeId])
+            ->with('success', $message);
+    }
+
     public function adminGroupRerandom(Request $request, $projectId)
     {
         $project = HrProject::findOrFail($projectId);
@@ -3907,14 +4240,19 @@ class HRController extends Controller
             return redirect()->back()->with('error', 'ฟังก์ชันสุ่มจัดกลุ่มใหม่ใช้ได้เฉพาะโหมดอัตโนมัติ');
         }
 
-        $definitions = $project->groupDefinitions()->get();
-        if ($definitions->isEmpty()) {
-            return redirect()->back()->with('error', 'ยังไม่มีกลุ่มให้จัดสรร');
+        $timeId = $this->resolveProjectTimeIdForGroups($request, $project);
+        if (! $timeId || ! $this->findProjectTimeForGroups((int) $projectId, $timeId)) {
+            return redirect()->back()->with('error', 'กรุณาเลือกวันและช่วงเวลาก่อนสุ่มจัดกลุ่ม');
         }
 
-        $registeredUsers = $this->getRegisteredUsersForProject($projectId);
+        $definitions = $project->groupDefinitions()->where('time_id', $timeId)->get();
+        if ($definitions->isEmpty()) {
+            return redirect()->back()->with('error', 'ยังไม่มีกลุ่มสำหรับช่วงเวลานี้');
+        }
+
+        $registeredUsers = $this->getRegisteredUsersForProject((int) $projectId, $timeId);
         if ($registeredUsers->isEmpty()) {
-            return redirect()->back()->with('warning', 'ยังไม่มีผู้ใช้ที่ลงทะเบียนโปรเจกต์');
+            return redirect()->back()->with('warning', 'ยังไม่มีผู้ใช้ที่ลงทะเบียนช่วงเวลานี้');
         }
 
         $plan = $this->buildAutoGroupRerandomPlan($definitions, $registeredUsers);
@@ -3930,6 +4268,7 @@ class HRController extends Controller
 
                 $row = HrGroup::where('project_id', $projectId)
                     ->where('user_id', $user->id)
+                    ->where('time_id', $timeId)
                     ->first();
 
                 if ($newGroupName === null) {
@@ -3937,6 +4276,7 @@ class HRController extends Controller
                         $this->logGroupAssignment($project, $user, $row->group, 'deleted', [
                             'rerandomized_by_admin' => true,
                             'reason'                => 'no_available_group_slot',
+                            'time_id'               => $timeId,
                         ]);
                         $row->delete();
                     }
@@ -3954,6 +4294,7 @@ class HRController extends Controller
                     $this->logGroupAssignment($project, $user, $newGroupName, 'updated', [
                         'rerandomized_by_admin' => true,
                         'old_group'             => $oldGroup,
+                        'time_id'               => $timeId,
                     ]);
                     $updatedCount++;
 
@@ -3962,11 +4303,13 @@ class HRController extends Controller
 
                 HrGroup::create([
                     'project_id' => $projectId,
+                    'time_id'    => $timeId,
                     'user_id'    => $user->id,
                     'group'      => $newGroupName,
                 ]);
                 $this->logGroupAssignment($project, $user, $newGroupName, 'assigned', [
                     'rerandomized_by_admin' => true,
+                    'time_id'               => $timeId,
                 ]);
                 $createdCount++;
             }
@@ -3988,68 +4331,72 @@ class HRController extends Controller
             $message .= " · ยังไม่มีกลุ่ม {$leftover} คน (ที่นั่งไม่พอ)";
         }
 
-        return redirect()->back()->with('success', $message);
+        return redirect()
+            ->route('hrd.admin.projects.groups.index', ['id' => $projectId, 'time_id' => $timeId])
+            ->with('success', $message);
     }
 
     public function adminGroupDefinitionStore(Request $request, $projectId)
     {
         $project = HrProject::findOrFail($projectId);
-        $isAuto  = $project->project_group_mode === 'auto';
-
         $rules = [
-            'name' => 'required|string|max:255',
+            'name'         => 'required|string|max:255',
+            'time_id'      => 'required|integer|exists:hr_times,id',
+            'max_members'  => 'nullable|integer|min:1',
         ];
 
-        if (! $isAuto) {
-            $rules['max_members'] = 'required|integer|min:1';
-        } else {
-            $rules['max_members'] = 'nullable|integer|min:1';
+        $validated = $request->validate($rules, [
+            'max_members.min' => 'จำนวนที่นั่งต้องอย่างน้อย 1',
+        ]);
+
+        $timeId = (int) $validated['time_id'];
+        if (! $this->findProjectTimeForGroups((int) $projectId, $timeId)) {
+            return redirect()->back()->with('error', 'ช่วงเวลาที่เลือกไม่ถูกต้องสำหรับโปรเจกต์นี้');
         }
 
-        $validated = $request->validate($rules);
-
         $exists = HrGroupDefinition::where('project_id', $projectId)
+            ->where('time_id', $timeId)
             ->where('name', $validated['name'])
             ->exists();
 
         if ($exists) {
-            return redirect()->back()->with('error', 'มีชื่อกลุ่มนี้อยู่แล้ว');
+            return redirect()->back()->with('error', 'มีชื่อกลุ่มนี้ในช่วงเวลานี้อยู่แล้ว');
         }
 
         $nextSort = (int) HrGroupDefinition::where('project_id', $projectId)->max('sort_order') + 1;
 
+        $maxMembers = $request->filled('max_members') ? (int) $validated['max_members'] : null;
+
         HrGroupDefinition::create([
             'project_id'   => $projectId,
+            'time_id'      => $timeId,
             'name'         => $validated['name'],
-            'max_members'  => $validated['max_members'] ?? null,
+            'max_members'  => $maxMembers,
             'sort_order'   => $nextSort,
         ]);
 
-        return redirect()->back()->with('success', 'สร้างกลุ่ม "' . $validated['name'] . '" เรียบร้อยแล้ว');
+        return redirect()
+            ->route('hrd.admin.projects.groups.index', ['id' => $projectId, 'time_id' => $timeId])
+            ->with('success', 'สร้างกลุ่ม "' . $validated['name'] . '" เรียบร้อยแล้ว');
     }
 
     public function adminGroupDefinitionUpdate(Request $request, $projectId, $definitionId)
     {
         $project = HrProject::findOrFail($projectId);
-        $isAuto  = $project->project_group_mode === 'auto';
 
         $definition = HrGroupDefinition::where('project_id', $projectId)
             ->where('id', $definitionId)
             ->firstOrFail();
 
-        if ($isAuto) {
-            $validated = $request->validate([
-                'max_members' => 'nullable|integer|min:1',
-            ]);
-            $maxMembers = $request->filled('max_members') ? (int) $validated['max_members'] : null;
-        } else {
-            $validated = $request->validate([
-                'max_members' => 'required|integer|min:1',
-            ]);
-            $maxMembers = (int) $validated['max_members'];
-        }
+        $validated = $request->validate([
+            'max_members' => 'nullable|integer|min:1',
+        ], [
+            'max_members.min' => 'จำนวนที่นั่งต้องอย่างน้อย 1',
+        ]);
+        $maxMembers = $request->filled('max_members') ? (int) $validated['max_members'] : null;
 
         $memberCount = HrGroup::where('project_id', $projectId)
+            ->where('time_id', $definition->time_id)
             ->where('group', $definition->name)
             ->count();
         if ($maxMembers !== null && $memberCount > $maxMembers) {
@@ -4072,6 +4419,7 @@ class HRController extends Controller
         $project   = HrProject::findOrFail($projectId);
         $groupName = $definition->name;
         $members   = HrGroup::where('project_id', $projectId)
+            ->where('time_id', $definition->time_id)
             ->where('group', $groupName)
             ->get();
 
@@ -4120,6 +4468,7 @@ class HRController extends Controller
         $request->validate([
             'user_id'             => 'required|string',
             'group_definition_id' => 'required|integer|exists:hr_group_definitions,id',
+            'time_id'             => 'required|integer|exists:hr_times,id',
         ]);
 
         $user = User::where('userid', $request->user_id)->first();
@@ -4130,19 +4479,22 @@ class HRController extends Controller
 
         $definition = $this->findProjectGroupDefinition($projectId, (int) $request->group_definition_id);
 
-        if (! $definition) {
+        if (! $definition || (int) $definition->time_id !== (int) $request->time_id) {
             return redirect()->back()->with('error', 'กลุ่มที่เลือกไม่ถูกต้อง');
         }
 
         try {
             $this->assignUserToProjectGroup($project, $user, $definition, [
                 'assigned_by_admin' => true,
+                'time_id'           => $definition->time_id,
             ]);
         } catch (\InvalidArgumentException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'จัดกลุ่มผู้ใช้ ' . $user->name . ' (รหัส: ' . $request->user_id . ') เข้ากลุ่ม ' . $definition->name . ' เรียบร้อยแล้ว');
+        return redirect()
+            ->route('hrd.admin.projects.groups.index', ['id' => $projectId, 'time_id' => $definition->time_id])
+            ->with('success', 'จัดกลุ่มผู้ใช้ ' . $user->name . ' (รหัส: ' . $request->user_id . ') เข้ากลุ่ม ' . $definition->name . ' เรียบร้อยแล้ว');
     }
 
     /**
@@ -4210,12 +4562,17 @@ class HRController extends Controller
     {
         $request->validate([
             'import_file' => 'required|file|mimes:xlsx,xls,csv',
+            'time_id'     => 'required|integer|exists:hr_times,id',
         ]);
 
-        try {
-            $project = HrProject::findOrFail($projectId);
+        $project = HrProject::findOrFail($projectId);
+        $timeId  = (int) $request->time_id;
+        if (! $this->findProjectTimeForGroups((int) $projectId, $timeId)) {
+            return redirect()->back()->with('error', 'ช่วงเวลาที่เลือกไม่ถูกต้องสำหรับโปรเจกต์นี้');
+        }
 
-            Excel::import(new HrGroupsImport($projectId), $request->file('import_file'));
+        try {
+            Excel::import(new HrGroupsImport((int) $projectId, $timeId), $request->file('import_file'));
 
             $importResults = session('import_results', []);
 
@@ -4256,12 +4613,21 @@ class HRController extends Controller
     /**
      * Download Excel template for group import
      */
-    public function adminGroupTemplate($projectId)
+    public function adminGroupTemplate(Request $request, $projectId)
     {
         $project = HrProject::findOrFail($projectId);
+        $timeId  = $this->resolveProjectTimeIdForGroups($request, $project);
 
-        return Excel::download(new HrGroupsTemplateExport($projectId),
-            'group_import_template_' . $project->project_name . '.xlsx');
+        if (! $timeId || ! $this->findProjectTimeForGroups((int) $projectId, $timeId)) {
+            return redirect()
+                ->route('hrd.admin.projects.groups.index', $projectId)
+                ->with('error', 'กรุณาเลือกวันและช่วงเวลาก่อนดาวน์โหลดเทมเพลต');
+        }
+
+        return Excel::download(
+            new HrGroupsTemplateExport((int) $projectId, $timeId),
+            'group_import_template_' . $project->project_name . '.xlsx'
+        );
     }
 
     // API for outher application
@@ -5302,7 +5668,7 @@ class HRController extends Controller
                 'removed_on_unregister' => true,
                 'registration_id'       => $attend->id,
                 'api_remove_participant' => true,
-            ]);
+            ], (int) $attend->time_id);
         }
 
         return response()->json([

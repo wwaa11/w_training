@@ -12,9 +12,12 @@ class HrGroupsTemplateExport implements FromCollection, WithHeadings, WithStyles
 {
     private $projectId;
 
-    public function __construct(int $projectId)
+    private $timeId;
+
+    public function __construct(int $projectId, int $timeId)
     {
         $this->projectId = $projectId;
+        $this->timeId    = $timeId;
     }
 
     public function collection()
@@ -22,10 +25,12 @@ class HrGroupsTemplateExport implements FromCollection, WithHeadings, WithStyles
         $project = HrProject::findOrFail($this->projectId);
 
         $groupAssignments = HrGroup::where('project_id', $this->projectId)
+            ->where('time_id', $this->timeId)
             ->get()
             ->keyBy('user_id');
 
         $participants = $project->activeAttends()
+            ->where('time_id', $this->timeId)
             ->with('user')
             ->get()
             ->groupBy('user_id')

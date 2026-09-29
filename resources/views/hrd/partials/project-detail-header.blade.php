@@ -20,9 +20,10 @@
         <p class="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">{{ $project->project_detail }}</p>
     @endif
 
-    @if ($userIsRegisteredForProject)
+    @if ($userIsRegisteredForProject && ($showAssignmentStrip ?? true))
         @include('hrd.partials.assignment-strip', [
             'project' => $project,
+            'registrationData' => $registrationData,
             'registrationUserGroup' => $registrationUserGroup,
             'userSeatAssignments' => $userSeatAssignments,
         ])

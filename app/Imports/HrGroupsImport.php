@@ -15,9 +15,12 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
 
     private $projectId;
 
-    public function __construct(int $projectId)
+    private $timeId;
+
+    public function __construct(int $projectId, int $timeId)
     {
         $this->projectId = $projectId;
+        $this->timeId    = $timeId;
     }
 
     public function collection(Collection $rows)
@@ -42,6 +45,7 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
                 $groupName = trim($row['group_name']);
 
                 $definition = HrGroupDefinition::where('project_id', $this->projectId)
+                    ->where('time_id', $this->timeId)
                     ->where('name', $groupName)
                     ->first();
 
@@ -62,6 +66,7 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
 
                 // Check if user is already in a group for this project
                 $existingGroup = HrGroup::where('project_id', $this->projectId)
+                    ->where('time_id', $this->timeId)
                     ->where('user_id', $user->id)
                     ->first();
 
@@ -90,6 +95,7 @@ class HrGroupsImport implements ToCollection, WithHeadingRow
                     // Create new group assignment
                     HrGroup::create([
                         'project_id' => $this->projectId,
+                        'time_id'    => $this->timeId,
                         'user_id'    => $user->id,
                         'group'      => $groupName,
                     ]);

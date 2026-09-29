@@ -40,7 +40,9 @@ class HrProjectSeatAssignment implements ShouldQueue
         try {
             if ($this->projectId) {
                 // Get project by ID
-                $project = HrProject::with(['dates.times.attends'])->find($this->projectId);
+                $project = HrProject::with([
+                    'dates.times.attends' => fn ($query) => $query->where('attend_delete', false),
+                ])->find($this->projectId);
 
                 if ($project) {
                     $assignedCount = 0;
@@ -50,15 +52,17 @@ class HrProjectSeatAssignment implements ShouldQueue
                     $project->dates->each(function ($date) use (&$assignedCount, &$skippedCount, &$errorCount) {
                         $date->times->each(function ($time) use (&$assignedCount, &$skippedCount, &$errorCount) {
                             $time->attends->each(function ($attendance) use (&$assignedCount, &$skippedCount, &$errorCount) {
-                                if ($attendance->seat_id == null) {
-                                    $result = $this->assignSeatForAttendance($attendance->id);
-                                    if ($result === 'assigned') {
-                                        $assignedCount++;
-                                    } elseif ($result === 'skipped') {
-                                        $skippedCount++;
-                                    } else {
-                                        $errorCount++;
-                                    }
+                                if ($attendance->attend_delete) {
+                                    return;
+                                }
+
+                                $result = $this->assignSeatForAttendance($attendance->id);
+                                if ($result === 'assigned') {
+                                    $assignedCount++;
+                                } elseif ($result === 'skipped') {
+                                    $skippedCount++;
+                                } else {
+                                    $errorCount++;
                                 }
                             });
                         });
@@ -176,14 +180,9 @@ class HrProjectSeatAssignment implements ShouldQueue
         $currentSeats = HrSeat::where('time_id', $time->id)
             ->where('seat_delete', false)
             ->get()
-            ->keyBy('seat_number');
+            ->keyBy(fn (HrSeat $seat) => (int) $seat->seat_number);
 
-        // Determine max seats
-        if (! $time->time_limit) {
-            $maxSeats = 999999; // Very high number for unlimited
-        } else {
-            $maxSeats = $time->time_max ?? 100;
-        }
+        $maxSeats = $time->seatAssignmentCapacity();
 
         $assignedSeat = null;
 

@@ -168,6 +168,11 @@
                 font-size: 0.875rem;
             }
 
+            /* Tailwind .hidden loses to .hrd-alert { display:flex } without this */
+            .hrd-alert.hidden {
+                display: none !important;
+            }
+
             .hrd-alert--success {
                 border-color: #a7f3d0;
                 background: #ecfdf5;

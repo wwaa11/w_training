@@ -7,7 +7,7 @@
                 "backUrl" => route("hrd.admin.projects.show", $project->id),
                 "title" => "จัดการที่นั่ง",
                 "subtitle" => $project->project_name,
-                "headerActions" => '<button type="button" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" onclick="refreshSeatData()"><i class="fas fa-sync-alt"></i>รีเฟรช</button><button type="button" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="triggerSeatAssignment()"><i class="fas fa-cogs"></i>จัดอัตโนมัติ</button><button type="button" class="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-700" onclick="exportSeatData()"><i class="fas fa-download"></i>ส่งออก</button>',
+                "headerActions" => '<button type="button" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" onclick="refreshSeatData()"><i class="fas fa-sync-alt"></i>รีเฟรช</button><button type="button" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="triggerSeatAssignment(this)" id="triggerSeatAssignmentBtn"><i class="fas fa-cogs"></i>จัดอัตโนมัติ</button><button type="button" class="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-700" onclick="exportSeatData()"><i class="fas fa-download"></i>ส่งออก</button>',
             ])
 
             <!-- Project Info -->
@@ -95,24 +95,8 @@
                 </div>
             </div>
 
-            <!-- Error Message -->
-            <div class="hrd-alert hrd-alert--error mb-6 hidden" id="errorMessage">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    <span id="errorText"></span>
-                </div>
-            </div>
-
-            <!-- Success Message -->
-            <div class="hrd-alert hrd-alert--success mb-6 hidden" id="successMessage">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span id="successText"></span>
-                </div>
-            </div>
-
             <!-- Waiting Screen -->
-            <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm" id="waitingScreen">
+            <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm" id="waitingScreen">
                 <div class="hrd-card mx-4 w-full max-w-md p-8 shadow-2xl">
                     <div class="text-center">
                         <div class="mb-4">
@@ -169,8 +153,6 @@
         function showLoading() {
             document.getElementById('loadingSpinner').classList.remove('hidden');
             document.getElementById('seatContent').classList.add('hidden');
-            document.getElementById('errorMessage').classList.add('hidden');
-            document.getElementById('successMessage').classList.add('hidden');
         }
 
         function hideLoading() {
@@ -178,42 +160,91 @@
             document.getElementById('seatContent').classList.remove('hidden');
         }
 
-        function showError(message) {
-            document.getElementById('errorText').textContent = message;
-            document.getElementById('errorMessage').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('errorMessage').classList.add('hidden');
-            }, 5000);
+        function normalizeAlertMessage(message, fallback) {
+            if (message === undefined || message === null) {
+                return fallback;
+            }
+            if (typeof message === 'object') {
+                const nested = message.error || message.message;
+                if (nested) {
+                    return String(nested);
+                }
+                return fallback;
+            }
+            const text = String(message).trim();
+            return text !== '' ? text : fallback;
         }
 
-        function showSuccess(message) {
-            document.getElementById('successText').textContent = message;
-            document.getElementById('successMessage').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('successMessage').classList.add('hidden');
-            }, 5000);
+        function showError(message, fallback = 'เกิดข้อผิดพลาด') {
+            const text = normalizeAlertMessage(message, fallback);
+            Swal.fire({
+                icon: 'error',
+                title: text,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 6000,
+                timerProgressBar: true,
+            });
+        }
+
+        function showSuccess(message, fallback = 'ดำเนินการสำเร็จ') {
+            const text = normalizeAlertMessage(message, fallback);
+            Swal.fire({
+                icon: 'success',
+                title: text,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+            });
+        }
+
+        function formatApiError(error, fallback) {
+            const data = error?.response?.data;
+            if (typeof data === 'string' && data.trim() !== '') {
+                return data.trim();
+            }
+            if (data?.error) {
+                return data.error;
+            }
+            if (data?.message) {
+                return data.message;
+            }
+            if (data?.errors) {
+                return Object.values(data.errors).flat().join(' ');
+            }
+
+            return fallback;
         }
 
         function showWaitingScreen() {
-            document.getElementById('waitingScreen').classList.remove('hidden');
+            const el = document.getElementById('waitingScreen');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
         }
 
         function hideWaitingScreen() {
-            document.getElementById('waitingScreen').classList.add('hidden');
+            const el = document.getElementById('waitingScreen');
+            el.classList.add('hidden');
+            el.classList.remove('flex');
         }
 
         function loadSeatData() {
             showLoading();
 
-            axios.get(`{{ route("hrd.admin.seats.get", $project->id) }}`)
+            return axios.get(`{{ route("hrd.admin.seats.get", $project->id) }}`)
                 .then(response => {
                     currentSeatData = response.data;
                     displaySeatData(response.data);
                     updateStats(response.data);
+                    return response;
                 })
                 .catch(error => {
                     console.error('Error loading seat data:', error);
-                    showError('เกิดข้อผิดพลาดในการโหลดข้อมูลการจัดที่นั่ง');
+                    showError(formatApiError(error, 'เกิดข้อผิดพลาดในการโหลดข้อมูลการจัดที่นั่ง'));
+                    throw error;
                 })
                 .finally(() => {
                     hideLoading();
@@ -352,11 +383,13 @@
         }
 
         function refreshSeatData() {
-            loadSeatData();
-            showSuccess('ข้อมูลได้รับการอัปเดตแล้ว');
+            loadSeatData().then(() => {
+                showSuccess('ข้อมูลได้รับการอัปเดตแล้ว');
+            }).catch(() => {});
         }
 
-        function triggerSeatAssignment() {
+        function triggerSeatAssignment(buttonEl) {
+            const button = buttonEl || document.getElementById('triggerSeatAssignmentBtn');
             Swal.fire({
                 title: 'ยืนยันการจัดที่นั่งอัตโนมัติ',
                 text: 'คุณแน่ใจหรือไม่ที่จะเริ่มการจัดที่นั่งอัตโนมัติสำหรับโปรเจกต์นี้?',
@@ -368,8 +401,6 @@
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Disable the button to prevent multiple clicks
-                    const button = event.target;
                     const originalText = button.innerHTML;
                     button.disabled = true;
                     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังประมวลผล...';
@@ -381,24 +412,16 @@
                             project_id: {{ $project->id }}
                         })
                         .then(response => {
-                            showSuccess('เริ่มการจัดที่นั่งอัตโนมัติสำเร็จ!');
-
-                            // Wait for 5 seconds before refreshing data
-                            setTimeout(() => {
-                                loadSeatData();
-                                hideLoading();
-                                hideWaitingScreen();
-                                // Re-enable the button
-                                button.disabled = false;
-                                button.innerHTML = originalText;
-                            }, 5000);
+                            const msg = response.data?.message || 'จัดที่นั่งอัตโนมัติสำเร็จ';
+                            return loadSeatData().then(() => showSuccess(msg));
                         })
                         .catch(error => {
                             console.error('Error triggering seat assignment:', error);
-                            showError('เกิดข้อผิดพลาดในการเริ่มการจัดที่นั่ง กรุณาลองใหม่อีกครั้ง');
+                            showError(formatApiError(error, 'เกิดข้อผิดพลาดในการเริ่มการจัดที่นั่ง กรุณาลองใหม่อีกครั้ง'));
+                        })
+                        .finally(() => {
                             hideLoading();
                             hideWaitingScreen();
-                            // Re-enable the button
                             button.disabled = false;
                             button.innerHTML = originalText;
                         });
@@ -457,13 +480,15 @@
                         })
                         .then(response => {
                             console.log('Seat assignment response:', response.data);
-                            showSuccess('จัดที่นั่งสำเร็จ!');
-                            loadSeatData();
+                            const seatNo = response.data?.seat_number;
+                            const msg = seatNo
+                                ? `จัดที่นั่งสำเร็จ (เลขที่นั่ง ${seatNo})`
+                                : 'จัดที่นั่งสำเร็จ';
+                            return loadSeatData().then(() => showSuccess(msg));
                         })
                         .catch(error => {
                             console.error('Error assigning seat:', error);
-                            const message = error.response?.data?.error || 'เกิดข้อผิดพลาดในการจัดที่นั่ง';
-                            showError(message);
+                            showError(formatApiError(error, 'เกิดข้อผิดพลาดในการจัดที่นั่ง'));
                         });
                 }
             });
@@ -488,8 +513,7 @@
                             }
                         })
                         .then(response => {
-                            showSuccess('ลบการจัดที่นั่งสำเร็จ!');
-                            loadSeatData();
+                            return loadSeatData().then(() => showSuccess('ลบการจัดที่นั่งสำเร็จ'));
                         })
                         .catch(error => {
                             console.error('Error removing seat:', error);
@@ -518,8 +542,7 @@
                             }
                         })
                         .then(response => {
-                            showSuccess('ล้างที่นั่งทั้งหมดสำเร็จ!');
-                            loadSeatData();
+                            return loadSeatData().then(() => showSuccess('ล้างที่นั่งทั้งหมดสำเร็จ'));
                         })
                         .catch(error => {
                             console.error('Error clearing seats:', error);

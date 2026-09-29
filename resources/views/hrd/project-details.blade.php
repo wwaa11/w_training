@@ -37,6 +37,7 @@
             "userIsRegisteredForProject" => $userIsRegisteredForProject,
             "registrationUserGroup" => $registrationUserGroup,
             "userSeatAssignments" => $userSeatAssignments,
+            "showAssignmentStrip" => false,
         ])
 
         @if ($focusMySessions)
@@ -60,32 +61,48 @@
                 <div class="space-y-3 p-4 sm:p-5">
 
                     @foreach ($availableCheckIns as $checkIn)
+                        @php
+                            $ciTime = $checkIn["time"];
+                            $ciStart = \Carbon\Carbon::parse($ciTime->time_start)->format("H:i");
+                            $ciEnd = \Carbon\Carbon::parse($ciTime->time_end)->format("H:i");
+                            $ciCheckinFrom = \Carbon\Carbon::parse($ciTime->time_start)->subMinutes(30)->format("H:i");
+                        @endphp
                         <div class="hrd-user-card p-4 text-slate-800" id="checkin-card-{{ $project->id }}-{{ $checkIn["time"]->id }}">
                             <div class="mb-3 min-w-0">
                                 <h3 class="text-sm font-semibold text-slate-900" id="checkin-date-title-{{ $project->id }}-{{ $checkIn["time"]->id }}">{{ $checkIn["date"]->date_title }}</h3>
-                                <p class="mt-0.5 text-xs text-slate-600" id="checkin-time-schedule-{{ $project->id }}-{{ $checkIn["time"]->id }}">
-                                    {{ \Carbon\Carbon::parse($checkIn["time"]->time_start)->format("H:i") }}–{{ \Carbon\Carbon::parse($checkIn["time"]->time_end)->format("H:i") }}
-                                </p>
                             </div>
+
+                            @include("hrd.partials.checkin-session-schedule", [
+                                "time" => $checkIn["time"],
+                                "class" => "mb-3",
+                            ])
 
                             <div class="mb-3 space-y-2">
                                 @if ($checkIn["date"]->date_location)
-                                    <div class="text-xs text-slate-600" id="checkin-location-{{ $project->id }}-{{ $checkIn["time"]->id }}">
-                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <div class="text-sm text-slate-600" id="checkin-location-{{ $project->id }}-{{ $checkIn["time"]->id }}">
+                                        <i class="fas fa-map-marker-alt mr-1 text-blue-600"></i>
                                         <span class="font-medium">สถานที่:</span> {{ $checkIn["date"]->date_location }}
                                     </div>
                                 @endif
                                 @if ($checkIn["note"])
-                                    <div class="text-xs text-orange-600" id="checkin-note-{{ $project->id }}-{{ $checkIn["time"]->id }}">
+                                    <div class="text-sm text-orange-700" id="checkin-note-{{ $project->id }}-{{ $checkIn["time"]->id }}">
                                         <i class="fas fa-info-circle mr-1"></i>
                                         <span class="font-medium">รายละเอียด:</span> {{ $checkIn["note"] }}
                                     </div>
                                 @endif
-                                <div class="text-xs text-emerald-600">
-                                    <i class="fas fa-sign-in-alt mr-1"></i>
-                                    <span class="font-medium">เช็คอินได้ตั้งแต่:</span> {{ \Carbon\Carbon::parse($checkIn["time"]->time_start)->subMinutes(30)->format("H:i") }}
-                                </div>
                             </div>
+
+                            @if ($project->project_seat_assign || $project->project_group_assign)
+                                <div class="mb-3">
+                                    @include("hrd.partials.assignment-inline", [
+                                        "project" => $project,
+                                        "layout" => "full",
+                                        "hasAttended" => (bool) $checkIn["hasAttended"],
+                                        "userSeat" => $checkIn["hasAttended"] ? ($checkIn["userSeat"] ?? null) : null,
+                                        "userGroup" => $checkIn["hasAttended"] ? ($checkIn["userGroup"] ?? null) : null,
+                                    ])
+                                </div>
+                            @endif
 
                             <!-- Check-in Button or Attended Status -->
                             @if ($checkIn["hasAttended"])
@@ -105,40 +122,27 @@
 
                                     </div>
                                 </div>
-                                @if ($project->links->count() > 0 && $checkIn["hasApprove"])
-                                    <div class="mt-3 rounded-2xl border border-blue-300 bg-gradient-to-r from-blue-50 to-blue-100 p-4">
-                                        <div class="mb-2 text-xs font-medium text-blue-700">
-                                            <i class="fas fa-link mr-1"></i>
-                                            ทรัพยากรสำหรับเซสชัน
-                                        </div>
-                                        <div class="">
-                                            @foreach ($project->links as $link)
-                                                @php
-                                                    $linkAvailable = true;
-                                                    if ($link->link_limit) {
-                                                        $now = now();
-                                                        $linkAvailable = (!$link->link_time_start || $now >= $link->link_time_start) && (!$link->link_time_end || $now <= $link->link_time_end);
-                                                    }
-                                                @endphp
-                                                @if ($linkAvailable)
-                                                    <a href="{{ $link->link_url }}" target="_blank">
-                                                        <div class="mb-2 flex items-center justify-between rounded border border-slate-200 bg-blue-50 p-2">
-                                                            <span class="text-xs font-medium text-blue-800">{{ $link->link_name }}</span>
-                                                            <div class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800">
-                                                                <i class="fas fa-external-link-alt mr-1"></i>
-                                                                เปิด
-                                                            </div>
-                                                        </div>
-                                                    </a>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    </div>
+                                @if (! empty($checkIn["showSessionLinks"]))
+                                    @include("hrd.partials.project-session-links", [
+                                        "project" => $project,
+                                        "heading" => "ทรัพยากรสำหรับเซสชัน",
+                                    ])
                                 @endif
                             @elseif ($checkIn["canCheckIn"])
                                 <!-- Can Check In -->
                                 @if ($checkIn["projectType"] === "attendance")
-                                    <form class="attendance-form-top" id="attendance-form-{{ $project->id }}-{{ $checkIn["time"]->id }}" action="{{ route("hrd.projects.attend.store", $project->id) }}" method="POST">
+                                    <form
+                                        class="attendance-form-top js-hrd-checkin-confirm"
+                                        id="attendance-form-{{ $project->id }}-{{ $checkIn["time"]->id }}"
+                                        action="{{ route("hrd.projects.attend.store", $project->id) }}"
+                                        method="POST"
+                                        data-checkin-project="{{ $project->project_name }}"
+                                        data-checkin-date="{{ $checkIn["date"]->date_title }}"
+                                        data-checkin-session="{{ $ciStart }} – {{ $ciEnd }}"
+                                        data-checkin-from="{{ $ciCheckinFrom }}"
+                                        data-checkin-location="{{ $checkIn["date"]->date_location ?? "" }}"
+                                        data-checkin-session-title="{{ $ciTime->time_title ?? "" }}"
+                                    >
                                         @csrf
                                         <input type="hidden" name="time_id" value="{{ $checkIn["time"]->id }}">
                                         <button class="hrd-btn-primary min-h-[48px] w-full py-3.5" id="attendance-btn-{{ $project->id }}-{{ $checkIn["time"]->id }}" type="submit">
@@ -150,7 +154,19 @@
                                         </button>
                                     </form>
                                 @else
-                                    <form class="stamp-form-top" id="stamp-form-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}" action="{{ route("hrd.projects.stamp.store", [$project->id, $checkIn["userRegistration"]->id]) }}" method="POST">
+                                    <form
+                                        class="stamp-form-top js-hrd-checkin-confirm"
+                                        id="stamp-form-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}"
+                                        action="{{ route("hrd.projects.stamp.store", [$project->id, $checkIn["userRegistration"]->id]) }}"
+                                        method="POST"
+                                        data-checkin-project="{{ $project->project_name }}"
+                                        data-checkin-date="{{ $checkIn["date"]->date_title }}"
+                                        data-checkin-session="{{ $ciStart }} – {{ $ciEnd }}"
+                                        data-checkin-from="{{ $ciCheckinFrom }}"
+                                        data-checkin-location="{{ $checkIn["date"]->date_location ?? "" }}"
+                                        data-checkin-session-title="{{ $ciTime->time_title ?? "" }}"
+                                        data-checkin-hint="การเช็คอินจะบันทึกเวลาที่คุณเข้าร่วมสำหรับเซสชันที่ลงทะเบียนแล้ว"
+                                    >
                                         @csrf
                                         <button class="hrd-btn-primary min-h-[48px] w-full py-3.5" id="stamp-btn-{{ $project->id }}-{{ $checkIn["userRegistration"]->id }}" type="submit">
                                             <i class="fas fa-stamp mr-3 text-lg text-white"></i>
@@ -394,6 +410,7 @@
 @endsection
 
 @section("scripts")
+    @include("hrd.partials.checkin-confirm-swal")
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             @if (session("success"))
@@ -524,207 +541,7 @@
                 });
             }
 
-            // Handle attendance form submissions
-            const attendanceForms = document.querySelectorAll('.attendance-form');
-            attendanceForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    // Get session details with better error handling
-                    const sessionCard = this.closest('.border-slate-100, .border-slate-200, .border-green-200');
-                    if (!sessionCard) {
-                        console.error('Could not find session card for attendance form');
-                        return;
-                    }
-
-                    const timeSlot = sessionCard.querySelector('.font-medium')?.textContent || 'Unknown Session';
-                    const timeElement = sessionCard.querySelector('.fa-clock')?.parentNode;
-                    const timeSchedule = timeElement ? timeElement.textContent.trim() : '';
-
-                    Swal.fire({
-                        title: 'ยืนยันการเช็คอิน',
-                        html: `
-                            <div class="text-left">
-                                <p class="mb-3"><strong>โปรแกรม:</strong> {{ $project->project_name }}</p>
-                                <p class="mb-2"><strong>เซสชัน:</strong> ${timeSlot}</p>
-                                ${timeSchedule ? `<p class="mb-3"><strong>เวลา:</strong> ${timeSchedule}</p>` : ''}
-                            </div>
-                            <p class="mt-4 text-sm text-slate-600">คุณแน่ใจหรือไม่ที่จะเช็คอินสำหรับเซสชันนี้?</p>
-                        `,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3b82f6',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'ใช่, เช็คอิน',
-                        cancelButtonText: 'ยกเลิก'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            this.submit();
-                        }
-                    });
-                });
-            });
-
-            // Handle top attendance form submissions (for attendance projects)
-            const topAttendanceForms = document.querySelectorAll('.attendance-form-top');
-            topAttendanceForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    // Get form ID to extract project and time IDs
-                    const formId = this.id;
-                    const matches = formId.match(/attendance-form-(\d+)-(\d+)/);
-
-                    if (!matches) {
-                        console.error('Could not parse attendance form ID:', formId);
-                        return;
-                    }
-
-                    const projectId = matches[1];
-                    const timeId = matches[2];
-
-                    // Use ID-based selectors for better performance and reliability
-                    const projectName = @json($project->project_name);
-                    const dateTitle = document.getElementById(`checkin-date-title-${projectId}-${timeId}`)?.textContent?.trim() || '';
-                    const locationElement = document.getElementById(`checkin-location-${projectId}-${timeId}`);
-                    const location = locationElement ? locationElement.textContent.replace('สถานที่:', '').trim() : '';
-                    const timeScheduleElement = document.getElementById(`checkin-time-schedule-${projectId}-${timeId}`);
-                    const timeSchedule = timeScheduleElement ? timeScheduleElement.textContent.replace('เวลา:', '').trim() : '';
-
-                    Swal.fire({
-                        title: 'ยืนยันการเช็คอิน',
-                        html: `
-                            <div class="text-left">
-                                <p class="mb-3"><strong>โปรแกรม:</strong> ${projectName}</p>
-                                ${dateTitle ? `<p class="mb-2"><strong>วันที่:</strong> ${dateTitle}</p>` : ''}
-                                ${location ? `<p class="mb-2"><strong>สถานที่:</strong> ${location}</p>` : ''}
-                                ${timeSchedule ? `<p class="mb-3"><strong>เวลา:</strong> ${timeSchedule}</p>` : ''}
-                            </div>
-                            <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
-                                <p class="text-sm text-emerald-700">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    การเช็คอินจะบันทึกเวลาที่คุณเข้าร่วมโปรแกรม
-                                </p>
-                            </div>
-                            <p class="mt-4 text-sm text-slate-600">คุณแน่ใจหรือไม่ที่จะเช็คอินสำหรับเซสชันนี้?</p>
-                        `,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2563eb',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'ใช่, เช็คอิน',
-                        cancelButtonText: 'ยกเลิก',
-                        showLoaderOnConfirm: true,
-                        preConfirm: () => {
-                            return new Promise((resolve) => {
-                                setTimeout(() => {
-                                    resolve();
-                                }, 1000);
-                            });
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Show loading state on button using ID
-                            const buttonId = `attendance-btn-${projectId}-${timeId}`;
-                            const button = document.getElementById(buttonId);
-                            if (button) {
-                                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังเช็คอิน...';
-                                button.disabled = true;
-                            }
-
-                            this.submit();
-                        }
-                    });
-                });
-            });
-
-            // Handle top stamp form submissions (for registered projects)
-            const topStampForms = document.querySelectorAll('.stamp-form-top');
-            topStampForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    // Get form ID to extract project and registration IDs
-                    const formId = this.id;
-                    const matches = formId.match(/stamp-form-(\d+)-(\d+)/);
-
-                    if (!matches) {
-                        console.error('Could not parse stamp form ID:', formId);
-                        return;
-                    }
-
-                    const projectId = matches[1];
-                    const registrationId = matches[2];
-                    const projectName = @json($project->project_name);
-
-                    const sessionCard = this.closest('[id^="session-hub-"], [id^="checkin-card-"]');
-                    let dateTitle = '';
-                    let timeSchedule = '';
-                    let location = '';
-                    if (sessionCard?.id.startsWith('session-hub-')) {
-                        const dateHeading = sessionCard.closest('div')?.querySelector('p.text-sm.font-semibold');
-                        dateTitle = dateHeading?.textContent?.trim() || '';
-                        timeSchedule = sessionCard.querySelector('p.text-sm.font-semibold')?.textContent?.trim() || '';
-                        const loc = sessionCard.closest('div')?.querySelector('.fa-map-marker-alt')?.parentNode;
-                        location = loc ? loc.textContent.replace(/\s+/g, ' ').trim() : '';
-                    } else if (sessionCard) {
-                        const timeIdMatch = sessionCard.id.match(/checkin-card-\d+-(\d+)/);
-                        const timeId = timeIdMatch ? timeIdMatch[1] : '';
-                        dateTitle = document.getElementById(`checkin-date-title-${projectId}-${timeId}`)?.textContent?.trim() || '';
-                        const locationElement = document.getElementById(`checkin-location-${projectId}-${timeId}`);
-                        location = locationElement ? locationElement.textContent.replace('สถานที่:', '').trim() : '';
-                        const timeScheduleElement = document.getElementById(`checkin-time-schedule-${projectId}-${timeId}`);
-                        timeSchedule = timeScheduleElement ? timeScheduleElement.textContent.trim() : '';
-                    }
-
-                    Swal.fire({
-                        title: 'ยืนยันการเช็คอิน',
-                        html: `
-                            <div class="text-left">
-                                <p class="mb-3"><strong>โปรแกรม:</strong> ${projectName}</p>
-                                ${dateTitle ? `<p class="mb-2"><strong>วันที่:</strong> ${dateTitle}</p>` : ''}
-                                ${location ? `<p class="mb-2"><strong>สถานที่:</strong> ${location}</p>` : ''}
-                                ${timeSchedule ? `<p class="mb-3"><strong>เวลา:</strong> ${timeSchedule}</p>` : ''}
-                            </div>
-                            <div class="mt-4 p-3 bg-blue-50 border border-slate-200 rounded-lg">
-                                <p class="text-sm text-blue-700">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    การเช็คอินจะบันทึกเวลาที่คุณเข้าร่วมโปรแกรมที่ลงทะเบียนแล้ว
-                                </p>
-                            </div>
-                            <p class="mt-4 text-sm text-slate-600">คุณแน่ใจหรือไม่ที่จะเช็คอินสำหรับเซสชันที่ลงทะเบียนแล้วนี้?</p>
-                        `,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3b82f6',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'ใช่, เช็คอิน',
-                        cancelButtonText: 'ยกเลิก',
-                        showLoaderOnConfirm: true,
-                        preConfirm: () => {
-                            return new Promise((resolve) => {
-                                setTimeout(() => {
-                                    resolve();
-                                }, 1000);
-                            });
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Show loading state on button using ID
-                            const buttonId = `stamp-btn-${projectId}-${registrationId}`;
-                            const button = document.getElementById(buttonId);
-                            if (button) {
-                                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังเช็คอิน...';
-                                button.disabled = true;
-                            }
-
-                            this.submit();
-                        }
-                    });
-                });
-            });
-
-
+            bindHrdCheckinConfirmForms('.js-hrd-checkin-confirm');
 
             // Handle reselect form submissions
             const reselectForm = document.getElementById('reselect-form-{{ $project->id }}');

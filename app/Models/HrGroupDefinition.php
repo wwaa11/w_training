@@ -11,6 +11,7 @@ class HrGroupDefinition extends Model
 
     protected $fillable = [
         'project_id',
+        'time_id',
         'name',
         'max_members',
         'sort_order',
@@ -26,11 +27,21 @@ class HrGroupDefinition extends Model
         return $this->belongsTo(HrProject::class, 'project_id');
     }
 
+    public function time()
+    {
+        return $this->belongsTo(HrTime::class, 'time_id');
+    }
+
     public function memberCount(): int
     {
-        return HrGroup::where('project_id', $this->project_id)
-            ->where('group', $this->name)
-            ->count();
+        $query = HrGroup::where('project_id', $this->project_id)
+            ->where('group', $this->name);
+
+        if ($this->time_id !== null) {
+            $query->where('time_id', $this->time_id);
+        }
+
+        return $query->count();
     }
 
     public function hasCapacity(): bool
@@ -57,8 +68,8 @@ class HrGroupDefinition extends Model
     }
 
     /**
-     * Auto mode: allow join if group has capacity and joining would not split departments
-     * when another group without this department still has room.
+     * Auto mode: prefer assigning users to groups that do not already include their department
+     * when another group with capacity is available without that department.
      */
     public function departmentAllowedForAutoJoin(?string $userDepartment, array $groupDepartmentMap, iterable $allDefinitions): bool
     {

@@ -142,29 +142,31 @@
                                             @endif
                                         </div>
 
-                                        @if ($project->project_seat_assign && $time)
+                                        @if ($time && $hasAttended && ($project->project_seat_assign || $project->project_group_assign))
                                             @php
-                                                $userSeat = $time
-                                                    ->seats()
-                                                    ->where("user_id", auth()->id())
-                                                    ->where("seat_delete", false)
-                                                    ->first();
-                                            @endphp
-                                            @php
+                                                $userSeat = $project->project_seat_assign
+                                                    ? $time
+                                                        ->seats()
+                                                        ->where("user_id", auth()->id())
+                                                        ->where("seat_delete", false)
+                                                        ->first()
+                                                    : null;
                                                 $historyUserGroup = $project->project_group_assign
-                                                    ? \App\Models\HrGroup::where("project_id", $project->id)->where("user_id", auth()->id())->first()
+                                                    ? \App\Models\HrGroup::where("project_id", $project->id)
+                                                        ->where("user_id", auth()->id())
+                                                        ->where("time_id", $time->id)
+                                                        ->first()
                                                     : null;
                                             @endphp
-                                            @if ($userSeat || $historyUserGroup)
-                                                <div class="col-span-full pt-1">
-                                                    @include("hrd.partials.assignment-inline", [
-                                                        "userSeat" => $userSeat ?? null,
-                                                        "userGroup" => $historyUserGroup,
-                                                        "showSeat" => (bool) $userSeat,
-                                                        "showGroup" => (bool) $historyUserGroup,
-                                                    ])
-                                                </div>
-                                            @endif
+                                            <div class="col-span-full pt-1">
+                                                @include("hrd.partials.assignment-inline", [
+                                                    "project" => $project,
+                                                    "layout" => "full",
+                                                    "hasAttended" => true,
+                                                    "userSeat" => $userSeat,
+                                                    "userGroup" => $historyUserGroup,
+                                                ])
+                                            </div>
                                         @endif
                                     </div>
 
@@ -350,9 +352,11 @@
                                     @if ($transaction->seat)
                                         <div class="col-span-full pt-1">
                                             @include("hrd.partials.assignment-inline", [
+                                                "layout" => "full",
+                                                "hasAttended" => true,
+                                                "showSeatFeature" => true,
+                                                "showGroupFeature" => false,
                                                 "seatNumber" => $transaction->seat,
-                                                "showSeat" => true,
-                                                "showGroup" => false,
                                             ])
                                         </div>
                                     @endif

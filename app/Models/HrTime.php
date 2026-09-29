@@ -71,4 +71,24 @@ class HrTime extends Model
         }
         return $this->time_max - $this->activeAttends()->count();
     }
+
+    /**
+     * Upper bound for seat numbers when assigning (manual or automatic).
+     */
+    public function seatAssignmentCapacity(): int
+    {
+        if (! $this->time_limit) {
+            return 999999;
+        }
+
+        $max = (int) ($this->time_max ?? 0);
+        if ($max > 0) {
+            return $max;
+        }
+
+        $registered = $this->activeAttends()->count();
+        $assigned   = $this->seats()->where('seat_delete', false)->count();
+
+        return max(1, $registered, $assigned);
+    }
 }

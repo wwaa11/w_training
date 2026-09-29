@@ -45,13 +45,14 @@
         </div>
     </div>
 
-    @if ($showAssignment && ($t['userRegistered'] || $t['hasAttended']) && (($project->project_seat_assign && $t['userSeat']) || ($project->project_group_assign && $t['userGroup'])))
+    @if ($showAssignment && ($t['userRegistered'] || $t['hasAttended']) && ($project->project_seat_assign || $project->project_group_assign))
         <div class="mt-3">
             @include('hrd.partials.assignment-inline', [
+                'project' => $project,
+                'layout' => 'full',
+                'hasAttended' => (bool) ($t['hasAttended'] ?? false),
                 'userSeat' => $t['userSeat'] ?? null,
                 'userGroup' => $t['userGroup'] ?? null,
-                'showSeat' => $project->project_seat_assign,
-                'showGroup' => $project->project_group_assign,
             ])
         </div>
     @endif

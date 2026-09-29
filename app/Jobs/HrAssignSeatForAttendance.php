@@ -104,14 +104,9 @@ class HrAssignSeatForAttendance implements ShouldQueue
         $currentSeats = HrSeat::where('time_id', $time->id)
             ->where('seat_delete', false)
             ->get()
-            ->keyBy('seat_number');
+            ->keyBy(fn (HrSeat $seat) => (int) $seat->seat_number);
 
-        // Determine max seats
-        if (! $time->time_limit) {
-            $maxSeats = 999999; // Very high number for unlimited
-        } else {
-            $maxSeats = $time->time_max ?? 100;
-        }
+        $maxSeats = $time->seatAssignmentCapacity();
 
         $assignedSeat = null;
 

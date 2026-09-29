@@ -35,35 +35,52 @@
                                     <h3 class="mt-0.5 text-base font-semibold text-slate-900" id="project-name-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">{{ $ongoingProject["project"]->project_name }}</h3>
                                 </div>
 
-                                @if (! empty($session["attendanceRecord"]) && ($ongoingProject["project"]->project_seat_assign || $ongoingProject["project"]->project_group_assign))
-                                    @include("hrd.partials.assignment-inline", [
-                                        "userSeat" => $session["userSeat"] ?? null,
-                                        "userGroup" => $session["userGroup"] ?? null,
-                                        "showSeat" => $ongoingProject["project"]->project_seat_assign,
-                                        "showGroup" => $ongoingProject["project"]->project_group_assign,
-                                        "class" => "mb-3",
-                                    ])
+                                @php
+                                    $sessionHasAttended = ! empty($session["hasAttended"]);
+                                @endphp
+                                @if ($ongoingProject["project"]->project_seat_assign || $ongoingProject["project"]->project_group_assign)
+                                    <div class="mb-3">
+                                        @include("hrd.partials.assignment-inline", [
+                                            "project" => $ongoingProject["project"],
+                                            "layout" => "full",
+                                            "hasAttended" => $sessionHasAttended,
+                                            "userSeat" => $sessionHasAttended ? ($session["userSeat"] ?? null) : null,
+                                            "userGroup" => $sessionHasAttended ? ($session["userGroup"] ?? null) : null,
+                                        ])
+                                    </div>
                                 @endif
 
-                                <dl class="mb-4 space-y-1.5 text-sm text-slate-600">
-                                    @if ($session["date"]->date_location)
-                                        <div class="flex gap-2" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                            <dt class="shrink-0 font-medium text-slate-500">สถานที่</dt>
-                                            <dd>{{ $session["date"]->date_location }}</dd>
-                                        </div>
-                                    @endif
-                                    <div class="flex gap-2" id="time-schedule-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
-                                        <dt class="shrink-0 font-medium text-slate-500">เวลา</dt>
-                                        <dd>{{ \Carbon\Carbon::parse($session["time"]->time_start)->format("H:i") }}–{{ \Carbon\Carbon::parse($session["time"]->time_end)->format("H:i") }}</dd>
-                                    </div>
-                                    <div class="flex gap-2 text-blue-700">
-                                        <dt class="shrink-0 font-medium">เช็คอิน</dt>
-                                        <dd>ตั้งแต่ {{ \Carbon\Carbon::parse($session["time"]->time_start)->subMinutes(30)->format("H:i") }}</dd>
-                                    </div>
-                                </dl>
+                                @include("hrd.partials.checkin-session-schedule", [
+                                    "time" => $session["time"],
+                                    "class" => "mb-4",
+                                ])
+
+                                @if ($session["date"]->date_location)
+                                    <p class="mb-4 flex items-start gap-2 text-sm text-slate-600" id="location-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}">
+                                        <i class="fas fa-map-marker-alt mt-0.5 shrink-0 text-blue-600" aria-hidden="true"></i>
+                                        <span><span class="font-medium text-slate-700">สถานที่</span> {{ $session["date"]->date_location }}</span>
+                                    </p>
+                                @endif
 
                                 @if ($session["canCheckIn"])
-                                    <form class="checkin-form" id="checkin-form-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}" action="{{ $session["checkInRoute"] }}" method="{{ $session["checkInMethod"] }}">
+                                    @php
+                                        $dashTime = $session["time"];
+                                        $dashSessionStart = \Carbon\Carbon::parse($dashTime->time_start)->format("H:i");
+                                        $dashSessionEnd = \Carbon\Carbon::parse($dashTime->time_end)->format("H:i");
+                                        $dashCheckinFrom = \Carbon\Carbon::parse($dashTime->time_start)->subMinutes(30)->format("H:i");
+                                    @endphp
+                                    <form
+                                        class="checkin-form js-hrd-checkin-confirm"
+                                        id="checkin-form-{{ $ongoingProject["project"]->id }}-{{ $session["time"]->id }}"
+                                        action="{{ $session["checkInRoute"] }}"
+                                        method="{{ $session["checkInMethod"] }}"
+                                        data-checkin-project="{{ $ongoingProject["project"]->project_name }}"
+                                        data-checkin-date="{{ $session["date"]->date_title }}"
+                                        data-checkin-session="{{ $dashSessionStart }} – {{ $dashSessionEnd }}"
+                                        data-checkin-from="{{ $dashCheckinFrom }}"
+                                        data-checkin-location="{{ $session["date"]->date_location ?? "" }}"
+                                        data-checkin-session-title="{{ $dashTime->time_title ?? "" }}"
+                                    >
                                         @csrf
                                         @foreach ($session["checkInData"] as $key => $value)
                                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -79,6 +96,11 @@
                                         <p class="text-xl font-bold text-slate-900">{{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("H:i") }}</p>
                                         <p class="text-xs text-blue-700">{{ \Carbon\Carbon::parse($session["attendanceRecord"]->attend_datetime)->format("d M Y") }}</p>
                                     </div>
+                                    @if (! empty($session["showSessionLinks"]))
+                                        @include("hrd.partials.project-session-links", [
+                                            "project" => $ongoingProject["project"],
+                                        ])
+                                    @endif
                                 @endif
                             </div>
                         @endforeach
@@ -167,6 +189,7 @@
 @endsection
 
 @section("scripts")
+    @include("hrd.partials.checkin-confirm-swal")
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             @if (session("success"))
@@ -197,32 +220,7 @@
             }
             searchInput?.addEventListener('input', searchProjects);
 
-            document.querySelectorAll('.checkin-form').forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const matches = this.id.match(/checkin-form-(\d+)-(\d+)/);
-                    if (!matches) return;
-                    const [projectId, timeId] = [matches[1], matches[2]];
-                    const projectName = document.getElementById(`project-name-${projectId}-${timeId}`)?.textContent || '';
-                    const dateTitle = document.getElementById(`date-title-${projectId}-${timeId}`)?.textContent || '';
-                    Swal.fire({
-                        title: 'ยืนยันการเช็คอิน',
-                        html: `<p class="text-sm text-left"><strong>${projectName}</strong><br>${dateTitle}</p>`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2563eb',
-                        cancelButtonColor: '#71717a',
-                        confirmButtonText: 'เช็คอิน',
-                        cancelButtonText: 'ยกเลิก',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            const btn = document.getElementById(`checkin-btn-${projectId}-${timeId}`);
-                            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเช็คอิน...'; }
-                            this.submit();
-                        }
-                    });
-                });
-            });
+            bindHrdCheckinConfirmForms('.js-hrd-checkin-confirm');
         });
     </script>
 @endsection

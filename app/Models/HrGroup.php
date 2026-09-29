@@ -10,6 +10,7 @@ class HrGroup extends Model
 
     protected $fillable = [
         'project_id',
+        'time_id',
         'user_id',
         'group',
     ];
@@ -18,6 +19,11 @@ class HrGroup extends Model
     public function project()
     {
         return $this->belongsTo(HrProject::class, 'project_id');
+    }
+
+    public function time()
+    {
+        return $this->belongsTo(HrTime::class, 'time_id');
     }
 
     public function user()

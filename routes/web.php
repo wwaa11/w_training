@@ -159,6 +159,7 @@ Route::middleware([HrAdmin::class])->group(function () {
                     Route::get('/', [HRController::class, 'adminProjectGroups'])->name('index');
                     Route::post('/mode', [HRController::class, 'adminGroupModeUpdate'])->name('mode');
                     Route::post('/rerandom', [HRController::class, 'adminGroupRerandom'])->name('rerandom');
+                    Route::post('/copy-to-all-slots', [HRController::class, 'adminGroupCopyDefinitionsToAllSlots'])->name('copy_to_all_slots');
                     Route::post('/definitions', [HRController::class, 'adminGroupDefinitionStore'])->name('definitions.store');
                     Route::put('/definitions/{definitionId}', [HRController::class, 'adminGroupDefinitionUpdate'])->name('definitions.update');
                     Route::delete('/definitions/{definitionId}', [HRController::class, 'adminGroupDefinitionDelete'])->name('definitions.delete');
